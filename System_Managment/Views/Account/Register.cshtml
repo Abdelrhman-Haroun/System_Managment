@@ -1,0 +1,170 @@
+﻿@using BLL.ViewModels.Account
+@model RegisterationVM
+
+@{
+    ViewData["Title"] = "تسجيل مستخدم جديد";
+}
+
+<head>
+
+    <title>@ViewData["Title"]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "custom": "#2a7f40",
+                        "secondary": "#D4A373",
+                        "background-light": "#F8F9FA",
+                        "background-dark": "#1A1A1A",
+                        "text-light": "#333333",
+                        "text-dark": "#F8F9FA"
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        };
+    </script>
+
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark" x-data="{ isMenuOpen: false }">
+    <div class="relative flex h-auto w-full flex-col items-center justify-center bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden p-4">
+        <div class="w-full max-w-md space-y-6">
+            <h1 class="text-3xl font-bold text-center text-text-light dark:text-text-dark">إنشاء حساب جديد</h1>
+            <p class="text-center text-text-light/80 dark:text-text-dark/80">الرجاء إدخال بياناتك لإنشاء حساب في تطبيق مزرعة آل سالم</p>
+
+            <form id="registerForm" asp-controller="Account" asp-action="Register" method="post" enctype="multipart/form-data"
+                   data-ajax="true"
+                  data-ajax-method="post"
+                  data-ajax-complete="onRegisterComplete"
+                  data-ajax-success="onRegisterSuccess"
+                  data-ajax-failure="onRegisterFailure">
+
+                <div class="flex flex-col items-center space-y-4">
+                    <div class="relative">
+                        <div id="profile-picture-preview" class="w-32 h-32 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                            <img id="preview-image" class="hidden w-full h-full object-cover" src="" alt="Profile picture preview" />
+                        </div>
+
+                        <label class="absolute bottom-0 right-0 bg-custom text-white rounded-full pt-2 pr-2 pl-2 cursor-pointer hover:bg-custom/90" for="ProfilePicture">
+                            <span class="material-symbols-outlined">add_a_photo</span>
+                            <input asp-for="ProfilePicture" class="sr-only" id="ProfilePicture" type="file" accept="image/*" />
+                        </label>
+
+                    </div>
+                    <p class="text-lg font-medium text-text-light dark:text-text-dark">صورة شخصية</p>
+                    <span asp-validation-for="ProfilePicture" class="text-danger"></span>
+                </div>
+
+                <label class="flex flex-col">
+                    <span asp-validation-for="FullName" class="text-lg" style="color:#FF0000"></span>
+                    <p class="text-lg font-medium pb-2 text-text-light dark:text-text-dark">الاسم الكامل</p>
+                    <div class="flex w-full flex-1 items-stretch rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+                        <input asp-for="FullName" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg bg-transparent text-text-light dark:text-text-dark focus:outline-none focus:ring-0 border-0 h-14 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-4" placeholder="الاسم الكامل" type="text" />
+                        <div class="flex items-center justify-center pl-4 text-gray-500">
+                            <span class="material-symbols-outlined">person</span>
+                        </div>
+                    </div>
+
+                </label>
+
+                <label class="flex flex-col">
+                    <span asp-validation-for="Email" class="text-lg" style="color:#FF0000"></span>
+                    <p class="text-lg font-medium pb-2 text-text-light dark:text-text-dark">البريد الإلكتروني</p>
+                    <div class="flex w-full flex-1 items-stretch rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+                        <input asp-for="Email" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg bg-transparent text-text-light dark:text-text-dark focus:outline-none focus:ring-0 border-0 h-14 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-4" placeholder="البريد الإلكتروني" type="email" />
+                        <div class="flex items-center justify-center pl-4 text-gray-500">
+                            <span class="material-symbols-outlined">mail</span>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="flex flex-col">
+                    <span asp-validation-for="PhoneNumber" class="text-lg" style="color:#FF0000"></span>
+                    <p class="text-lg font-medium pb-2 text-text-light dark:text-text-dark">رقم الهاتف</p>
+                    <div class="flex w-full flex-1 items-stretch rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+                        <input asp-for="PhoneNumber" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg bg-transparent text-text-light dark:text-text-dark focus:outline-none focus:ring-0 border-0 h-14 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-4" placeholder="البريد الإلكتروني" type="text" />
+                        <div class="flex items-center justify-center pl-4 text-gray-500">
+                            <span class="material-symbols-outlined">phone</span>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="flex flex-col">
+                    <span asp-validation-for="Password" class="text-lg" style="color:#FF0000"></span>
+                    <p class="text-lg font-medium pb-2 text-text-light dark:text-text-dark">كلمة المرور</p>
+                    <div class="flex w-full flex-1 items-stretch rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+                        <input asp-for="Password" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg bg-transparent text-text-light dark:text-text-dark focus:outline-none focus:ring-0 border-0 h-14 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-4" placeholder="كلمة المرور" type="password" />
+                        <div class="flex items-center justify-center pl-4 text-gray-500 cursor-pointer">
+                            <span class="material-symbols-outlined">visibility_off</span>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="flex flex-col">
+                    <span asp-validation-for="ConfirmPassword" class="text-lg" style="color:#FF0000"></span>
+                    <p class="text-lg font-medium pb-2 text-text-light dark:text-text-dark">تأكيد كلمة المرور</p>
+                    <div class="flex w-full flex-1 items-stretch rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+                        <input asp-for="ConfirmPassword" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg bg-transparent text-text-light dark:text-text-dark focus:outline-none focus:ring-0 border-0 h-14 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-4" placeholder="تأكيد كلمة المرور" type="password" />
+                        <div class="flex items-center justify-center pl-4 text-gray-500">
+                            <span class="material-symbols-outlined">lock</span>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="flex flex-col">
+                    <span asp-validation-for="UserRole" class="text-lg" style="color:#FF0000"></span>
+                    <p class="text-base font-medium pb-2 text-text-light dark:text-text-dark">درجة المستخدم</p>
+                    <div class="relative w-full">
+                        <select asp-for="UserRole" class="form-select appearance-none w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-light dark:text-text-dark focus:outline-none focus:ring-2 h-14">
+                            <option value="" disabled selected>اختر درجة المستخدم</option>
+                            <option value="SuperAdmin">مسؤول</option>
+                            <option value="Admin">مشرف</option>
+                            <option value="Employee">موظف</option>
+                        </select>
+                    </div>
+                </label>
+
+                <button type="submit" class="w-full bg-custom text-xl text-white mt-3 font-bold py-4 px-4 rounded-lg hover:bg-custom/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom dark:focus:ring-offset-background-dark transition-colors duration-300">
+                    إنشاء حساب
+                </button>
+            </form>
+        </div>
+    </div>
+
+    @* Include validation scripts for client-side validation *@
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+            document.getElementById('ProfilePicture').addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                const previewImage = document.getElementById('preview-image');
+                const previewContainer = document.getElementById('profile-picture-preview');
+
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        previewImage.src = e.target.result;
+                        previewImage.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewImage.src = '';
+                    previewImage.classList.add('hidden');
+                }
+            });
+    </script>
+</body>

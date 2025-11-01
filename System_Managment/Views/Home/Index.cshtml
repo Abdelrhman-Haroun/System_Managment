@@ -1,0 +1,136 @@
+﻿@model dynamic
+@{
+    ViewData["Title"] = "الرئيسية";
+}
+
+<head>
+ 
+    <title>@ViewData["Title"]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        custom: "#2a7f40",
+                        secondary: "#A7C957",
+                        accent: "#F2E8CF",
+                        "text-dark": "#383838",
+                        "background-light": "#F6F8F6",
+                        "background-dark": "#1A1A1A",
+                        "card-dark": "#242424"
+                    },
+                    fontFamily: {
+                        display: ["Cairo", "sans-serif"]
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                        lg: "0.75rem",
+                        xl: "1rem",
+                        full: "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-dark dark:text-accent" x-data="{ isMenuOpen: false }">
+    <div class="relative flex h-auto  w-full flex-col group/design-root overflow-x-hidden" >
+        <main class="flex-1 p-4 sm:p-6">
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white dark:bg-card-dark p-4 rounded-xl shadow-md flex flex-col items-center justify-center text-center col-span-2 sm:col-span-3 lg:col-span-4">
+                    <span class="material-symbols-outlined text-4xl text-custom dark:text-secondary mb-2">account_balance</span>
+                    <h3 class="font-bold text-lg text-text-dark dark:text-accent">الخزينة</h3>
+                    <p class="text-2xl font-bold text-custom dark:text-secondary">7,500,000 جنيه</p>
+                </div>
+                <div class="bg-white dark:bg-card-dark p-4 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
+                    <span class="material-symbols-outlined text-4xl text-custom dark:text-secondary mb-2">group</span>
+                    <h3 class="font-bold text-lg text-text-dark dark:text-accent">العملاء</h3>
+                    <p class="text-2xl font-bold text-custom dark:text-secondary">1,250</p>
+                </div>
+                <div class="bg-white dark:bg-card-dark p-4 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
+                    <span class="material-symbols-outlined text-4xl text-custom dark:text-secondary mb-2">local_shipping</span>
+                    <h3 class="font-bold text-lg text-text-dark dark:text-accent">الموردين</h3>
+                    <p class="text-2xl font-bold text-custom dark:text-secondary">320</p>
+                </div>
+                <div class="bg-white dark:bg-card-dark p-4 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
+                    <span class="material-symbols-outlined text-4xl text-custom dark:text-secondary mb-2">category</span>
+                    <h3 class="font-bold text-lg text-text-dark dark:text-accent">المنتجات</h3>
+                    <p class="text-2xl font-bold text-custom dark:text-secondary">150</p>
+                </div>
+                <div class="bg-white dark:bg-card-dark p-4 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
+                    <span class="material-symbols-outlined text-4xl text-custom dark:text-secondary mb-2">payments</span>
+                    <h3 class="font-bold text-lg text-text-dark dark:text-accent">المصروفات</h3>
+                    <p class="text-2xl font-bold text-custom dark:text-secondary">120,000 جنيه</p>
+                </div>
+                <div class="bg-white dark:bg-card-dark p-4 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
+                    <span class="material-symbols-outlined text-4xl text-custom dark:text-secondary mb-2">trending_up</span>
+                    <h3 class="font-bold text-lg text-text-dark dark:text-accent">الإيرادات</h3>
+                    <p class="text-2xl font-bold text-custom dark:text-secondary">890,000 جنيه</p>
+                </div>
+                <div class="bg-white dark:bg-card-dark p-4 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
+                    <span class="material-symbols-outlined text-4xl text-custom dark:text-secondary mb-2">account_balance_wallet</span>
+                    <h3 class="font-bold text-lg text-text-dark dark:text-accent">الأصول</h3>
+                    <p class="text-2xl font-bold text-custom dark:text-secondary">2,500,000 جنيه</p>
+                </div>
+            </div>
+            <section class="bg-white dark:bg-card-dark p-4 sm:p-6 rounded-xl shadow-md">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-custom dark:text-secondary">آخر المعاملات</h2>
+                    <a class="text-sm font-medium text-custom dark:text-secondary hover:underline" asp-controller="Transactions" asp-action="Index">عرض الكل</a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right">
+                        <thead>
+                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                                <th class="p-3 font-semibold text-text-dark dark:text-accent">التاريخ</th>
+                                <th class="p-3 font-semibold text-text-dark dark:text-accent">النوع</th>
+                                <th class="p-3 font-semibold text-text-dark dark:text-accent hidden sm:table-cell">الطرف</th>
+                                <th class="p-3 font-semibold text-text-dark dark:text-accent">المبلغ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                                <td class="p-3 text-text-dark dark:text-accent">2023-10-26</td>
+                                <td class="p-3">
+                                    <span class="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">بيع</span>
+                                </td>
+                                <td class="p-3 text-text-dark dark:text-accent hidden sm:table-cell">مؤسسة الخير</td>
+                                <td class="p-3 font-bold text-green-600 dark:text-green-400">+ 15,000 جنيه</td>
+                            </tr>
+                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                                <td class="p-3 text-text-dark dark:text-accent">2023-10-25</td>
+                                <td class="p-3">
+                                    <span class="bg-red-100 text-red-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">شراء</span>
+                                </td>
+                                <td class="p-3 text-text-dark dark:text-accent hidden sm:table-cell">مورد الأسمدة</td>
+                                <td class="p-3 font-bold text-red-600 dark:text-red-400">- 5,000 جنيه</td>
+                            </tr>
+                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                                <td class="p-3 text-text-dark dark:text-accent">2023-10-24</td>
+                                <td class="p-3">
+                                    <span class="bg-yellow-100 text-yellow-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300">مصروف</span>
+                                </td>
+                                <td class="p-3 text-text-dark dark:text-accent hidden sm:table-cell">فاتورة كهرباء</td>
+                                <td class="p-3 font-bold text-red-600 dark:text-red-400">- 1,200 جنيه</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 text-text-dark dark:text-accent">2023-10-23</td>
+                                <td class="p-3">
+                                    <span class="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">بيع</span>
+                                </td>
+                                <td class="p-3 text-text-dark dark:text-accent hidden sm:table-cell">أسواق المزرعة</td>
+                                <td class="p-3 font-bold text-green-600 dark:text-green-400">+ 22,000 جنيه</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+        </div>
+    <script defer src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js"></script>
+</body>

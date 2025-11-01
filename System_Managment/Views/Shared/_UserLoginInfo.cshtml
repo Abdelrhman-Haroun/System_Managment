@@ -1,0 +1,28 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    string userName = "User";
+    string profilePictureUrl = "uploads/alter.png";
+    if (User.Identity?.IsAuthenticated == true)
+    {
+        var user = await UserManager.GetUserAsync(User);
+        if (user != null)
+        {
+            userName = user.FullName ?? User.Identity.Name ?? "User";
+            profilePictureUrl =user.ProfilePicture ?? profilePictureUrl;
+        }
+    }
+}
+
+<div class="flex items-center gap-2">
+    <span class="text-white font-medium text-sm hidden sm:inline">@userName</span>
+    <div class="relative">
+        <img alt="صورة الملف الشخصي لـ @userName" class="h-8 w-8 rounded-full object-cover border-2 border-blue-400" src="~/Files/@profilePictureUrl" />
+    </div>
+    <form method="post" asp-controller="Account" asp-action="Logout">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="text-white text-sm hover:text-blue-200">تسجيل الخروج</button>
+    </form>
+</div>
+

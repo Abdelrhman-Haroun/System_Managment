@@ -1,0 +1,117 @@
+﻿﻿@using Microsoft.AspNetCore.Identity
+@model List<ApplicationUser>
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "إدارة المستخدمين";
+}
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+        darkMode: "class",
+        theme: {
+        extend: {
+        colors: {
+        "custom": "#2a7f40",
+        "accent": "#F5DEB3",
+        "background-light": "#F8F8F8",
+        "background-dark": "#152111",
+        "text-light": "#333333",
+        "text-dark": "#F8F8F8",
+        "action-red": "#D32F2F",
+        "action-blue": "#1976D2",
+        },
+        fontFamily: {
+        "display": ["Tajawal", "sans-serif"]
+        },
+        borderRadius: {
+        "DEFAULT": "0.5rem",
+        "lg": "0.75rem",
+        "xl": "1rem",
+        "full": "9999px"
+        },
+        },
+        },
+        }
+    </script>
+
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark" x-data="{ isMenuOpen: false }">
+    <div class="relative flex h-auto  w-full flex-col group/design-root overflow-x-hidden">
+        <div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10 shadow-sm">
+            <div class="text-text-light dark:text-text-dark flex size-12 shrink-0 items-center">
+                <a asp-controller="Home" asp-action="Index" class="text-text-light dark:text-text-dark">
+                    <span class="material-symbols-outlined text-2xl">arrow_back_ios</span>
+                </a>
+            </div>
+            <h1 class="text-text-light dark:text-text-dark text-xl font-bold leading-tight tracking-[-0.015em] flex-1 text-center">إدارة المستخدمين</h1>
+            <div class="flex w-12 items-center justify-end">
+                <button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 w-12 bg-transparent text-text-light dark:text-text-dark">
+                    <span class="material-symbols-outlined text-2xl">search</span>
+                </button>
+            </div>
+        </div>
+        <main class="flex-grow p-4">
+            <div class="space-y-3">
+                @foreach (var user in Model)
+                {
+
+                    var roles = await UserManager.GetRolesAsync(new ApplicationUser { Id = user.Id });
+                    var roleName = roles.FirstOrDefault() ?? "غير محدد";
+                    string viewedRoleName;
+                    string img = null;
+                    if (roleName == "SuperAdmin")
+                    {
+                        viewedRoleName = "مسؤول";
+                    }
+                    else if (roleName == "Admin")
+                    {
+                        viewedRoleName = "مشرف";
+                    }
+                    else
+                    {
+                        viewedRoleName = "موظف";
+                    }
+                    if (user.ProfilePicture != null)
+                    {
+                        img = @user.ProfilePicture;
+                    }
+                    else
+                    {
+                        img = "uploads/alter.png";
+                    }
+                    <div class="flex items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+                        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14" data-alt="Profile picture of @user.FullName" style="background-image: url('Files/@img')"></div>
+                        <div class="flex flex-col justify-center flex-grow">
+                            <p class="text-text-light dark:text-text-dark text-xl font-medium leading-normal line-clamp-1">@user.FullName</p>
+                            <p class="text-custom dark:text-accent text-l font-normal leading-normal line-clamp-2">@viewedRoleName</p>
+                        </div>
+                        <div class="shrink-0 flex items-center gap-2">
+                            <a asp-controller="Account" asp-action="Edit" asp-route-id="@user.Id" class="text-text-light dark:text-text-dark flex size-7 items-center justify-center">
+                                <span class="material-symbols-outlined text-2xl">edit</span>
+                            </a>
+                            <a asp-controller="Users" asp-action="Details" asp-route-id="@user.Id" class="text-text-light dark:text-text-dark flex size-7 items-center justify-center">
+                                <span class="material-symbols-outlined text-2xl">visibility</span>
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </main>
+
+        <div class="fixed bottom-6 end-6">
+            <a asp-controller="Account" asp-action="Register" class="flex items-center justify-center h-16 w-16 cursor-pointer overflow-hidden rounded-full bg-custom text-white shadow-lg transition-transform hover:scale-105">
+                <span class="material-symbols-outlined text-3xl">add</span>
+            </a>
+        </div>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+</body>

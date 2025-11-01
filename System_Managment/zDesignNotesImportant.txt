@@ -1,0 +1,4 @@
+﻿all view should has
+x-data="{ isMenuOpen: false }     -- to handle menu state for mobile view
+flex h-auto  w-full               -- to make the view flexible and full width with auto height
+custom: "#2a7f40"                 -- it's the primary color for the design 
