@@ -5,6 +5,8 @@ using BLL.Services.Service;
 using DAL.Data;
 using DAL.IRepository;
 using DAL.Models;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Auth.OAuth2.Flows;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +17,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 
 builder.Services.AddControllersWithViews();
+
 
 builder.Services.AddTransient<IEmailSender, SmtpEmailSender>(sp =>
 {

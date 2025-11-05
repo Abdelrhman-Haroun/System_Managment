@@ -1,0 +1,152 @@
+﻿@model EditUserVM
+
+<div class="relative flex h-auto w-full flex-col group/design-root overflow-x-hidden p-4">
+    <h1 class="text-3xl font-bold text-center text-text-light dark:text-text-dark mb-6">تعديل المستخدم</h1>
+
+    <div class="flex flex-col items-center mb-6">
+        <div class="relative">
+            @{
+                string img = !string.IsNullOrEmpty(Model.ProfilePicture) ? Model.ProfilePicture : "uploads/alter.png";
+            }
+            <div id="profilePreview" class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-24 w-24"
+                 style="background-image: url('/files/@img');"></div>
+            <label for="profilePictureInput" class="absolute bottom-0 end-0 flex h-8 w-8 items-center justify-center rounded-full bg-custom text-white shadow-md cursor-pointer hover:bg-custom/90">
+                <span class="material-symbols-outlined text-lg">edit</span>
+            </label>
+            <input type="file" id="profilePictureInput" class="hidden" accept="image/*" />
+        </div>
+    </div>
+
+    <form id="editUserForm" method="post" enctype="multipart/form-data" class="space-y-4">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="Id" value="@Model.Id" />
+
+        @* Only include ProfilePicture if it has a value *@
+        @if (!string.IsNullOrEmpty(Model.ProfilePicture))
+        {
+            <input type="hidden" name="ProfilePicture" value="@Model.ProfilePicture" />
+        }
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">الاسم الكامل</label>
+            <input type="text" name="FullName" value="@Model.FullName" required
+                   class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-custom focus:ring-custom dark:bg-gray-700 dark:text-white sm:text-sm" />
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">البريد الإلكتروني</label>
+            <input type="email" name="Email" value="@Model.Email" required
+                   class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-custom focus:ring-custom dark:bg-gray-700 dark:text-white sm:text-sm" />
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">رقم الهاتف</label>
+            <input type="text" name="PhoneNumber" value="@Model.PhoneNumber"
+                   class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-custom focus:ring-custom dark:bg-gray-700 dark:text-white sm:text-sm" />
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">درجة المستخدم</label>
+            <select name="Role" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-custom focus:ring-custom dark:bg-gray-700 dark:text-white sm:text-sm">
+                <option value="Employee" selected="@(Model.Role == "Employee")">موظف</option>
+                <option value="Admin" selected="@(Model.Role == "Admin")">مشرف</option>
+                <option value="SuperAdmin" selected="@(Model.Role == "SuperAdmin")">مسؤول</option>
+            </select>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="font-medium text-text-light dark:text-text-dark">حالة الحساب</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">تفعيل/تعطيل وصول المستخدم</p>
+                </div>
+                <label class="relative inline-flex cursor-pointer items-center">
+                    <input type="checkbox" name="IsLocked" value="true" @(Model.IsLocked ? "checked" : "") class="peer sr-only" />
+                    <input type="hidden" name="IsLocked" value="false" />
+                    <div class="h-6 w-11 rounded-full bg-gray-200 after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-['']
+                                peer-checked:bg-custom peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:border-gray-600 dark:bg-gray-700"></div>
+                </label>
+            </div>
+        </div>
+
+        <div class="pt-4 space-y-3">
+            <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-lg bg-custom px-4 py-3 text-base font-bold text-white shadow-md hover:bg-custom/90">
+                <span class="material-symbols-outlined">save</span>
+                <span>حفظ التغييرات</span>
+            </button>
+
+            <button type="button" id="deleteUserBtn" data-userid="@Model.Id"
+                    class="flex w-full items-center justify-center gap-2 rounded-lg bg-transparent px-4 py-3 text-base font-bold text-action-red border border-action-red hover:bg-action-red/10">
+                <span class="material-symbols-outlined">delete</span>
+                <span>حذف المستخدم</span>
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    (function () {
+        $('#profilePictureInput').on('change', function (e) {
+            var file = e.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function (event) {
+                    $('#profilePreview').css('background-image', 'url(' + event.target.result + ')');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        $('#editUserForm').on('submit', function (e) {
+            e.preventDefault();
+
+            var formData = new FormData(this);
+
+            // Add file only if selected
+            var fileInput = document.getElementById('profilePictureInput');
+            if (fileInput.files.length > 0) {
+                formData.append('ProfilePictureFile', fileInput.files[0]);
+            }
+
+            $.ajax({
+                url: '@Url.Action("Edit", "Account")',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.success) {
+                        $('#dialogContainer').modal('hide');
+                        location.reload();
+                    } else {
+                        alert('فشل الحفظ: ' + (response.message || 'خطأ غير معروف'));
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert('حدث خطأ: ' + error);
+                }
+            });
+        });
+
+        $('#deleteUserBtn').on('click', function () {
+            if (!confirm('هل أنت متأكد من حذف هذا المستخدم؟')) return;
+
+            $.ajax({
+                url: '@Url.Action("Delete", "Account")',
+                type: 'POST',
+                data: {
+                    id: $(this).data('userid'),
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (response) {
+                    if (response.success) {
+                        $('#dialogContainer').modal('hide');
+                        location.reload();
+                    } else {
+                        alert('فشل الحذف');
+                    }
+                }
+            });
+        });
+    })();
+</script>

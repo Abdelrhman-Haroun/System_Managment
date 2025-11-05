@@ -10,7 +10,10 @@
         if (user != null)
         {
             userName = user.FullName ?? User.Identity.Name ?? "User";
-            profilePictureUrl =user.ProfilePicture ?? profilePictureUrl;
+            if (user.ProfilePicture != null)
+            {
+                profilePictureUrl = user.ProfilePicture;
+            }
         }
     }
 }
@@ -18,7 +21,7 @@
 <div class="flex items-center gap-2">
     <span class="text-white font-medium text-sm hidden sm:inline">@userName</span>
     <div class="relative">
-        <img alt="صورة الملف الشخصي لـ @userName" class="h-8 w-8 rounded-full object-cover border-2 border-blue-400" src="~/Files/@profilePictureUrl" />
+        <img alt="صورة الملف الشخصي لـ @userName" class="h-8 w-8 rounded-full object-cover border-2 border-blue-400" src="~/files/@profilePictureUrl" />
     </div>
     <form method="post" asp-controller="Account" asp-action="Logout">
         @Html.AntiForgeryToken()
