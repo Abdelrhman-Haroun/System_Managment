@@ -19,13 +19,9 @@
 }
 
 <div class="flex items-center gap-2">
-    <span class="text-white font-medium text-sm hidden sm:inline">@userName</span>
+    <span class="text-white font-medium text-sm  sm:inline">@userName</span>
     <div class="relative">
         <img alt="صورة الملف الشخصي لـ @userName" class="h-8 w-8 rounded-full object-cover border-2 border-blue-400" src="~/files/@profilePictureUrl" />
     </div>
-    <form method="post" asp-controller="Account" asp-action="Logout">
-        @Html.AntiForgeryToken()
-        <button type="submit" class="text-white text-sm hover:text-blue-200">تسجيل الخروج</button>
-    </form>
 </div>
 

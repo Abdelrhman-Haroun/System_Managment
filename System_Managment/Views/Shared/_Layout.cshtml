@@ -151,12 +151,48 @@
             <a class="flex items-center gap-2 p-3 text-sm font-medium border-b-2 border-transparent hover:border-custom/50 hover:text-custom dark:hover:text-secondary dark:hover:border-secondary/50 transition-colors" asp-controller="Reports" asp-action="Index">
                 <span class="material-symbols-outlined">bar_chart</span>الإحصائيات والتقارير
             </a>
-            <a class="flex items-center gap-2 p-3 text-sm font-medium border-b-2 border-transparent hover:border-custom/50 hover:text-custom dark:hover:text-secondary dark:hover:border-secondary/50 transition-colors" asp-controller="Account" asp-action="Index">
-                <span class="material-symbols-outlined">people</span>المستخدمين
-            </a>
-            <a class="flex items-center gap-2 p-3 text-sm font-medium border-b-2 border-transparent hover:border-custom/50 hover:text-custom dark:hover:text-secondary dark:hover:border-secondary/50 transition-colors" asp-controller="Settings" asp-action="Index">
-                <span class="material-symbols-outlined">settings</span>الإعدادات
-            </a>
+            <!-- Settings Dropdown (Desktop) - FIXED POSITION VERSION -->
+            <div x-data="{ isDesktopSettingsOpen: false }"
+                 x-on:click.away="isDesktopSettingsOpen = false"
+                 class="relative"
+                 x-ref="settingsButton">
+                <button x-on:click="isDesktopSettingsOpen = !isDesktopSettingsOpen"
+                        class="flex items-center gap-2 p-3 text-sm font-medium border-b-2 border-transparent hover:border-custom/50 hover:text-custom dark:hover:text-secondary dark:hover:border-secondary/50 transition-colors">
+                    <span class="material-symbols-outlined">settings</span>
+                    <span>الإعدادات</span>
+                    <span class="material-symbols-outlined text-lg transition-transform" x-bind:class="isDesktopSettingsOpen ? 'rotate-180' : ''">expand_more</span>
+                </button>
+
+                <!-- Dropdown Menu - Fixed positioning -->
+                <div x-show="isDesktopSettingsOpen"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 transform scale-95"
+                     x-transition:enter-end="opacity-100 transform scale-100"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 transform scale-100"
+                     x-transition:leave-end="opacity-0 transform scale-95"
+                     style="display: none;"
+                     x-bind:style="'position: fixed; left: ' + $refs.settingsButton.getBoundingClientRect().left + 'px; top: ' + ($refs.settingsButton.getBoundingClientRect().bottom) + 'px;'"
+                     class="w-56 bg-white dark:bg-card-dark rounded-b-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-[100]">
+                    <a class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                       asp-controller="Account" asp-action="Index">
+                        <span class="material-symbols-outlined">people</span>
+                        <span>المستخدمين</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                       asp-controller="Account" asp-action="ChangePassword">
+                        <span class="material-symbols-outlined">lock</span>
+                        <span>تغيير كلمة المرور</span>
+                    </a>
+                    <div class="border-t border-gray-200 dark:border-gray-700"></div>
+                    <form method="post" asp-controller="Account" asp-action="Logout" class="m-0">
+                        <button type="submit" class="flex items-center gap-3 px-4 py-3 text-sm w-full text-right hover:bg-red-50 dark:hover:bg-red-900/20 text-action-red transition-colors">
+                            <span class="material-symbols-outlined">logout</span>
+                            <span>تسجيل الخروج</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </nav>
 
