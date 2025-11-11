@@ -75,7 +75,7 @@
                 <span>حفظ التغييرات</span>
             </button>
 
-            <button type="button" id="deleteUserBtn" onclick="confirmDelete(@Model.Id)" data-userid="@Model.Id"
+            <button type="button" id="deleteUserBtn" data-userid="@Model.Id"
                     class="flex w-full items-center justify-center gap-2 rounded-lg bg-transparent px-4 py-3 text-base font-bold text-action-red border border-action-red hover:bg-action-red/10">
                 <span class="material-symbols-outlined">delete</span>
                 <span>حذف المستخدم</span>
@@ -149,5 +149,4 @@
             });
         });
     })();
-
 </script>

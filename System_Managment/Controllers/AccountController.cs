@@ -32,10 +32,9 @@ namespace System_Managment.Controllers
 
         #region All Users
         [HttpGet]
-        [HttpGet]
         public async Task<IActionResult> Index(string searchTerm)
         {
-            var users = _userManager.Users.AsQueryable();
+            var users = _userManager.Users.Where(u=>u.IsActive).AsQueryable();
 
             // Filter by search term if provided
             if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -404,7 +403,6 @@ namespace System_Managment.Controllers
                     var errors = string.Join(", ", result.Errors.Select(e => e.Description));
                     return Json(new { success = false, message = "فشل التحديث: " + errors });
                 }
-
                 return Json(new { success = true });
             }
             catch (Exception ex)
@@ -426,7 +424,8 @@ namespace System_Managment.Controllers
             if (user == null)
                 return Json(new { success = false, message = "المستخدم غير موجود" });
 
-            var result = await _userManager.DeleteAsync(user);
+            user.IsActive = false;
+            var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
             {
                 return Json(new

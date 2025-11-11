@@ -1,0 +1,245 @@
+﻿@using Microsoft.AspNetCore.Identity
+@model List<ApplicationUser>
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "إدارة المستخدمين";
+}
+
+<div class="relative flex h-auto w-full flex-col group/design-root overflow-x-hidden">
+    <!-- Search Header -->
+    <div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10 shadow-sm">
+        <h1 class="text-text-light dark:text-text-dark text-xl font-bold leading-tight tracking-[-0.015em] flex-1 text-center">إدارة المستخدمين</h1>
+
+        <div class="flex items-center gap-2">
+            <!-- Search Form -->
+            <form id="searchForm" method="get" asp-action="Index" class="flex items-center gap-2">
+                <input type="text"
+                       id="searchInput"
+                       name="searchTerm"
+                       value="@ViewBag.SearchTerm"
+                       placeholder="بحث بالاسم، البريد، أو الهاتف..."
+                       class="hidden w-0 transition-all duration-300 rounded-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-custom" />
+
+                <button type="button"
+                        id="searchBtn"
+                        class="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-transparent text-text-light dark:text-text-dark hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <span class="material-symbols-outlined text-2xl">search</span>
+                </button>
+
+                @if (!string.IsNullOrWhiteSpace(ViewBag.SearchTerm))
+                {
+                    <a asp-action="Index"
+                       title="مسح البحث"
+                       class="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-transparent text-action-red hover:bg-red-100 dark:hover:bg-red-900 transition-colors">
+                        <span class="material-symbols-outlined text-2xl">close</span>
+                    </a>
+                }
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow p-4">
+        <div class="space-y-3">
+            @if (Model.Any())
+            {
+                @foreach (var user in Model)
+                {
+                    var roles = await UserManager.GetRolesAsync(new ApplicationUser { Id = user.Id });
+                    var roleName = roles.FirstOrDefault() ?? "غير محدد";
+                    string viewedRoleName;
+                    string img;
+
+                    if (roleName == "SuperAdmin")
+                    {
+                        viewedRoleName = "مسؤول";
+                    }
+                    else if (roleName == "Admin")
+                    {
+                        viewedRoleName = "مشرف";
+                    }
+                    else if (roleName == "Employee")
+                    {
+                        viewedRoleName = "موظف";
+                    }
+                    else
+                    {
+                        viewedRoleName = "غير محدد";
+                    }
+
+                    if (!string.IsNullOrEmpty(user.ProfilePicture))
+                    {
+                        img = user.ProfilePicture;
+                    }
+                    else
+                    {
+                        img = "uploads/alter.png";
+                    }
+
+                    <div class="flex items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+                        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14"
+                             style="background-image: url('Files/@img')"></div>
+                        <div class="flex flex-col justify-center flex-grow">
+                            <p class="text-text-light dark:text-text-dark text-xl font-medium leading-normal line-clamp-1">@user.FullName</p>
+                            <p class="text-custom dark:text-accent text-l font-normal leading-normal line-clamp-2">@viewedRoleName</p>
+                        </div>
+                        <div class="shrink-0 flex items-center gap-2">
+                            <a href="@Url.Action("Edit", "Account", new { id = user.Id })"
+                               class="openEditDialog text-text-light dark:text-text-dark flex size-7 items-center justify-center">
+                                <span class="material-symbols-outlined text-2xl">edit</span>
+                            </a>
+
+                            <a href="@Url.Action("Details", "Account", new { id = user.Id })"
+                               class="openDetailsDialog text-text-light dark:text-text-dark flex size-7 items-center justify-center">
+                                <span class="material-symbols-outlined text-2xl">visibility</span>
+                            </a>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <!-- No Results Message -->
+                <div class="flex flex-col items-center justify-center py-16">
+                    <span class="material-symbols-outlined text-7xl text-gray-400 dark:text-gray-600 mb-4">search_off</span>
+                    <p class="text-2xl font-semibold text-gray-600 dark:text-gray-400 mb-2">لا توجد نتائج</p>
+                    @if (!string.IsNullOrWhiteSpace(ViewBag.SearchTerm))
+                    {
+                        <p class="text-gray-500 dark:text-gray-500 mb-4">لم يتم العثور على مستخدمين يطابقون "<strong>@ViewBag.SearchTerm</strong>"</p>
+                        <a asp-action="Index"
+                           class="flex items-center gap-2 px-4 py-2 bg-custom text-white rounded-lg hover:bg-custom/90 transition-colors">
+                            <span class="material-symbols-outlined">refresh</span>
+                            <span>عرض جميع المستخدمين</span>
+                        </a>
+                    }
+                    else
+                    {
+                        <p class="text-gray-500 dark:text-gray-500">لا يوجد مستخدمون في النظام</p>
+                    }
+                </div>
+            }
+        </div>
+    </main>
+
+    <!-- Add New User Button -->
+    <div class="fixed bottom-6 end-6">
+        <a asp-controller="Account" asp-action="Register"
+           class="flex items-center justify-center h-16 w-16 cursor-pointer overflow-hidden rounded-full bg-custom text-white shadow-lg transition-transform hover:scale-105"
+           id="openRegisterDialog">
+            <span class="material-symbols-outlined text-3xl">add</span>
+        </a>
+    </div>
+
+    <!-- Dialog Modal -->
+    <div class="modal fade" id="dialogContainer" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
+            <div class="modal-content">
+                <div class="modal-body p-0" id="dialogBody">
+                    <!-- AJAX content loads here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // ===== Search Functionality =====
+            var searchInput = $('#searchInput');
+            var searchBtn = $('#searchBtn');
+            var searchForm = $('#searchForm');
+            var isSearchOpen = false;
+
+            // Toggle search input
+            searchBtn.on('click', function(e) {
+                e.preventDefault();
+
+                if (!isSearchOpen) {
+                    // Open search
+                    searchInput.removeClass('hidden w-0').addClass('w-64 md:w-80');
+                    searchInput.focus();
+                    isSearchOpen = true;
+                } else {
+                    // Submit search if input has value
+                    if (searchInput.val().trim() !== '') {
+                        searchForm.submit();
+                    } else {
+                        // Close search if empty
+                        searchInput.addClass('hidden w-0').removeClass('w-64 md:w-80');
+                        isSearchOpen = false;
+                    }
+                }
+            });
+
+            // Submit on Enter key
+            searchInput.on('keypress', function(e) {
+                if (e.which === 13) { // Enter key
+                    e.preventDefault();
+                    if (searchInput.val().trim() !== '') {
+                        searchForm.submit();
+                    }
+                }
+            });
+
+            // Close search on Escape key
+            searchInput.on('keydown', function(e) {
+                if (e.which === 27) { // Escape key
+                    searchInput.addClass('hidden w-0').removeClass('w-64 md:w-80');
+                    searchInput.val('');
+                    isSearchOpen = false;
+                }
+            });
+
+            // Close search on click outside
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('#searchForm').length && isSearchOpen) {
+                    if (searchInput.val().trim() === '') {
+                        searchInput.addClass('hidden w-0').removeClass('w-64 md:w-80');
+                        isSearchOpen = false;
+                    }
+                }
+            });
+
+            // If there's a search term, keep input open
+            if (searchInput.val().trim() !== '') {
+                searchInput.removeClass('hidden w-0').addClass('w-64 md:w-80');
+                isSearchOpen = true;
+            }
+
+            // ===== Dialog Functions =====
+            window.openDialog = function(link) {
+                $.ajax({
+                    url: link,
+                    type: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    success: function (data) {
+                        $('#dialogBody').html(data);
+                        $('#dialogContainer').modal('show');
+                    },
+                    error: function () {
+                        alert('حدث خطأ أثناء تحميل البيانات.');
+                    }
+                });
+            };
+
+            // Edit dialog
+            $(document).on('click', '.openEditDialog', function (e) {
+                e.preventDefault();
+                openDialog($(this).attr('href'));
+            });
+
+            // Register dialog
+            $(document).on('click', '#openRegisterDialog', function (e) {
+                e.preventDefault();
+                openDialog($(this).attr('href'));
+            });
+
+            // Details dialog
+            $(document).on('click', '.openDetailsDialog', function (e) {
+                e.preventDefault();
+                openDialog($(this).attr('href'));
+            });
+        });
+    </script>
+}

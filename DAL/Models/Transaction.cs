@@ -1,13 +1,64 @@
-﻿namespace DAL.Models
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace DAL.Models
 {
     public class Transaction
     {
+        [Key]
         public int Id { get; set; }
-        public DateTime Date { get; set; }
-        public string EntityType { get; set; } // "Customer" or "Supplier"
-        public int EntityId { get; set; }
-        public decimal Amount { get; set; }
-        public string Description { get; set; }
-        public bool IsDebit { get; set; } // true for debit, false for credit
+
+        [Required]
+        [StringLength(50)]
+        public string TransactionNumber { get; set; }
+
+        [Required]
+        [StringLength(30)]
+        public string Type { get; set; } // Sale, Purchase
+
+        // Product (for Sale/Purchase)
+        [ForeignKey("Product")]
+        public int? ProductId { get; set; }
+
+        // Parties
+        [ForeignKey("Customer")]
+        public int? CustomerId { get; set; }
+
+        [ForeignKey("Supplier")]
+        public int? SupplierId { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(18,3)")]
+        public decimal Quantity { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal UnitPrice { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal TotalAmount { get; set; } // Quantity * UnitPrice
+
+        // Payment Tracking
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal PaidAmount { get; set; } = 0;
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal RemainingAmount { get; set; }
+
+        // Where the money goes based on payment type
+        [ForeignKey("Cashbox")]
+        public int? CashboxId { get; set; }
+
+        public string Notes { get; set; }
+
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
+
+        // Navigation Properties
+        public virtual Product Product { get; set; }
+        public virtual Customer Customer { get; set; }
+        public virtual Supplier Supplier { get; set; }
+        public virtual Cashbox Cashbox { get; set; }
     }
+
 }

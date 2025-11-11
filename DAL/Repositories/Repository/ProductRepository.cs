@@ -50,7 +50,7 @@ namespace DAL.Repository
         {
             await _context.Products.AddAsync(product);
             await  _context.SaveChangesAsync();
-            return await _context.Products.OrderByDescending(x => x.Price).FirstOrDefaultAsync();
+            return await _context.Products.FirstOrDefaultAsync();
         }
 
         public async Task<ICollection<Product>> GetAllProductsAsync(Expression<Func<Product, bool>> filter = null)

@@ -4,6 +4,7 @@ using DAL.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251109084022_Initial-Create-UserDate")]
+    partial class InitialCreateUserDate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -105,8 +108,8 @@ namespace DAL.Migrations
                         {
                             Id = "admin-user-id-12345",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "90a54122-810a-4716-900e-685f87ee1058",
-                            CreatedAt = new DateTime(2025, 11, 9, 12, 2, 24, 48, DateTimeKind.Utc).AddTicks(878),
+                            ConcurrencyStamp = "bc57d436-8316-43e8-b856-355da8704992",
+                            CreatedAt = new DateTime(2025, 11, 9, 10, 40, 21, 150, DateTimeKind.Local).AddTicks(1124),
                             Email = "admin@example.com",
                             EmailConfirmed = true,
                             FullName = "System Administrator",
@@ -114,9 +117,9 @@ namespace DAL.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@EXAMPLE.COM",
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEGMNG/Ym8qNFO4pGu4elC5ZYu/l5Elfm7arS5XqqsRAm2TN1ZHjGB8Oi0SD/o173jg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEEcL1JwedYxocGIY+CjddAu8MO1zP99wicGqCoAiOauakuytPqj0wMf/MfcOHEmHGw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "d65eb076-d7b7-4ee1-bfcb-014cef555697",
+                            SecurityStamp = "",
                             TwoFactorEnabled = false,
                             UserName = "admin"
                         });
@@ -205,7 +208,7 @@ namespace DAL.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("PhoneNumber")
+                    b.Property<string>("Phone")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
@@ -247,8 +250,8 @@ namespace DAL.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("Stock")
-                        .HasColumnType("int");
+                    b.Property<decimal>("Stock")
+                        .HasColumnType("decimal(18,3)");
 
                     b.Property<int>("StoreId")
                         .HasColumnType("int");
@@ -342,6 +345,9 @@ namespace DAL.Migrations
 
                     b.Property<int?>("CustomerId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Notes")
                         .IsRequired()

@@ -1,0 +1,726 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using DAL.Data;
+using DAL.Models;
+using YourApp.ViewModels;
+using Microsoft.EntityFrameworkCore;
+
+namespace YourApp.Services
+{
+    // ============================================
+    // TRANSACTION SERVICE
+    // ============================================
+    public interface ITransactionService
+    {
+        Task<List<TransactionListViewModel>> GetAllAsync(string type = null);
+        Task<TransactionDetailsViewModel> GetByIdAsync(int id);
+        Task<TransactionCreateViewModel> GetCreateViewModelAsync();
+        Task<int> CreateAsync(TransactionCreateViewModel vm);
+        Task<TransactionEditViewModel> GetEditViewModelAsync(int id);
+        Task UpdateAsync(int id, TransactionEditViewModel vm);
+        Task<TransactionDeleteViewModel> GetDeleteViewModelAsync(int id);
+        Task DeleteAsync(int id);
+        Task<List<TransactionListViewModel>> GetByCustomerAsync(int customerId);
+        Task<List<TransactionListViewModel>> GetBySupplierAsync(int supplierId);
+    }
+
+    public class TransactionService : ITransactionService
+    {
+        private readonly ApplicationDbContext _context;
+
+        public TransactionService(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<List<TransactionListViewModel>> GetAllAsync(string type = null)
+        {
+            var query = _context.Transactions
+                .Include(t => t.Product)
+                .Include(t => t.Customer)
+                .Include(t => t.Supplier)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(type))
+                query = query.Where(t => t.Type == type);
+
+            var transactions = await query.OrderByDescending(t => t.CreatedDate).ToListAsync();
+
+            return transactions.Select(t => MapToListVM(t)).ToList();
+        }
+
+        public async Task<TransactionDetailsViewModel> GetByIdAsync(int id)
+        {
+            var transaction = await _context.Transactions
+                .Include(t => t.Product)
+                .Include(t => t.Customer)
+                .Include(t => t.Supplier)
+                .Include(t => t.Cashbox)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (transaction == null)
+                throw new Exception("Transaction not found");
+
+            return MapToDetailsVM(transaction);
+        }
+
+        public async Task<TransactionCreateViewModel> GetCreateViewModelAsync()
+        {
+            var vm = new TransactionCreateViewModel();
+
+            vm.Products = await _context.Products
+                .Where(p => p.IsActive)
+                .Select(p => new ProductSelectViewModel { Id = p.Id, Name = p.Name })
+                .ToListAsync();
+
+            vm.Customers = await _context.Customers
+                .Where(c => c.IsActive)
+                .Select(c => new CustomerSelectViewModel { Id = c.Id, Name = c.Name })
+                .ToListAsync();
+
+            vm.Suppliers = await _context.Suppliers
+                .Where(s => s.IsActive)
+                .Select(s => new SupplierSelectViewModel { Id = s.Id, Name = s.Name })
+                .ToListAsync();
+
+            vm.Cashboxes = await _context.Cashboxes
+                .Where(c => c.IsActive)
+                .Select(c => new CashboxSelectViewModel { Id = c.Id, Name = c.Name })
+                .ToListAsync();
+
+            return vm;
+        }
+
+        public async Task<int> CreateAsync(TransactionCreateViewModel vm)
+        {
+            if (vm.Type == "Sale" && !vm.CustomerId.HasValue)
+                throw new Exception("Customer is required for Sales");
+
+            if (vm.Type == "Purchase" && !vm.SupplierId.HasValue)
+                throw new Exception("Supplier is required for Purchases");
+
+            var product = await _context.Products.FindAsync(vm.ProductId);
+            if (product == null)
+                throw new Exception("Product not found");
+
+            if (vm.Type == "Sale" && product.Stock < vm.Quantity)
+                throw new Exception($"Insufficient stock. Available: {product.Stock}");
+
+            decimal totalAmount = vm.Quantity * vm.UnitPrice;
+
+            var transaction = new Transaction
+            {
+                TransactionNumber = $"{(vm.Type == "Sale" ? "S" : "P")}-{DateTime.Now:yyyyMMddHHmmss}",
+                Type = vm.Type,
+                ProductId = vm.ProductId,
+                Quantity = vm.Quantity,
+                UnitPrice = vm.UnitPrice,
+                TotalAmount = totalAmount,
+                RemainingAmount = totalAmount,
+                CustomerId = vm.Type == "Sale" ? vm.CustomerId : null,
+                SupplierId = vm.Type == "Purchase" ? vm.SupplierId : null,
+                CashboxId = vm.CashboxId,
+                PaymentStatus = "Pending",
+                Notes = vm.Notes
+            };
+
+            // Update stock
+            if (vm.Type == "Sale")
+                product.Stock -= (int)vm.Quantity;
+            else
+                product.Stock += (int)vm.Quantity;
+
+            // Update balance
+            if (vm.Type == "Sale" && vm.CustomerId.HasValue)
+            {
+                var customer = await _context.Customers.FindAsync(vm.CustomerId.Value);
+                if (customer != null)
+                    customer.Balance += totalAmount;
+            }
+            else if (vm.Type == "Purchase" && vm.SupplierId.HasValue)
+            {
+                var supplier = await _context.Suppliers.FindAsync(vm.SupplierId.Value);
+                if (supplier != null)
+                    supplier.Balance += totalAmount;
+            }
+
+            _context.Transactions.Add(transaction);
+            await _context.SaveChangesAsync();
+            return transaction.Id;
+        }
+
+        public async Task<TransactionEditViewModel> GetEditViewModelAsync(int id)
+        {
+            var transaction = await _context.Transactions.FindAsync(id);
+            if (transaction == null)
+                throw new Exception("Transaction not found");
+
+            if (transaction.PaidAmount > 0)
+                throw new Exception("Cannot edit transaction that has been paid");
+
+            return new TransactionEditViewModel
+            {
+                Id = transaction.Id,
+                TransactionNumber = transaction.TransactionNumber,
+                Quantity = transaction.Quantity,
+                UnitPrice = transaction.UnitPrice,
+                Notes = transaction.Notes,
+                PaidAmount = transaction.PaidAmount,
+                PaymentStatus = transaction.PaymentStatus
+            };
+        }
+
+        public async Task UpdateAsync(int id, TransactionEditViewModel vm)
+        {
+            var transaction = await _context.Transactions.Include(t => t.Product).FirstOrDefaultAsync(t => t.Id == id);
+            if (transaction == null)
+                throw new Exception("Transaction not found");
+
+            if (transaction.PaidAmount > 0)
+                throw new Exception("Cannot update paid transaction");
+
+            var oldQuantity = transaction.Quantity;
+            var oldAmount = transaction.TotalAmount;
+
+            transaction.Quantity = vm.Quantity;
+            transaction.UnitPrice = vm.UnitPrice;
+            transaction.TotalAmount = vm.Quantity * vm.UnitPrice;
+            transaction.RemainingAmount = transaction.TotalAmount;
+            transaction.Notes = vm.Notes;
+
+            // Update stock
+            var quantityDifference = oldQuantity - vm.Quantity;
+            transaction.Product.Stock += (int)quantityDifference;
+
+            // Update balance
+            var amountDifference = oldAmount - transaction.TotalAmount;
+            if (transaction.CustomerId.HasValue)
+            {
+                var customer = await _context.Customers.FindAsync(transaction.CustomerId.Value);
+                if (customer != null)
+                    customer.Balance -= amountDifference;
+            }
+            else if (transaction.SupplierId.HasValue)
+            {
+                var supplier = await _context.Suppliers.FindAsync(transaction.SupplierId.Value);
+                if (supplier != null)
+                    supplier.Balance -= amountDifference;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<TransactionDeleteViewModel> GetDeleteViewModelAsync(int id)
+        {
+            var transaction = await _context.Transactions
+                .Include(t => t.Product)
+                .Include(t => t.Customer)
+                .Include(t => t.Supplier)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (transaction == null)
+                throw new Exception("Transaction not found");
+
+            return new TransactionDeleteViewModel
+            {
+                Id = transaction.Id,
+                TransactionNumber = transaction.TransactionNumber,
+                Type = transaction.Type,
+                ProductName = transaction.Product.Name,
+                Quantity = transaction.Quantity,
+                TotalAmount = transaction.TotalAmount,
+                PaidAmount = transaction.PaidAmount,
+                PaymentStatus = transaction.PaymentStatus,
+                Party = transaction.Type == "Sale" ? transaction.Customer?.Name : transaction.Supplier?.Name
+            };
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var transaction = await _context.Transactions
+                .Include(t => t.Product)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (transaction == null)
+                throw new Exception("Transaction not found");
+
+            if (transaction.PaidAmount > 0)
+                throw new Exception("Cannot delete transaction that has been paid");
+
+            // Restore stock
+            if (transaction.Type == "Sale")
+                transaction.Product.Stock += (int)transaction.Quantity;
+            else
+                transaction.Product.Stock -= (int)transaction.Quantity;
+
+            // Restore balance
+            if (transaction.CustomerId.HasValue)
+            {
+                var customer = await _context.Customers.FindAsync(transaction.CustomerId.Value);
+                if (customer != null)
+                    customer.Balance -= transaction.TotalAmount;
+            }
+            else if (transaction.SupplierId.HasValue)
+            {
+                var supplier = await _context.Suppliers.FindAsync(transaction.SupplierId.Value);
+                if (supplier != null)
+                    supplier.Balance -= transaction.TotalAmount;
+            }
+
+            _context.Transactions.Remove(transaction);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<TransactionListViewModel>> GetByCustomerAsync(int customerId)
+        {
+            var transactions = await _context.Transactions
+                .Include(t => t.Product)
+                .Include(t => t.Customer)
+                .Where(t => t.CustomerId == customerId && t.Type == "Sale")
+                .OrderByDescending(t => t.CreatedDate)
+                .ToListAsync();
+
+            return transactions.Select(t => MapToListVM(t)).ToList();
+        }
+
+        public async Task<List<TransactionListViewModel>> GetBySupplierAsync(int supplierId)
+        {
+            var transactions = await _context.Transactions
+                .Include(t => t.Product)
+                .Include(t => t.Supplier)
+                .Where(t => t.SupplierId == supplierId && t.Type == "Purchase")
+                .OrderByDescending(t => t.CreatedDate)
+                .ToListAsync();
+
+            return transactions.Select(t => MapToListVM(t)).ToList();
+        }
+
+        private TransactionListViewModel MapToListVM(Transaction t)
+        {
+            return new TransactionListViewModel
+            {
+                Id = t.Id,
+                TransactionNumber = t.TransactionNumber,
+                Type = t.Type,
+                ProductName = t.Product.Name,
+                Quantity = t.Quantity,
+                TotalAmount = t.TotalAmount,
+                PaidAmount = t.PaidAmount,
+                RemainingAmount = t.RemainingAmount,
+                Party = t.Type == "Sale" ? t.Customer?.Name : t.Supplier?.Name,
+                PaymentStatus = t.PaymentStatus,
+                CreatedDate = t.CreatedDate
+            };
+        }
+
+        private TransactionDetailsViewModel MapToDetailsVM(Transaction t)
+        {
+            return new TransactionDetailsViewModel
+            {
+                Id = t.Id,
+                TransactionNumber = t.TransactionNumber,
+                Type = t.Type,
+                ProductName = t.Product.Name,
+                ProductId = t.ProductId,
+                Quantity = t.Quantity,
+                UnitPrice = t.UnitPrice,
+                TotalAmount = t.TotalAmount,
+                PaidAmount = t.PaidAmount,
+                RemainingAmount = t.RemainingAmount,
+                CustomerName = t.Customer?.Name,
+                CustomerId = t.CustomerId,
+                SupplierName = t.Supplier?.Name,
+                SupplierId = t.SupplierId,
+                CashboxName = t.Cashbox?.Name,
+                PaymentStatus = t.PaymentStatus,
+                Notes = t.Notes,
+                CreatedDate = t.CreatedDate
+            };
+        }
+    }
+
+    // ============================================
+    // CUSTOMER SERVICE
+    // ============================================
+    public interface ICustomerService
+    {
+        Task<List<CustomerListViewModel>> GetAllAsync();
+        Task<CustomerDetailsViewModel> GetByIdAsync(int id);
+        Task<int> CreateAsync(CustomerCreateViewModel vm);
+        Task<CustomerEditViewModel> GetEditViewModelAsync(int id);
+        Task UpdateAsync(int id, CustomerEditViewModel vm);
+        Task DeleteAsync(int id);
+    }
+
+    public class CustomerService : ICustomerService
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly ITransactionService _transactionService;
+
+        public CustomerService(ApplicationDbContext context, ITransactionService transactionService)
+        {
+            _context = context;
+            _transactionService = transactionService;
+        }
+
+        public async Task<List<CustomerListViewModel>> GetAllAsync()
+        {
+            var customers = await _context.Customers.OrderByDescending(c => c.CreatedDate).ToListAsync();
+            return customers.Select(c => new CustomerListViewModel
+            {
+                Id = c.Id,
+                Name = c.Name,
+                PhoneNumber = c.PhoneNumber,
+                Address = c.Address,
+                Balance = c.Balance,
+                IsActive = c.IsActive,
+                CreatedDate = c.CreatedDate
+            }).ToList();
+        }
+
+        public async Task<CustomerDetailsViewModel> GetByIdAsync(int id)
+        {
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Id == id);
+            if (customer == null)
+                throw new Exception("Customer not found");
+
+            var transactions = await _transactionService.GetByCustomerAsync(id);
+
+            return new CustomerDetailsViewModel
+            {
+                Id = customer.Id,
+                Name = customer.Name,
+                PhoneNumber = customer.PhoneNumber,
+                Address = customer.Address,
+                Balance = customer.Balance,
+                IsActive = customer.IsActive,
+                CreatedDate = customer.CreatedDate,
+                Transactions = transactions
+            };
+        }
+
+        public async Task<int> CreateAsync(CustomerCreateViewModel vm)
+        {
+            var customer = new Customer
+            {
+                Name = vm.Name,
+                PhoneNumber = vm.PhoneNumber,
+                Address = vm.Address,
+                IsActive = true
+            };
+
+            _context.Customers.Add(customer);
+            await _context.SaveChangesAsync();
+            return customer.Id;
+        }
+
+        public async Task<CustomerEditViewModel> GetEditViewModelAsync(int id)
+        {
+            var customer = await _context.Customers.FindAsync(id);
+            if (customer == null)
+                throw new Exception("Customer not found");
+
+            return new CustomerEditViewModel
+            {
+                Id = customer.Id,
+                Name = customer.Name,
+                PhoneNumber = customer.PhoneNumber,
+                Address = customer.Address,
+                IsActive = customer.IsActive
+            };
+        }
+
+        public async Task UpdateAsync(int id, CustomerEditViewModel vm)
+        {
+            var customer = await _context.Customers.FindAsync(id);
+            if (customer == null)
+                throw new Exception("Customer not found");
+
+            customer.Name = vm.Name;
+            customer.PhoneNumber = vm.PhoneNumber;
+            customer.Address = vm.Address;
+            customer.IsActive = vm.IsActive;
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Id == id);
+            if (customer == null)
+                throw new Exception("Customer not found");
+
+            var hasTransactions = await _context.Transactions.AnyAsync(t => t.CustomerId == id);
+            if (hasTransactions)
+                throw new Exception("Cannot delete customer with existing transactions");
+
+            _context.Customers.Remove(customer);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    // ============================================
+    // SUPPLIER SERVICE
+    // ============================================
+    public interface ISupplierService
+    {
+        Task<List<SupplierListViewModel>> GetAllAsync();
+        Task<SupplierDetailsViewModel> GetByIdAsync(int id);
+        Task<int> CreateAsync(SupplierCreateViewModel vm);
+        Task<SupplierEditViewModel> GetEditViewModelAsync(int id);
+        Task UpdateAsync(int id, SupplierEditViewModel vm);
+        Task DeleteAsync(int id);
+    }
+
+    public class SupplierService : ISupplierService
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly ITransactionService _transactionService;
+
+        public SupplierService(ApplicationDbContext context, ITransactionService transactionService)
+        {
+            _context = context;
+            _transactionService = transactionService;
+        }
+
+        public async Task<List<SupplierListViewModel>> GetAllAsync()
+        {
+            var suppliers = await _context.Suppliers.OrderByDescending(s => s.CreatedDate).ToListAsync();
+            return suppliers.Select(s => new SupplierListViewModel
+            {
+                Id = s.Id,
+                Name = s.Name,
+                PhoneNumber = s.PhoneNumber,
+                Address = s.Address,
+                Balance = s.Balance,
+                IsActive = s.IsActive,
+                CreatedDate = s.CreatedDate
+            }).ToList();
+        }
+
+        public async Task<SupplierDetailsViewModel> GetByIdAsync(int id)
+        {
+            var supplier = await _context.Suppliers.FirstOrDefaultAsync(s => s.Id == id);
+            if (supplier == null)
+                throw new Exception("Supplier not found");
+
+            var transactions = await _transactionService.GetBySupplierAsync(id);
+
+            return new SupplierDetailsViewModel
+            {
+                Id = supplier.Id,
+                Name = supplier.Name,
+                PhoneNumber = supplier.PhoneNumber,
+                Address = supplier.Address,
+                Balance = supplier.Balance,
+                IsActive = supplier.IsActive,
+                CreatedDate = supplier.CreatedDate,
+                Transactions = transactions
+            };
+        }
+
+        public async Task<int> CreateAsync(SupplierCreateViewModel vm)
+        {
+            var supplier = new Supplier
+            {
+                Name = vm.Name,
+                PhoneNumber = vm.PhoneNumber,
+                Address = vm.Address,
+                IsActive = true
+            };
+
+            _context.Suppliers.Add(supplier);
+            await _context.SaveChangesAsync();
+            return supplier.Id;
+        }
+
+        public async Task<SupplierEditViewModel> GetEditViewModelAsync(int id)
+        {
+            var supplier = await _context.Suppliers.FindAsync(id);
+            if (supplier == null)
+                throw new Exception("Supplier not found");
+
+            return new SupplierEditViewModel
+            {
+                Id = supplier.Id,
+                Name = supplier.Name,
+                PhoneNumber = supplier.PhoneNumber,
+                Address = supplier.Address,
+                IsActive = supplier.IsActive
+            };
+        }
+
+        public async Task UpdateAsync(int id, SupplierEditViewModel vm)
+        {
+            var supplier = await _context.Suppliers.FindAsync(id);
+            if (supplier == null)
+                throw new Exception("Supplier not found");
+
+            supplier.Name = vm.Name;
+            supplier.PhoneNumber = vm.PhoneNumber;
+            supplier.Address = vm.Address;
+            supplier.IsActive = vm.IsActive;
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var supplier = await _context.Suppliers.FirstOrDefaultAsync(s => s.Id == id);
+            if (supplier == null)
+                throw new Exception("Supplier not found");
+
+            var hasTransactions = await _context.Transactions.AnyAsync(t => t.SupplierId == id);
+            if (hasTransactions)
+                throw new Exception("Cannot delete supplier with existing transactions");
+
+            _context.Suppliers.Remove(supplier);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    // ============================================
+    // PRODUCT SERVICE
+    // ============================================
+    public interface IProductService
+    {
+        Task<List<ProductListViewModel>> GetAllAsync();
+        Task<ProductDetailsViewModel> GetByIdAsync(int id);
+        Task<ProductCreateViewModel> GetCreateViewModelAsync();
+        Task<int> CreateAsync(ProductCreateViewModel vm);
+        Task<ProductEditViewModel> GetEditViewModelAsync(int id);
+        Task UpdateAsync(int id, ProductEditViewModel vm);
+        Task DeleteAsync(int id);
+    }
+
+    public class ProductService : IProductService
+    {
+        private readonly ApplicationDbContext _context;
+
+        public ProductService(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<List<ProductListViewModel>> GetAllAsync()
+        {
+            var products = await _context.Products
+                .Include(p => p.Store)
+                .OrderByDescending(p => p.CreatedDate)
+                .ToListAsync();
+
+            return products.Select(p => new ProductListViewModel
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                Price = p.Price,
+                Stock = p.Stock,
+                StoreName = p.Store.Name,
+                IsActive = p.IsActive,
+                CreatedDate = p.CreatedDate
+            }).ToList();
+        }
+
+        public async Task<ProductDetailsViewModel> GetByIdAsync(int id)
+        {
+            var product = await _context.Products
+                .Include(p => p.Store)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (product == null)
+                throw new Exception("Product not found");
+
+            return new ProductDetailsViewModel
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                Stock = product.Stock,
+                StoreName = product.Store.Name,
+                IsActive = product.IsActive,
+                CreatedDate = product.CreatedDate
+            };
+        }
+
+        public async Task<ProductCreateViewModel> GetCreateViewModelAsync()
+        {
+            var vm = new ProductCreateViewModel();
+            vm.Stores = await _context.Stores
+                .Where(s => s.IsActive)
+                .Select(s => new StoreSelectViewModel { Id = s.Id, Name = s.Name })
+                .ToListAsync();
+            return vm;
+        }
+
+        public async Task<int> CreateAsync(ProductCreateViewModel vm)
+        {
+            var product = new Product
+            {
+                Name = vm.Name,
+                Description = vm.Description,
+                Price = vm.Price,
+                Stock = vm.Stock,
+                StoreId = vm.StoreId,
+                IsActive = true
+            };
+
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync();
+            return product.Id;
+        }
+
+        public async Task<ProductEditViewModel> GetEditViewModelAsync(int id)
+        {
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
+            if (product == null)
+                throw new Exception("Product not found");
+
+            var vm = new ProductEditViewModel
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                IsActive = product.IsActive,
+                Stores = await _context.Stores
+                    .Where(s => s.IsActive)
+                    .Select(s => new StoreSelectViewModel { Id = s.Id, Name = s.Name })
+                    .ToListAsync()
+            };
+
+            return vm;
+        }
+
+        public async Task UpdateAsync(int id, ProductEditViewModel vm)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product == null)
+                throw new Exception("Product not found");
+
+            product.Name = vm.Name;
+            product.Description = vm.Description;
+            product.Price = vm.Price;
+            product.IsActive = vm.IsActive;
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
+            if (product == null)
+                throw new Exception("Product not found");
+
+            var hasTransactions = await _context.Transactions.AnyAsync(t => t.ProductId == id);
+            if (hasTransactions)
+                throw new Exception("Cannot delete product with existing transactions");
+
+            _context.Products.Remove(product);
+            await _context.SaveChangesAsync();
+        }
+    }
+}
