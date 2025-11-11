@@ -58,7 +58,7 @@ namespace DAL.Models
         public virtual Product Product { get; set; }
         public virtual Customer Customer { get; set; }
         public virtual Supplier Supplier { get; set; }
-        public virtual Cashbox Cashbox { get; set; }
+        public virtual CashBox CashBox { get; set; }
     }
 
 }

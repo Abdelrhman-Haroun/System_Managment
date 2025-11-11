@@ -14,6 +14,7 @@ namespace DAL.Data
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<CashBox> CashBoxes { get; set; }
         public DbSet<Store> Stores { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Employee> Employees { get; set; }
