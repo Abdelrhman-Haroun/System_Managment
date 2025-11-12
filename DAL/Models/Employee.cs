@@ -13,7 +13,7 @@ namespace DAL.Models
         public string Name { get; set; }
 
         [StringLength(20)]
-        public string PhoneNumber { get; set; }
+        public string? PhoneNumber { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
@@ -21,7 +21,7 @@ namespace DAL.Models
         public decimal Salary { get; set; }
 
         [StringLength(100)]
-        public string Position { get; set; }
+        public string? Position { get; set; }
 
         public bool IsActive { get; set; } = true;
 

@@ -13,13 +13,13 @@ namespace DAL.Models
         public string Name { get; set; }
 
         [StringLength(20)]
-        public string Phone { get; set; }
+        public string? Phone { get; set; }
 
         [StringLength(255)]
-        public string Address { get; set; }
+        public string? Address { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal Balance { get; set; } = 0; // Positive = they owe us
+        public decimal? Balance { get; set; } = 0; // Positive = they owe us
 
         public bool IsActive { get; set; } = true;
 

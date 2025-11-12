@@ -13,7 +13,7 @@ namespace DAL.Models
         public string Name { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal Balance { get; set; } = 0; // Positive = they owe us
+        public decimal? Balance { get; set; } = 0; // Positive = they owe us
 
 
         public bool IsActive { get; set; } = true;

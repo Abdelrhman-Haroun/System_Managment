@@ -14,18 +14,18 @@ namespace DAL.Models
 
         [Required]
         [StringLength(30)]
-        public string Type { get; set; } // Sale, Purchase
+        public int Type { get; set; } // Sale 1, Purchase 2
 
         // Product (for Sale/Purchase)
         [ForeignKey("Product")]
-        public int? ProductId { get; set; }
+        public int ProductId { get; set; }
 
         // Parties
         [ForeignKey("Customer")]
-        public int? CustomerId { get; set; }
+        public int CustomerId { get; set; }
 
         [ForeignKey("Supplier")]
-        public int? SupplierId { get; set; }
+        public int SupplierId { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,3)")]
@@ -48,9 +48,9 @@ namespace DAL.Models
 
         // Where the money goes based on payment type
         [ForeignKey("Cashbox")]
-        public int? CashboxId { get; set; }
+        public int CashboxId { get; set; }
 
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
 
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
