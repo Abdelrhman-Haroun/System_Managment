@@ -14,7 +14,7 @@ namespace BLL.ViewModels.Account
         [PasswordPropertyText]
         public string Password { get; set; }
 
-        [Required(ErrorMessage = "كلمة المرور مطلوبة")]
+        [Required(ErrorMessage = "تأكيد كلمة المرور مطلوبة")]
         [PasswordPropertyText]
         [Compare("Password", ErrorMessage = "كلمة المرور غير متطابقة")]
         public string ConfirmPassword { get; set; }

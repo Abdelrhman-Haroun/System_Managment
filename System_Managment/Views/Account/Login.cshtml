@@ -1,125 +1,176 @@
 ﻿@using BLL.ViewModels.Account
 @model LoginVM
+
 @{
+    ViewData["Title"] = "تسجيل الدخول";
     Layout = null;
 }
 
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html lang="ar" dir="rtl" class="light">
 <head>
     <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>مزرعة آل سالم - تسجيل الدخول</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - مزرعة آل سالم</title>
 
-
-    @* for favicon *@
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="shortcut icon" href="/favicon.ico" sizes="96x96" />
+    <link rel="shortcut icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="apple-mobile-web-app-title" content="MyWebSite" />
     <link rel="manifest" href="/site.webmanifest" />
 
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com" rel="preconnect" />
-    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin />
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script>
+
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24
+        }
+    </style>
+
+    <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     colors: {
-                        "custom": "#2a7f40",
-                        "background-light": "#F7FDF3",
-                        "background-dark": "#152111",
-                        "earthy-green": "#3A5F0B",
-                        "sandy-beige": "#F5DEB3",
-                        "vibrant-orange": "#FFA500",
-                        "dark-grey": "#333333",
-                        "light-gray": "#D1D5DB",
-                        "custom": "#3A5F0B",
-                        "light-green-bg": "#F7FDF3",
-                        "white-smoke": "#F5F5F5"
+                        primary: "#2a7f40",
+                        "background-light": "#f8fafa",
+                        "background-dark": "#141e17",
                     },
-                    fontFamily: {
-                        "display": ["Public Sans"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                    fontSize: {
-                        "base": "1rem", // Default size
-                        "lg": "1.125rem", // Slightly larger base
-                        "xl": "1.25rem", // For headings or emphasis
-                        "2xl": "1.5rem" // For larger text if needed
-                    }
+                    fontFamily: { display: ["Cairo", "sans-serif"] },
+                    borderRadius: { DEFAULT: "0.5rem", lg: "0.75rem", xl: "1rem", full: "9999px" },
                 },
             },
         }
     </script>
-
-    <style>
-        :root {
-            --checkbox-tick-svg: url('data:image/svg+xml,%3csvg viewBox=%270 0 16 16%27 fill=%27%233A5F0B%27 xmlns=%27http://www.w3.org/2000/svg%27%3e%3cpath d=%27M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z%27/%3e%3c/svg%3e');
-        }
-
-        body {
-            font-weight: bold;
-            font-size: 1.125rem; /* Slightly larger base font size */
-        }
-    </style>
 </head>
-<body class="bg-light-green-bg font-display text-dark-grey text-lg">
-    <div class="relative flex h-screen w-full flex-col items-center justify-center bg-light-green-bg group/design-root overflow-x-hidden p-4" style='font-family: "Public Sans", "Noto Sans", sans-serif;'>
-        <div class="w-full max-w-md space-y-6">
-            <div class="flex justify-center">
-                <div class="w-32 h-32 bg-custom rounded-full flex items-center justify-center">
-                    <!-- Increased to w-32 h-32 (128x128px) -->
-                    <img src="~/Files/images/logo.jpg" alt="شعار مزرعة آل سالم" class="w-full h-full object-cover rounded-full" /> <!-- Adjusted to fill the circle -->
+<body class="font-display bg-background-light">
+
+    <div class="grid min-h-screen w-full lg:grid-cols-2">
+
+        <!-- Login Form -->
+        <div class="flex items-center justify-center p-6 sm:p-8 lg:p-12">
+            <div class="w-full max-w-md">
+                <div class="mb-8 text-center">
+
+                    <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
+                        <img src="~/Files/images/logo.jpg" alt="شعار مزرعة آل سالم" class="w-full h-full object-cover rounded-full" /> 
+                    </div>
+
+                    <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">مرحباً بعودتك</h1>
+                    <p class="mt-2 text-slate-600">سجل الدخول للوصول إلى لوحة التحكم</p>
                 </div>
-            </div>
-            <h1 class="text-dark-grey tracking-light text-[36px] font-bold leading-tight text-center">تسجيل الدخول</h1>
-            <div class="space-y-4">
-                <form method="post">
-                    <div class="flex max-w-[480px] flex-wrap items-end gap-4 mb-3">
-                        <label class="flex flex-col min-w-40 flex-1">
-                            <span asp-validation-for="Email" class="text-lg" style="color:#FF0000"></span>
-                            <p class="text-dark-grey text-lg font-medium leading-normal pb-2">اسم المستخدم / البريد الإلكتروني</p>
-                            <input asp-for="Email" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-dark-grey text-lg focus:outline-0 focus:ring-2 focus:ring-custom border border-light-gray bg-white h-14 placeholder:text-gray-400 p-4 font-medium leading-normal" placeholder="ادخل اسم المستخدم او البريد الالكتروني" />
-                        </label>
+
+                <form asp-controller="Account" asp-action="Login" method="post" class="space-y-6">
+                    @Html.AntiForgeryToken()
+
+                    <!-- Username / Email -->
+                    <div class="space-y-2">
+                        <label asp-for="Email" class="text-sm font-medium text-slate-700"></label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400">
+                                <span class="material-symbols-outlined">person</span>
+                            </span>
+                            <input asp-for="Email" class="w-full rounded-lg border border-slate-300 bg-white py-3 pl-4 pr-12 text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
+                                   placeholder="اسم المستخدم أو البريد الإلكتروني" />
+                            <span asp-validation-for="Email" class="text-red-600 text-xs mt-1"></span>
+                        </div>
                     </div>
-                    <div class="flex max-w-[480px] flex-wrap items-end gap-4 mb-3">
-                        <label class="flex flex-col min-w-40 flex-1">
-                            <span asp-validation-for="Password" class="text-lg" style="color:#FF0000"></span>
-                            <p class="text-dark-grey text-lg font-medium leading-normal pb-2">كلمة المرور</p>
-                            <input asp-for="Password" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-dark-grey text-lg focus:outline-0 focus:ring-2 focus:ring-custom border border-light-gray bg-white h-14 placeholder:text-gray-400 p-4 font-medium leading-normal" placeholder="************" type="password" />
-                        </label>
+
+                    <!-- Password -->
+                    <div class="space-y-2">
+                        <label asp-for="Password" class="text-sm font-medium text-slate-700"></label>
+                        <div class="relative">
+                            <!-- حقل كلمة المرور -->
+                            <input asp-for="Password"
+                                   type="password"
+                                   id="password-field"
+                                   class="w-full rounded-lg border border-slate-300 bg-white py-3 px-12 text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
+                                   placeholder="••••••••" />
+
+                            <!-- أيقونة القفل (يمين تمامًا في RTL) -->
+                            <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-400">
+                                <span class="material-symbols-outlined text-xl">lock</span>
+                            </div>
+
+                            <!-- زر العين (يسار تمامًا في RTL) -->
+                            <button type="button"
+                                    id="toggle-password"
+                                    class="absolute inset-y-0 left-3 flex items-center text-slate-500 hover:text-slate-700 focus:outline-none">
+                                <span class="material-symbols-outlined text-xl" id="eye-icon">visibility</span>
+                            </button>
+
+                            <span asp-validation-for="Password" class="text-red-600 text-xs mt-1 block"></span>
+                        </div>
                     </div>
-                    <div class="flex items-center justify-between mb-3">
-                        <label class="flex gap-x-3 items-center">
-                            <input asp-for="RememberMe" class="h-5 w-5 rounded border-gray-300 dark:border-gray-600 bg-transparent checked:bg-custom checked:border-custom focus:ring-0 focus:ring-offset-0 focus:border-gray-300 dark:focus:border-gray-600 focus:outline-none appearance-none" type="checkbox" />
-                            <p class="text-dark-grey text-lg font-medium leading-normal">تذكرني</p>
-                        </label>
-                        <a asp-area="" asp-controller="Account" asp-action="ForgotPassword" class="text-lg font-medium text-custom hover:underline">نسيت كلمة المرور؟</a>
+
+                    <!-- Remember Me + Forgot Password -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <input asp-for="RememberMe" class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary" />
+                            <label asp-for="RememberMe" class="text-sm text-slate-600"></label>
+                        </div>
+                        <a asp-controller="Account" asp-action="ForgotPassword" class="text-sm font-medium text-primary hover:underline">
+                            نسيت كلمة المرور؟
+                        </a>
                     </div>
-                    <button type="submit" style="background-color:rgb(42, 127, 64)" class="w-full text-white h-14 rounded-lg text-xl font-bold hover:bg-opacity-90 transition-colors">
-                        دخول
+
+                    <!-- Submit Button -->
+                    <button type="submit"
+                            class="w-full rounded-lg bg-primary py-3.5 font-semibold text-white hover:bg-primary/90 focus:outline-none focus:ring-4 focus:ring-primary/30 transition">
+                        تسجيل الدخول
                     </button>
+
+                    <!-- Validation Summary (اختياري - يظهر أخطاء عامة) -->
+                    <div class="mt-4">
+                        <span asp-validation-summary="All" class="text-red-600 text-sm"></span>
+                    </div>
                 </form>
             </div>
         </div>
+
+        <!-- Right Side Image -->
+        <div class="relative hidden lg:block">
+            <img src="~/Files/images/farm Photo.jpg" alt="مزرعة خضراء" class="h-full w-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            <div class="absolute bottom-0 start-0 p-10 text-white">
+                <h2 class="text-4xl font-bold mb-3">إدارة مزرعتك باحترافية</h2>
+                <p class="text-lg opacity-90 max-w-lg">
+                    نظام متكامل لإدارة المحاصيل والثروة الحيوانية والمخزون والتقارير في مكان واحد.
+                </p>
+            </div>
+        </div>
     </div>
+
+    <!-- Client-side Validation Scripts (مهم جدًا للـ Tag Helpers) -->
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+    }
+    <script>
+        // انتظر حتى يتحمل الـ DOM كامل
+        document.addEventListener("DOMContentLoaded", function () {
+            const passwordField = document.getElementById("password-field");
+            const toggleButton = document.getElementById("toggle-password");
+            const eyeIcon = document.getElementById("eye-icon");
+
+            toggleButton.addEventListener("click", function () {
+                if (passwordField.type === "password") {
+                    passwordField.type = "text";
+                    eyeIcon.textContent = "visibility_off";
+                } else {
+                    passwordField.type = "password";
+                    eyeIcon.textContent = "visibility";
+                }
+            });
+        });
+    </script>
 </body>
 </html>
-<script src="~/lib/jquery/dist/jquery.min.js"></script>
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}

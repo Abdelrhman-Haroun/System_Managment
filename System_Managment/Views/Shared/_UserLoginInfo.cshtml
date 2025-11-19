@@ -2,26 +2,41 @@
 @inject UserManager<ApplicationUser> UserManager
 
 @{
-    string userName = "User";
-    string profilePictureUrl = "uploads/alter.png";
+    string userName = "زائر";
+    string userRole = "غير محدد";
+    string profilePictureUrl = "uploads/alter.png"; // صورة افتراضية
     if (User.Identity?.IsAuthenticated == true)
     {
         var user = await UserManager.GetUserAsync(User);
         if (user != null)
         {
-            userName = user.FullName ?? User.Identity.Name ?? "User";
-            if (user.ProfilePicture != null)
-            {
-                profilePictureUrl = user.ProfilePicture;
-            }
+            userName = user.FullName ?? User.Identity.Name ?? "مستخدم";
+            profilePictureUrl = !string.IsNullOrEmpty(user.ProfilePicture)
+                ? user.ProfilePicture
+                : "uploads/alter.png";
+
+            // جلب الدور (Role) الأول للمستخدم
+            var roles = await UserManager.GetRolesAsync(user);
+            userRole = roles.FirstOrDefault() ?? "مستخدم";
+            if (userRole == "SuperAdmin")
+                userRole = "مسؤول";
+            else if (userRole == "Admin")
+                userRole = "مشرف";
+            else
+                userRole = "موظف";
         }
     }
 }
 
-<div class="flex items-center gap-2">
-    <span class="text-white font-medium text-sm  sm:inline">@userName</span>
+<div class="flex items-center gap-3">
+    <div class="text-right hidden sm:block">
+        <p class="text-sm font-bold text-neutral-text">@userName</p>
+        <p class="text-xs text-neutral-text/60">@userRole</p>
+    </div>
     <div class="relative">
-        <img alt="صورة الملف الشخصي لـ @userName" class="h-8 w-8 rounded-full object-cover border-2 border-blue-400" src="~/files/@profilePictureUrl" />
+        <img src="~/files/@profilePictureUrl"
+             alt="صورة @userName"
+             class="h-10 w-10 rounded-full object-cover border-2 border-primary/30 shadow-sm"
+             onerror="this.src='~/files/uploads/alter.png'" />
     </div>
 </div>
-
