@@ -16,7 +16,7 @@ namespace DAL.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<CashBox> CashBoxes { get; set; }
         public DbSet<Store> Stores { get; set; }
-        public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<PurchaseInvoice> PurchaseInvoices { get; set; }
         public DbSet<Employee> Employees { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -31,61 +31,42 @@ namespace DAL.Data
         {
             base.OnModelCreating(builder);
 
-            var seedDate = DateTime.Now;
-
             // Seed roles
-            List<IdentityRole> roles = new List<IdentityRole>
-            {
-                new IdentityRole
-                {
-                    Id = "1f0aa99c-8cfa-4d9f-aefd-50b6a5f5e0b1",
-                    Name = "SuperAdmin",
-                    NormalizedName = "SUPERADMIN"
-                },
-                new IdentityRole
-                {
-                    Id = "2f0aa99c-8cfa-4d9f-aefd-50b6a5f5e0b2",
-                    Name = "Admin",
-                    NormalizedName = "ADMIN"
-                },
-                new IdentityRole
-                {
-                    Id = "3f0aa99c-8cfa-4d9f-aefd-50b6a5f5e0b3",
-                    Name = "Employee",
-                    NormalizedName = "EMPLOYEE"
-                }
-            };
-            builder.Entity<IdentityRole>().HasData(roles);
+            builder.Entity<IdentityRole>().HasData(
+                new IdentityRole { Id = "1", Name = "SuperAdmin", NormalizedName = "SUPERADMIN" },
+                new IdentityRole { Id = "2", Name = "Admin", NormalizedName = "ADMIN" },
+                new IdentityRole { Id = "3", Name = "Employee", NormalizedName = "EMPLOYEE" }
+            );
 
-            // Seed default admin user
-            var hasher = new PasswordHasher<ApplicationUser>();
+            // Seed admin
             var adminId = "admin-user-id-12345";
 
             var adminUser = new ApplicationUser
             {
                 Id = adminId,
-                UserName = "admin",
-                NormalizedUserName = "ADMIN",
+                UserName = "admin@example.com",
+                NormalizedUserName = "ADMIN@EXAMPLE.COM",
                 Email = "admin@example.com",
                 NormalizedEmail = "ADMIN@EXAMPLE.COM",
                 EmailConfirmed = true,
-                PasswordHash = hasher.HashPassword(null, "Admin@123"),
-                SecurityStamp = Guid.NewGuid().ToString(),
                 FullName = "System Administrator",
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
+                LockoutEnabled = true
             };
+
+            var hasher = new PasswordHasher<ApplicationUser>();
+            adminUser.PasswordHash = hasher.HashPassword(adminUser, "Admin@123");
 
             builder.Entity<ApplicationUser>().HasData(adminUser);
 
-            // Assign SuperAdmin role to admin user
+            // Add admin to SuperAdmin role
             builder.Entity<IdentityUserRole<string>>().HasData(
                 new IdentityUserRole<string>
                 {
-                    UserId = "admin-user-id-12345",
-                    RoleId = "1f0aa99c-8cfa-4d9f-aefd-50b6a5f5e0b1"
+                    UserId = adminId,
+                    RoleId = "1"
                 }
             );
         }
+
     }
 }

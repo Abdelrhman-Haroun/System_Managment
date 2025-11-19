@@ -8,9 +8,9 @@ namespace DAL.Models
         [Required]
         [StringLength(50)]
         public string FullName { get; set; }
-        public bool IsActive { get; set; } = true;
+        public bool IsDeleted { get; set; } = false;
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public string? ProfilePicture { get; set; }
     }

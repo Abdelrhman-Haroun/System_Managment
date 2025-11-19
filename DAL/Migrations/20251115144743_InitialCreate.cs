@@ -33,7 +33,7 @@ namespace DAL.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ProfilePicture = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -57,19 +57,53 @@ namespace DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Cashboxes",
+                name: "BankAccount",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    AccountName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    AccountNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    BankName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BankAccount", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CashBoxes",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Cashboxes", x => x.Id);
+                    table.PrimaryKey("PK_CashBoxes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Category",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Category", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -79,11 +113,11 @@ namespace DAL.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Phone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Phone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    Address = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -97,15 +131,32 @@ namespace DAL.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Phone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     Salary = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Position = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Position = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Employees", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MobileWallet",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    WalletName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MobileWallet", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -115,9 +166,9 @@ namespace DAL.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Description = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -131,11 +182,11 @@ namespace DAL.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Phone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Phone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    Address = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -249,21 +300,55 @@ namespace DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "SalesInvoice",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CustomerId = table.Column<int>(type: "int", nullable: false),
+                    InvoiceItemId = table.Column<int>(type: "int", nullable: false),
+                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    DiscountAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SalesInvoice", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SalesInvoice_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Products",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    Stock = table.Column<decimal>(type: "decimal(18,3)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    QuantityInStock = table.Column<int>(type: "int", nullable: true),
                     StoreId = table.Column<int>(type: "int", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CategoryId = table.Column<int>(type: "int", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Products", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Products_Category_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Category",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Products_Stores_StoreId",
                         column: x => x.StoreId,
@@ -273,48 +358,117 @@ namespace DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Transactions",
+                name: "Payment",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    TransactionNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
-                    ProductId = table.Column<int>(type: "int", nullable: true),
                     CustomerId = table.Column<int>(type: "int", nullable: true),
                     SupplierId = table.Column<int>(type: "int", nullable: true),
-                    Quantity = table.Column<decimal>(type: "decimal(18,3)", nullable: false),
-                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    PaidAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    RemainingAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    EmployeeId = table.Column<int>(type: "int", nullable: true),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    IsIncoming = table.Column<bool>(type: "bit", nullable: false),
+                    PaymentMethod = table.Column<int>(type: "int", nullable: false),
+                    BankAccountId = table.Column<int>(type: "int", nullable: true),
                     CashboxId = table.Column<int>(type: "int", nullable: true),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    MobileWalletId = table.Column<int>(type: "int", nullable: true),
+                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Transactions", x => x.Id);
+                    table.PrimaryKey("PK_Payment", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Transactions_Cashboxes_CashboxId",
-                        column: x => x.CashboxId,
-                        principalTable: "Cashboxes",
+                        name: "FK_Payment_BankAccount_BankAccountId",
+                        column: x => x.BankAccountId,
+                        principalTable: "BankAccount",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Transactions_Customers_CustomerId",
+                        name: "FK_Payment_CashBoxes_CashboxId",
+                        column: x => x.CashboxId,
+                        principalTable: "CashBoxes",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Payment_Customers_CustomerId",
                         column: x => x.CustomerId,
                         principalTable: "Customers",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Transactions_Products_ProductId",
+                        name: "FK_Payment_Employees_EmployeeId",
+                        column: x => x.EmployeeId,
+                        principalTable: "Employees",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Payment_MobileWallet_MobileWalletId",
+                        column: x => x.MobileWalletId,
+                        principalTable: "MobileWallet",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Payment_Suppliers_SupplierId",
+                        column: x => x.SupplierId,
+                        principalTable: "Suppliers",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PurchaseInvoices",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SupplierId = table.Column<int>(type: "int", nullable: false),
+                    InvoiceItemId = table.Column<int>(type: "int", nullable: false),
+                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    DiscountAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PurchaseInvoices", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PurchaseInvoices_Suppliers_SupplierId",
+                        column: x => x.SupplierId,
+                        principalTable: "Suppliers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InvoiceItem",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ProductId = table.Column<int>(type: "int", nullable: true),
+                    SaleInvoiceId = table.Column<int>(type: "int", nullable: true),
+                    PurchaseInvoiceId = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InvoiceItem", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_InvoiceItem_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Transactions_Suppliers_SupplierId",
-                        column: x => x.SupplierId,
-                        principalTable: "Suppliers",
+                        name: "FK_InvoiceItem_PurchaseInvoices_PurchaseInvoiceId",
+                        column: x => x.PurchaseInvoiceId,
+                        principalTable: "PurchaseInvoices",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_InvoiceItem_SalesInvoice_SaleInvoiceId",
+                        column: x => x.SaleInvoiceId,
+                        principalTable: "SalesInvoice",
                         principalColumn: "Id");
                 });
 
@@ -323,20 +477,20 @@ namespace DAL.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "1f0aa99c-8cfa-4d9f-aefd-50b6a5f5e0b1", null, "SuperAdmin", "SUPERADMIN" },
-                    { "2f0aa99c-8cfa-4d9f-aefd-50b6a5f5e0b2", null, "Admin", "ADMIN" },
-                    { "3f0aa99c-8cfa-4d9f-aefd-50b6a5f5e0b3", null, "Employee", "EMPLOYEE" }
+                    { "1", null, "SuperAdmin", "SUPERADMIN" },
+                    { "2", null, "Admin", "ADMIN" },
+                    { "3", null, "Employee", "EMPLOYEE" }
                 });
 
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
-                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "CreatedAt", "Email", "EmailConfirmed", "FullName", "IsActive", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfilePicture", "SecurityStamp", "TwoFactorEnabled", "UserName" },
-                values: new object[] { "admin-user-id-12345", 0, "509a6d04-0f8c-4409-ae04-46de038c316f", new DateTime(2024, 1, 1, 10, 0, 0, 0, DateTimeKind.Unspecified), "admin@example.com", true, "System Administrator", true, false, null, "ADMIN@EXAMPLE.COM", "ADMIN", "AQAAAAIAAYagAAAAEK2poOzvN2zUZMLL6QPe2VEpJYad8s4T84uGXw/OVgjCCpQOC5E+q4T5cUmT5ZpZKg==", null, false, null, "", false, "admin" });
+                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "CreatedAt", "Email", "EmailConfirmed", "FullName", "IsDeleted", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfilePicture", "SecurityStamp", "TwoFactorEnabled", "UserName" },
+                values: new object[] { "admin-user-id-12345", 0, "f448fddf-f99a-4c50-a7c1-d71fd2e6f193", new DateTime(2025, 11, 15, 14, 47, 38, 541, DateTimeKind.Utc).AddTicks(7338), "admin@example.com", true, "System Administrator", false, false, null, "ADMIN@EXAMPLE.COM", "ADMIN@EXAMPLE.COM", "AQAAAAIAAYagAAAAEBrsoeinEoipagPvSU/AUNcb9U219+7NA9BsNk94asznseGmmUFRdBMn0GbVqtwU1w==", null, false, null, "08535539-5f04-40ff-a4f5-bebef60e331f", false, "admin@example.com" });
 
             migrationBuilder.InsertData(
                 table: "AspNetUserRoles",
                 columns: new[] { "RoleId", "UserId" },
-                values: new object[] { "1f0aa99c-8cfa-4d9f-aefd-50b6a5f5e0b1", "admin-user-id-12345" });
+                values: new object[] { "1", "admin-user-id-12345" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -378,29 +532,69 @@ namespace DAL.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_InvoiceItem_ProductId",
+                table: "InvoiceItem",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoiceItem_PurchaseInvoiceId",
+                table: "InvoiceItem",
+                column: "PurchaseInvoiceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoiceItem_SaleInvoiceId",
+                table: "InvoiceItem",
+                column: "SaleInvoiceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payment_BankAccountId",
+                table: "Payment",
+                column: "BankAccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payment_CashboxId",
+                table: "Payment",
+                column: "CashboxId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payment_CustomerId",
+                table: "Payment",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payment_EmployeeId",
+                table: "Payment",
+                column: "EmployeeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payment_MobileWalletId",
+                table: "Payment",
+                column: "MobileWalletId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payment_SupplierId",
+                table: "Payment",
+                column: "SupplierId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_CategoryId",
+                table: "Products",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Products_StoreId",
                 table: "Products",
                 column: "StoreId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transactions_CashboxId",
-                table: "Transactions",
-                column: "CashboxId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Transactions_CustomerId",
-                table: "Transactions",
-                column: "CustomerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Transactions_ProductId",
-                table: "Transactions",
-                column: "ProductId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Transactions_SupplierId",
-                table: "Transactions",
+                name: "IX_PurchaseInvoices_SupplierId",
+                table: "PurchaseInvoices",
                 column: "SupplierId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesInvoice_CustomerId",
+                table: "SalesInvoice",
+                column: "CustomerId");
         }
 
         /// <inheritdoc />
@@ -422,10 +616,10 @@ namespace DAL.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Employees");
+                name: "InvoiceItem");
 
             migrationBuilder.DropTable(
-                name: "Transactions");
+                name: "Payment");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
@@ -434,19 +628,37 @@ namespace DAL.Migrations
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
-                name: "Cashboxes");
-
-            migrationBuilder.DropTable(
-                name: "Customers");
-
-            migrationBuilder.DropTable(
                 name: "Products");
+
+            migrationBuilder.DropTable(
+                name: "PurchaseInvoices");
+
+            migrationBuilder.DropTable(
+                name: "SalesInvoice");
+
+            migrationBuilder.DropTable(
+                name: "BankAccount");
+
+            migrationBuilder.DropTable(
+                name: "CashBoxes");
+
+            migrationBuilder.DropTable(
+                name: "Employees");
+
+            migrationBuilder.DropTable(
+                name: "MobileWallet");
+
+            migrationBuilder.DropTable(
+                name: "Category");
+
+            migrationBuilder.DropTable(
+                name: "Stores");
 
             migrationBuilder.DropTable(
                 name: "Suppliers");
 
             migrationBuilder.DropTable(
-                name: "Stores");
+                name: "Customers");
         }
     }
 }

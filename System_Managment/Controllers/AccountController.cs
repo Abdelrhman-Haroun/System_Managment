@@ -34,7 +34,7 @@ namespace System_Managment.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(string searchTerm)
         {
-            var users = _userManager.Users.Where(u=>u.IsActive).AsQueryable();
+            var users = _userManager.Users.Where(u=>!u.IsDeleted).AsQueryable();
 
             // Filter by search term if provided
             if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -66,28 +66,41 @@ namespace System_Managment.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         [AllowAnonymous]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginVM model, string returnUrl = null)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user == null)
             {
-                var username = _userManager.Users.FirstOrDefault(u => u.UserName == model.Email);
-                if (username == null)
-                {
-                    ModelState.AddModelError("Email", "هذا المستخدم " + model.Email + " غير موجود");
-                    return View(model);
-                }
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-                if (result.Succeeded)
-                {
-                    return RedirectToLocal(returnUrl ?? "/Home/Index");
-                }
-                else
-                {
-                    ModelState.AddModelError("Password", "كلمة المرور غير صحيحة");
-                }
+                ModelState.AddModelError("Email", $"هذا المستخدم {model.Email} غير موجود.");
+                return View(model);
             }
+
+            // Check lockout status correctly
+            if (await _userManager.IsLockedOutAsync(user))
+            {
+                return RedirectToAction("AccessDenied");
+            }
+
+            // Correct login call: use Username, not Email
+            var result = await _signInManager.PasswordSignInAsync(user.UserName,model.Password,model.RememberMe,lockoutOnFailure: false);
+
+            if (result.Succeeded)
+            {
+                return RedirectToLocal(returnUrl ?? "/Home/Index");
+            }
+
+            if (result.IsLockedOut)
+            {
+                return RedirectToAction("AccessDenied");
+            }
+
+            ModelState.AddModelError("Password", "كلمة المرور غير صحيحة");
             return View(model);
         }
 
@@ -424,7 +437,7 @@ namespace System_Managment.Controllers
             if (user == null)
                 return Json(new { success = false, message = "المستخدم غير موجود" });
 
-            user.IsActive = false;
+            user.IsDeleted = true;
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
             {
@@ -455,13 +468,10 @@ namespace System_Managment.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await _userManager.FindByEmailAsync(model.Email);
+                var user = await _userManager.FindByEmailAsync(User.Identity.Name);
 
                 if (user == null)
-                {
-                    ModelState.AddModelError("", "User not found.");
-                    return View(model);
-                }
+                    return NotFound();
 
                 // Use the current password from the model, not the hash
                 var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
@@ -480,6 +490,15 @@ namespace System_Managment.Controllers
             }
 
             return View(model);
+        }
+        #endregion
+
+        #region Access Denied 
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
         #endregion
     }

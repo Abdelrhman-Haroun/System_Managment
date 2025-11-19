@@ -12,10 +12,6 @@ namespace BLL.ViewModels.Account
 
     public class ChangePasswordVM
     {
-        [Required(ErrorMessage = "البريد الإلكتروني مطلوب")]
-        [EmailAddress(ErrorMessage = "صيغة البريد الإلكتروني غير صحيحة")]
-        public string Email { get; set; }
-
         [Required(ErrorMessage = "كلمة المرور الحالية مطلوبة")]
         [DataType(DataType.Password)]
         public string CurrentPassword { get; set; }

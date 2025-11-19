@@ -3,11 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DAL.Models
 {
-    public class Supplier
+    public class Supplier : Base
     {
-        [Key]
-        public int Id { get; set; }
-
         [Required(ErrorMessage = "اسم المورد مطلوب")]
         [StringLength(100)]
         public string Name { get; set; }
@@ -19,13 +16,10 @@ namespace DAL.Models
         public string? Address { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal? Balance { get; set; } = 0; // Negative = we owe them
-
-        public bool IsActive { get; set; } = true;
-
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public decimal? Balance { get; set; } = 0; 
 
         // Navigation Properties
-        public virtual ICollection<Transaction> Transactions { get; set; }
+        public virtual ICollection<PurchaseInvoice> PurchaseInvoices { get; set; } = new List<PurchaseInvoice>();
+        public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
     }
 }
