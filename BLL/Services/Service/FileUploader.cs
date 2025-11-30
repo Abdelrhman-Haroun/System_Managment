@@ -1,14 +1,10 @@
 ﻿using BLL.Services.IService;
 using Microsoft.AspNetCore.Http;
 
-namespace BL.Services.Service
+namespace BLL.Services.Service
 {
     public class FileUploader : IFileUploader
     {
-        // REMOVED: No longer needs a reference to the web hosting environment.
-        // private readonly IWebHostEnvironment _hostingEnvironment;
-
-        // The constructor is now parameterless.
         public FileUploader()
         {
         }

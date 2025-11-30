@@ -1,0 +1,260 @@
+﻿@model IEnumerable<Customer>
+
+
+
+@{
+    ViewData["Title"] = "إدارة العملاء";
+    var searchTerm = Context.Request.Query["searchTerm"].ToString();
+    var pageNumber = int.TryParse(Context.Request.Query["page"].ToString(), out var page) ? page : 1;
+    var pageSize = 8;
+    var totalUsers = Model.Count();
+    var totalPages = totalUsers == 0 ? 1 : (int)Math.Ceiling((double)totalUsers / pageSize);
+    if (pageNumber < 1) pageNumber = 1;
+    if (pageNumber > totalPages) pageNumber = totalPages;
+    var paginatedUsers = Model.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+}
+
+<!-- Full Screen Layout بدون أي هوامش خارجية -->
+<div>
+    <div>
+        <div class="max-w-7xl mx-auto space-y-8">
+
+            <!-- الهيدر -->
+            <div class="flex flex-col gap-6">
+                <div>
+                    <h1 class="text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+                        إدارة العملاء
+                    </h1>
+                    <p class="text-slate-600 dark:text-slate-400 mt-2 text-lg">
+                        إجمالي العملاء: <strong class="font-bold">@totalUsers</strong>
+                        @if (!string.IsNullOrEmpty(searchTerm))
+                        {
+                            <span class="text-primary"> | نتائج البحث عن: "@searchTerm"</span>
+                        }
+                    </p>
+                </div>
+
+                <!-- البحث والزر في صف واحد -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                    <!-- شريط البحث - يأخذ المساحة الكاملة -->
+                    <form id="searchForm" asp-action="Index" method="get" class="relative flex-1">
+                        <button type="button" id="searchBtn" class="absolute end-5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-primary z-10">
+                            <span class="material-symbols-outlined text-2xl">search</span>
+                        </button>
+                        <input type="text" name="searchTerm" value="@searchTerm" id="searchInput"
+                               placeholder="ابحث بالاسم، الهاتف..."
+                               class="w-full h-14 ps-14 pe-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70 text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary transition-all duration-300 text-lg font-medium shadow-sm" />
+                        @if (!string.IsNullOrEmpty(searchTerm))
+                        {
+                            <a asp-action="Index" class="absolute start-5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-red-600">
+                                <span class="material-symbols-outlined text-xl">close</span>
+                            </a>
+                        }
+                    </form>
+
+                    <a asp-action="Create" asp-controller="Customer" class="openRegisterDialog hidden sm:flex items-center justify-center gap-2 h-14 px-7 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg hover:shadow-xl transition-all whitespace-nowrap">
+                        <span class="material-symbols-outlined text-xl">add</span>
+                        إضافة عميل
+                    </a>
+                </div>
+            </div>
+
+            <!-- حالة عدم وجود نتائج -->
+            @if (!Model.Any())
+            {
+                <div class="text-center py-32">
+                    <span class="material-symbols-outlined text-9xl text-slate-300 dark:text-slate-700 mb-6 block">search_off</span>
+                    <h3 class="text-2xl font-bold text-slate-600 dark:text-slate-400 mb-3">لا توجد نتائج</h3>
+                    @if (!string.IsNullOrEmpty(searchTerm))
+                    {
+                        <p class="text-slate-500 mb-6">لم يتم العثور على عملاء يطابقون "<strong>@searchTerm</strong>"</p>
+                        <a asp-action="Index" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary/90">
+                            <span class="material-symbols-outlined">refresh</span> عرض الكل
+                        </a>
+                    }
+                    else
+                    {
+                        <p class="text-slate-500">لا يوجد عملاء في النظام حاليًا</p>
+                    }
+                </div>
+            }
+            else
+            {
+                <!-- الجدول -->
+                <div class="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-slate-50 dark:bg-slate-900/50">
+                                <tr>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-32">الاسم الكامل</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-48">العنوان</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-20">رقم الهاتف</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-20">رصيد الحساب</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-24">إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                                @foreach (var user in paginatedUsers)
+                                {
+
+                                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white">@user.Name</td>
+                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">@user.Address</td>
+                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">@user.Phone</td>
+                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">@user.Balance</td>
+  
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-4">
+                                                <a href="@Url.Action("Edit", new { id = user.Id })" class="openEditDialog text-primary hover:text-primary/80" title="تعديل">
+                                                    <span class="material-symbols-outlined text-xl">edit</span>
+                                                </a>
+                                                <a href="@Url.Action("Details", new { id = user.Id })" class="openDetailsDialog text-slate-600 hover:text-slate-800" title="تفاصيل">
+                                                    <span class="material-symbols-outlined text-xl">visibility</span>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                @if (totalPages > 1)
+                {
+                    <div class="mt-8 flex justify-center">
+                        <nav class="flex gap-2 items-center">
+                            <!-- زر السابق -->
+                            @if (pageNumber > 1)
+                            {
+                                <a asp-action="Index" asp-route-page="@(pageNumber - 1)" asp-route-searchTerm="@searchTerm" class="size-11 rounded-xl border border-slate-300 dark:border-slate-700 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                    <span class="material-symbols-outlined">chevron_right</span>
+                                </a>
+                            }
+                            else
+                            {
+                                <div class="size-11 rounded-xl border border-slate-300 dark:border-slate-700 flex items-center justify-center opacity-50 cursor-not-allowed">
+                                    <span class="material-symbols-outlined">chevron_right</span>
+                                </div>
+                            }
+
+                            <!-- أرقام الصفحات -->
+                            @{
+                                var startPage = Math.Max(1, pageNumber - 2);
+                                var endPage = Math.Min(totalPages, pageNumber + 2);
+
+                                @if (startPage > 1)
+                                {
+                                    <a asp-action="Index" asp-route-page="1" asp-route-searchTerm="@searchTerm" class="size-11 rounded-xl border border-slate-300 dark:border-slate-700 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-sm font-semibold">1</a>
+                                    @if (startPage > 2)
+                                    {
+                                        <span class="px-2 text-slate-500">...</span>
+                                    }
+                                }
+
+                                @for (int i = startPage; i <= endPage; i++)
+                                {
+                                    @if (i == pageNumber)
+                                    {
+                                        <button class="size-11 rounded-xl bg-primary text-white font-bold flex items-center justify-center cursor-default">@i</button>
+                                    }
+                                    else
+                                    {
+                                        <a asp-action="Index" asp-route-page="@i" asp-route-searchTerm="@searchTerm" class="size-11 rounded-xl border border-slate-300 dark:border-slate-700 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-sm font-semibold">@i</a>
+                                    }
+                                }
+
+                                @if (endPage < totalPages)
+                                {
+                                    @if (endPage < totalPages - 1)
+                                    {
+                                        <span class="px-2 text-slate-500">...</span>
+                                    }
+                                    <a asp-action="Index" asp-route-page="@totalPages" asp-route-searchTerm="@searchTerm" class="size-11 rounded-xl border border-slate-300 dark:border-slate-700 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-sm font-semibold">@totalPages</a>
+                                }
+                            }
+
+                            <!-- زر التالي -->
+                            @if (pageNumber < totalPages)
+                            {
+                                <a asp-action="Index" asp-route-page="@(pageNumber + 1)" asp-route-searchTerm="@searchTerm" class="size-11 rounded-xl border border-slate-300 dark:border-slate-700 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                    <span class="material-symbols-outlined">chevron_left</span>
+                                </a>
+                            }
+                            else
+                            {
+                                <div class="size-11 rounded-xl border border-slate-300 dark:border-slate-700 flex items-center justify-center opacity-50 cursor-not-allowed">
+                                    <span class="material-symbols-outlined">chevron_left</span>
+                                </div>
+                            }
+                        </nav>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+<!-- زر إضافة عائم للموبايل -->
+<div class="fixed bottom-6 end-6 z-50 sm:hidden">
+    <a asp-action="Create" asp-controller="Customer" class="flex size-16 items-center justify-center rounded-full bg-primary text-white shadow-2xl hover:scale-110 transition-all">
+        <span class="material-symbols-outlined text-3xl">add</span>
+    </a>
+</div>
+
+
+@section Scripts {
+    <script>
+        $(function () {
+            const $input = $('#searchInput');
+            const $btn = $('#searchBtn');
+            const $form = $('#searchForm');
+
+            $btn.on('click', () => {
+                if ($input.val().trim()) $form.submit();
+                else $input.focus();
+            });
+
+            $input.on('keydown', e => {
+                if (e.key === 'Enter') { e.preventDefault(); $form.submit(); }
+                if (e.key === 'Escape') { $input.val(''); $input.blur(); }
+            });
+        });
+
+        function openDialog(url) {
+            $.get(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .done(function (data) {
+                    const modal = $(`
+                        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+                            <div class="w-full max-w-2xl my-8">
+                                ${data}
+                            </div>
+                        </div>
+                    `);
+                    $('body').append(modal);
+
+                    // إغلاق
+                    modal.on('click', '.closeDialog', () => modal.remove());
+                    modal.on('click', function (e) {
+                        if (e.target === modal[0]) modal.remove();
+                    });
+                });
+        }
+
+        $(document).on('click', '.openEditDialog', function (e) {
+            e.preventDefault();
+            openDialog(this.dataset.url || this.href);
+        });
+
+            // فتح Details Dialog
+        $(document).on('click', '.openDetailsDialog', function (e) {
+            e.preventDefault();
+            openDialog($(this).data('url') || this.href);
+        });
+
+        $(document).on('keydown', e => {
+            if (e.key === 'Escape') $('.fixed.inset-0.z-50').remove();
+        });
+    </script>
+}

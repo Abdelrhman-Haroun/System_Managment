@@ -18,5 +18,4 @@ public class EditUserVM
     public string? ProfilePicture { get; set; }
     public IFormFile? ProfilePictureFile { get; set; }
 
-    public bool IsLocked { get; set; }
 }

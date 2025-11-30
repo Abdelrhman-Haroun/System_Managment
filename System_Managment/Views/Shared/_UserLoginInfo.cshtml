@@ -1,31 +1,41 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @inject UserManager<ApplicationUser> UserManager
+@inject IUrlHelper UrlHelper
 
 @{
     string userName = "زائر";
     string userRole = "غير محدد";
-    string profilePictureUrl = "uploads/alter.png"; // صورة افتراضية
+    string profilePictureUrl = "/files/images/alter.png"; // مسار افتراضي (بدون ~)
+
     if (User.Identity?.IsAuthenticated == true)
     {
         var user = await UserManager.GetUserAsync(User);
         if (user != null)
         {
-            userName = user.FullName ?? User.Identity.Name ?? "مستخدم";
-            profilePictureUrl = !string.IsNullOrEmpty(user.ProfilePicture)
-                ? user.ProfilePicture
-                : "uploads/alter.png";
+            userName = user.FullName ?? User.Identity?.Name ?? "مستخدم";
 
-            // جلب الدور (Role) الأول للمستخدم
+            // إذا كان لدى المستخدم صورة شخصية → نستخدمها، وإلا الصورة الافتراضية
+            profilePictureUrl = !string.IsNullOrEmpty(user.ProfilePicture)
+                ? "/files"+user.ProfilePicture
+                : "/files/images/alter.png";
+
+            // جلب أول دور للمستخدم
             var roles = await UserManager.GetRolesAsync(user);
-            userRole = roles.FirstOrDefault() ?? "مستخدم";
-            if (userRole == "SuperAdmin")
-                userRole = "مسؤول";
-            else if (userRole == "Admin")
-                userRole = "مشرف";
-            else
-                userRole = "موظف";
+            var role = roles.FirstOrDefault() ?? "موظف";
+
+            userRole = role switch
+            {
+                "SuperAdmin" => "مسؤول",
+                "Admin" => "مشرف",
+                _ => "موظف"
+            };
         }
     }
+
+    // تحويل المسارات إلى مسارات صحيحة يفهمها المتصفح (حتى في onerror)
+    var resolvedProfilePic = Url.Content(profilePictureUrl);
+    var defaultImage = Url.Content("~/files/images/alter.png");
+    var fallbackUploadImage = Url.Content("~/files/uploads/alter.png"); // إذا تريد fallback ثاني
 }
 
 <div class="flex items-center gap-3">
@@ -33,10 +43,12 @@
         <p class="text-sm font-bold text-neutral-text">@userName</p>
         <p class="text-xs text-neutral-text/60">@userRole</p>
     </div>
+
     <div class="relative">
-        <img src="~/files/@profilePictureUrl"
+        <img src="@resolvedProfilePic"
              alt="صورة @userName"
              class="h-10 w-10 rounded-full object-cover border-2 border-primary/30 shadow-sm"
-             onerror="this.src='~/files/uploads/alter.png'" />
+             onerror="this.onerror=null; this.src='@defaultImage'"
+             loading="lazy" />
     </div>
 </div>

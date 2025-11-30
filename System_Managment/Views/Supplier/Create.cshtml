@@ -1,0 +1,113 @@
+﻿@model CreateVM
+
+
+@{
+    ViewData["Title"] = "إضافة مورد جديد";
+}
+
+<div class="max-w-7xl mx-auto">
+    <!-- العنوان -->
+    <div class="mb-10">
+        <h1 class="text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+            إضافة مورد جديد
+        </h1>
+        <p class="text-slate-600 dark:text-slate-400 mt-2 text-lg">
+            املأ جميع البيانات المطلوبة بدقة لإضافة مورد جديد إلى النظام
+        </p>
+    </div>
+
+    <!-- النموذج باستخدام Tag Helpers -->
+    <form asp-action="Create" asp-controller="Supplier" method="post" class="space-y-8">
+        @Html.AntiForgeryToken()
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            <!-- الاسم -->
+            <div class="flex flex-col">
+                <label asp-for="Name" class="text-slate-800 dark:text-slate-200 text-base font-semibold mb-2"></label>
+                <input asp-for="Name"
+                       class="h-14 px-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70
+                              text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20
+                              focus:border-primary transition-all duration-200 text-base"
+                       placeholder="مثال: شركة الرياض للتجارة" />
+                <span asp-validation-for="Name" class="text-red-500 text-sm mt-1"></span>
+            </div>
+
+            <!-- رقم الهاتف -->
+            <div class="flex flex-col">
+                <label asp-for="Phone" class="text-slate-800 dark:text-slate-200 text-base font-semibold mb-2"></label>
+                <input asp-for="Phone"
+                style="direction:rtl"
+                       class="h-14 px-4  rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70
+                              text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20
+                              focus:border-primary transition-all duration-200 text-base"
+                       placeholder="xxxxxxxxxxx" />
+                <span asp-validation-for="Phone" class="text-red-500 text-sm mt-1"></span>
+            </div>
+
+        </div>
+
+        <!-- العنوان -->
+        <div class="flex flex-col">
+            <label asp-for="Address" class="text-slate-800 dark:text-slate-200 text-base font-semibold mb-2"></label>
+            <textarea asp-for="Address"
+                      rows="4"
+                      placeholder="العنوان الكامل، المدينة، الحي، الشارع..."
+                      class="px-4 py-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70
+                             text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20
+                             focus:border-primary transition-all duration-200 text-base resize-none"></textarea>
+            <span asp-validation-for="Address" class="text-red-500 text-sm mt-1"></span>
+        </div>
+
+        <!-- الرصيد الافتتاحي -->
+        <div class="flex flex-col md:max-w-md">
+            <label asp-for="Balance" class="text-slate-800 dark:text-slate-200 text-base font-semibold mb-2"></label>
+            <div class="relative">
+                <input asp-for="Balance"
+                       placeholder="ج.م"
+                       step="0.01"
+                       class="h-14 pl-16 pr-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70
+                              text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20
+                              focus:border-primary transition-all duration-200 text-base w-full" />
+            </div>
+            <span asp-validation-for="Balance" class="text-red-500 text-sm mt-1"></span>
+        </div>
+
+        <!-- الأزرار -->
+        <div class="flex flex-col sm:flex-row-reverse gap-4 pt-8 border-t border-slate-200 dark:border-slate-700">
+            <button type="submit"
+                    class="flex items-center justify-center gap-2 min-w-48 h-12 px-8 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-base transition-all duration-200 shadow-lg hover:shadow-xl">
+                <span class="material-symbols-outlined text-xl">save</span>
+                حفظ المورد
+            </button>
+
+            <a asp-controller="Supplier" asp-action="Index"
+               class="flex items-center justify-center min-w-48 h-12 px-8 rounded-xl bg-slate-200 dark:bg-slate-700/70 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 font-bold text-base transition-all duration-200">
+                العودة للقائمة
+            </a>
+        </div>
+    </form>
+</div>
+
+
+
+
+@section Scripts {
+    <script>
+        let msg = @Html.Raw(Json.Serialize(TempData["SuccessMessage"]));
+        if (msg) {
+            Swal.fire({
+                icon: 'success',
+                title: 'تم بنجاح',
+                text: msg,
+                confirmButtonText: 'حسناً'
+            }).then(() => {
+                window.location.href = '/Supplier/Index';
+            });}
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+
+   

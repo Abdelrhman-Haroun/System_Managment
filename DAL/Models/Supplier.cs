@@ -5,7 +5,6 @@ namespace DAL.Models
 {
     public class Supplier : Base
     {
-        [Required(ErrorMessage = "اسم المورد مطلوب")]
         [StringLength(100)]
         public string Name { get; set; }
 

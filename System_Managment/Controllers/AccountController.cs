@@ -32,9 +32,9 @@ namespace System_Managment.Controllers
 
         #region All Users
         [HttpGet]
-        public async Task<IActionResult> Index(string searchTerm)
+        public async Task<IActionResult> Index(string searchTerm, int page = 1)
         {
-            var users = _userManager.Users.Where(u=>!u.IsDeleted).AsQueryable();
+            var users = _userManager.Users.Where(u => !u.IsDeleted).AsQueryable();
 
             // Filter by search term if provided
             if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -51,6 +51,7 @@ namespace System_Managment.Controllers
             var userList = await users.OrderBy(u => u.CreatedAt).ToListAsync();
 
             ViewBag.SearchTerm = searchTerm;
+            ViewBag.CurrentPage = page;
 
             return View(userList);
         }
@@ -116,11 +117,6 @@ namespace System_Managment.Controllers
         [HttpGet]
         public IActionResult Register()
         {
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            {
-                // Return the partial view for AJAX request
-                return PartialView("Register", new RegisterationVM());
-            }
             return View();
         }
 
@@ -129,19 +125,16 @@ namespace System_Managment.Controllers
         public async Task<IActionResult> Register(RegisterationVM model)
         {
             string wwwRootPath = _hostingEnvironment.WebRootPath;
-
             if (ModelState.IsValid)
             {
-                var username = _userManager.Users.FirstOrDefault(u => u.UserName == model.Email);
-                var fullName = _userManager.Users.FirstOrDefault(u => u.FullName == model.FullName);
-                if (username != null)
-                {
-                    ModelState.AddModelError("Email", "هذا الايميل " + model.Email + " مستخدم من قبل");
-                }  
-                else if (fullName != null)
-                {
-                    ModelState.AddModelError("FullName", "هذا الاسم " + model.FullName + " مستخدم من قبل");
-                }
+                var username = await _userManager.Users.AnyAsync(u => u.UserName == model.Email);
+                var fullName = await _userManager.Users.AnyAsync(u => u.FullName == model.FullName);
+
+                if (fullName)
+                    ModelState.AddModelError("FullName", "الاسم الكامل مستخدم من قبل");
+                else if(username)
+                    ModelState.AddModelError("Email", "البريد الإلكتروني مستخدم من قبل");
+
                 else
                 {
                     var user = new ApplicationUser
@@ -154,30 +147,22 @@ namespace System_Managment.Controllers
                     };
 
                     var result = await _userManager.CreateAsync(user, model.Password);
+
                     if (result.Succeeded)
                     {
                         await _userManager.AddToRoleAsync(user, model.UserRole);
-
-                        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                            return Json(new { success = true });
-
-                        return RedirectToAction("Index");
+                        TempData["SuccessMessage"] = "تم إنشاء الحساب بنجاح";
+                        //return RedirectToAction("Index");
                     }
 
                     foreach (var error in result.Errors)
-                    {
                         ModelState.AddModelError("", error.Description);
-                    }
+
+                    TempData["RegisterError"] = "حدث خطأ أثناء إنشاء الحساب";
                 }
             }
-
-            // If AJAX, return the partial with validation errors
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                return PartialView("Register", model);
-
             return View(model);
         }
-
         #endregion
 
         #region Logout
@@ -287,13 +272,26 @@ namespace System_Managment.Controllers
 
         #region Details
         [HttpGet]
-        public IActionResult Details(string id)
+        public async Task<IActionResult> Details(string id)
         {
-            var user = _userManager.Users.FirstOrDefault(u => u.Id == id);
-            if (user == null) 
+            if (string.IsNullOrEmpty(id))
                 return NotFound();
 
-            return PartialView(user);
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+                return NotFound();
+
+            // جيب الـ Roles هنا في الـ Controller (مش في الـ View)
+            var roles = await _userManager.GetRolesAsync(user);
+            ViewBag.UserRole = roles.FirstOrDefault() ?? "غير محدد";
+
+            // جيب تاريخ الإنشاء لو موجود
+            ViewBag.CreatedAt = user.CreatedAt; // أو أي property عندك
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return PartialView("_DetailsPartial", user);
+
+            return View(user);
         }
 
         #endregion
@@ -318,12 +316,11 @@ namespace System_Managment.Controllers
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
                 Role = roles.FirstOrDefault(), 
-                IsLocked = user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.UtcNow,
                 ProfilePicture = user.ProfilePicture
             };
 
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                return PartialView("Edit", model);
+                return PartialView("_EditPartial", model);
 
             return View(model);
         }
@@ -406,8 +403,6 @@ namespace System_Managment.Controllers
                 if (!string.IsNullOrEmpty(model.Role))
                     await _userManager.AddToRoleAsync(user, model.Role);
 
-                // Lock status
-                user.LockoutEnd = model.IsLocked ? DateTime.UtcNow.AddYears(100) : null;
 
                 var result = await _userManager.UpdateAsync(user);
 
@@ -500,6 +495,24 @@ namespace System_Managment.Controllers
         {
             return View();
         }
+        #endregion
+
+        #region Lockout
+        [HttpPost]
+        public async Task<IActionResult> ToggleLockout(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            if (user.LockoutEnd.HasValue && user.LockoutEnd > DateTime.UtcNow)
+                user.LockoutEnd = null;
+            else
+                user.LockoutEnd = DateTime.UtcNow.AddYears(100);
+
+            await _userManager.UpdateAsync(user);
+            return RedirectToAction("Index");
+        }
+
         #endregion
     }
 

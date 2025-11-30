@@ -1,0 +1,265 @@
+﻿
+
+@model EditUserVM
+
+<div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-2xl mx-auto max-h-screen overflow-y-auto">
+    <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">تعديل المستخدم</h2>
+        <button type="button" class="closeDialog text-slate-500 hover:text-red-600 transition-colors">
+            <span class="material-symbols-outlined text-3xl">close</span>
+        </button>
+    </div>
+
+    <div class="p-8 pt-6">
+        <form id="editUserForm" enctype="multipart/form-data" class="space-y-8">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <!-- Compact Profile Picture -->
+            <div class="flex justify-center">
+                <div class="relative group">
+
+                    @{
+                        var fileName = string.IsNullOrEmpty(Model.ProfilePicture)
+                        ? "~/files/images/alter.png"                         // fallback file name (optional)
+                        : Model.ProfilePicture.TrimStart('/');  // remove leading slash if any
+
+                        var imagePath = Url.Content("~/files/" + fileName);
+                    }
+
+                    <label for="photoInput" class="relative cursor-pointer">
+
+                        <!-- Circle Image -->
+                        <div class="h-40 w-40 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center
+                        border-4 border-slate-200 dark:border-slate-700 shadow-lg overflow-hidden">
+
+                            <!-- User Image -->
+                            <img id="profilePreview"
+                                 src="@imagePath"
+                                 class="@(string.IsNullOrEmpty(imagePath) ? "hidden" : "block") w-full h-full object-cover" />
+
+                            <!-- Default Icon -->
+                            <span id="defaultIcon"
+                                  class="@(string.IsNullOrEmpty(imagePath) ? "block" : "hidden")
+                             material-symbols-outlined text-6xl text-slate-400 dark:text-slate-600">
+                                person
+                            </span>
+                        </div>
+
+                        <!-- Camera Button -->
+                        <div class="absolute bottom-2 left-2 flex h-12 w-12 items-center justify-center
+                        rounded-full bg-emerald-600 text-white shadow-md ring-4 ring-white dark:ring-slate-800
+                        transition-transform group-hover:scale-110">
+                            <span class="material-symbols-outlined text-2xl">photo_camera</span>
+                        </div>
+
+                        <!-- File Input -->
+                        <input id="photoInput"
+                               name="ProfilePictureFile"
+                               type="file"
+                               accept="image/*"
+                               class="hidden"
+                               onchange="previewImage(event)" />
+                    </label>
+
+                </div>
+            </div>
+
+
+            <!-- الحقول -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">الاسم الكامل</label>
+                    <input name="FullName" value="@Model.FullName" required
+                           class="w-full h-14 px-5 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none transition-all" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">البريد الإلكتروني</label>
+                    <input name="Email" value="@Model.Email" type="email" required
+                           class="w-full h-14 px-5 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none transition-all" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">رقم الهاتف</label>
+                    <input name="PhoneNumber" value="@Model.PhoneNumber"
+                           class="w-full h-14 px-5 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none transition-all" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">الدور</label>
+                    <div class="relative">
+                        <select name="Role" id="userRole"
+                                class="w-full h-14 px-5 rounded-xl border-2 border-slate-300 dark:border-slate-600
+                       bg-white dark:bg-slate-700 text-slate-900 dark:text-white
+                       focus:border-emerald-500 focus:outline-none"
+                                style="appearance:none;-webkit-appearance:none;-moz-appearance:none;
+                       background-image:none;direction:rtl;">
+
+                            @foreach (var role in new (string value, string text)[]
+                            {
+                            ("Employee",   "موظف"),
+                            ("Admin",      "مشرف"),
+                            ("SuperAdmin", "مسؤول النظام")
+                            })
+                            {
+                                if (Model.Role == role.value)
+                                {
+                                    <option value="@role.value" selected>@role.text</option>
+                                }
+                                else
+                                {
+                                    <option value="@role.value">@role.text</option>
+                                }
+                            }
+                        </select>
+
+                        <!-- LEFT ARROW ONLY -->
+                        <span class="material-symbols-outlined absolute top-1/2 left-4 -translate-y-1/2
+                     text-slate-500 dark:text-slate-400 pointer-events-none">
+                            keyboard_arrow_down
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-200 dark:border-slate-700">
+
+                <!-- Save -->
+                <button type="submit"
+                        class="flex-1 h-14 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">save</span>
+                    حفظ التغييرات
+                </button>
+
+                <!-- Delete Button -->
+                <button type="button" id="deleteUserBtn"
+                        class="flex-1 h-14 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">delete</span>
+                    حذف المستخدم
+                </button>
+
+           
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+    // 1. معاينة الصورة فورًا
+    document.getElementById('photoInput')?.addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                document.getElementById('profilePreview').src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+  
+
+    // 3. إرسال النموذج عبر AJAX + SweetAlert2
+    $('#editUserForm').on('submit', function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        $.ajax({
+            url: '@Url.Action("Edit", "Account")',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم الحفظ!',
+                        text: 'تم حفظ التغييرات بنجاح.',
+                        confirmButtonText: 'حسناً',
+                        confirmButtonColor: '#10b981',
+                    }).then(() => {
+                        location.reload();  
+                    });
+
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطأ',
+                        text: res.message || 'حدث خطأ غير متوقع.',
+                        confirmButtonText: 'حسناً',
+                        confirmButtonColor: '#ef4444',
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ في الاتصال',
+                    text: 'حدث خطأ أثناء الاتصال بالخادم.',
+                    confirmButtonText: 'حسناً',
+                    confirmButtonColor: '#ef4444',
+                });
+            }
+        });
+    });
+
+
+     $('#deleteUserBtn').on('click', function () {
+
+        Swal.fire({
+            title: 'هل أنت متأكد؟',
+            text: "لن تتمكن من استعادة هذا المستخدم بعد الحذف!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'نعم، احذف',
+            cancelButtonText: 'إلغاء',
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+
+                $.ajax({
+                    url: '@Url.Action("Delete", "Account")',
+                    type: 'POST',
+                    data: {
+                        id: '@Model.Id',
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (res) {
+                        if (res.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'تم الحذف',
+                                text: 'تم حذف المستخدم بنجاح.',
+                                confirmButtonColor: '#10b981'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'خطأ',
+                                text: res.message || 'حدث خطأ أثناء الحذف.',
+                            });
+                        }
+                    },
+                    error: function () {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'خطأ',
+                            text: 'تعذر الاتصال بالخادم.',
+                        });
+                    }
+                });
+
+            }
+        });
+
+    });
+</script>

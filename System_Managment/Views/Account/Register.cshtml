@@ -1,139 +1,245 @@
 ﻿@model RegisterationVM
 
-<div class="relative flex h-auto w-full flex-col items-center font-bold text-lg justify-center bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden p-4">
-    <div class="w-full max-w-md space-y-6">
-        <h1 class="text-3xl font-bold text-center text-text-light dark:text-text-dark">إنشاء حساب جديد</h1>
+@{
+    ViewData["Title"] = "إنشاء حساب جديد";
+}
 
+<div class="max-w-7xl mx-auto space-y-8">
+    <!-- Back Button and Title -->
+    <div class="flex items-center gap-4 mb-6">
+        <a asp-action="Index" class="flex items-center justify-center size-11 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            <span class="material-symbols-outlined">arrow_forward</span>
+        </a>
+        <div>
+            <h1 class="text-4xl font-black text-slate-900 dark:text-white tracking-tight">إنشاء حساب جديد</h1>
+            <p class="text-slate-600 dark:text-slate-400 mt-2 text-lg">أدخل التفاصيل أدناه لإنشاء حساب مستخدم جديد</p>
+        </div>
+    </div>
 
-        <form id="registerForm" asp-controller="Account" asp-action="Register" method="post" enctype="multipart/form-data">
+    <!-- Registration Card -->
+    <div class="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+        <form id="registerForm" asp-action="Register" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
 
-            <div class="flex flex-col items-center space-y-4">
-                <div class="relative">
-                    <div id="profile-picture-preview" class="w-32 h-32 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
-                        <img id="preview-image" class="hidden w-full h-full object-cover" src="" alt="Profile picture preview" />
+            <div class="grid md:grid-cols-2">
+                <!-- Form Section (Left Side) -->
+                <div class="flex flex-col items-center justify-center p-8 sm:p-12 order-2 md:order-1">
+                    <div class="w-full flex flex-col gap-y-5">
+
+                        <!-- Full Name Field -->
+                        <div class="relative">
+                            <span class="material-symbols-outlined pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-slate-500 dark:text-slate-400">person</span>
+                            <input asp-for="FullName"
+                                   class="form-input peer block h-14 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70 py-3 pl-12 pr-4 text-base text-slate-900 dark:text-white focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all placeholder-transparent"
+                                   id="full-name"
+                                   placeholder="الاسم الكامل"
+                                   type="text" />
+                            <label for="full-name"
+                                   class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 transition-all duration-200
+                                          peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base
+                                          peer-focus:top-2.5 peer-focus:text-xs peer-focus:text-primary
+                                          peer-[&:not(:placeholder-shown)]:top-2.5 peer-[&:not(:placeholder-shown)]:text-xs">
+                                الاسم الكامل
+                            </label>
+                            <span asp-validation-for="FullName" class="text-red-600 text-sm mt-1 block"></span>
+                        </div>
+
+                        <!-- Email Field -->
+                        <div class="relative">
+                            <span class="material-symbols-outlined pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-slate-500 dark:text-slate-400">mail</span>
+                            <input asp-for="Email"
+                                   class="form-input peer block h-14 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70 py-3 pl-12 pr-4 text-base text-slate-900 dark:text-white focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all placeholder-transparent"
+                                   id="email"
+                                   placeholder="البريد الإلكتروني"
+                                   type="email" />
+                            <label for="email"
+                                   class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 transition-all duration-200
+                                          peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base
+                                          peer-focus:top-2.5 peer-focus:text-xs peer-focus:text-primary
+                                          peer-[&:not(:placeholder-shown)]:top-2.5 peer-[&:not(:placeholder-shown)]:text-xs">
+                                البريد الإلكتروني
+                            </label>
+                            <span asp-validation-for="Email" class="text-red-600 text-sm mt-1 block"></span>
+                        </div>
+
+                        <!-- Phone Field -->
+                        <div class="relative">
+                            <span class="material-symbols-outlined pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-slate-500 dark:text-slate-400">phone</span>
+                            <input asp-for="PhoneNumber"
+                                   class="form-input peer block h-14 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70 py-3 pl-12 pr-4 text-base text-slate-900 dark:text-white focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all placeholder-transparent"
+                                   id="phone"
+                                   dir="rtl"
+                                   placeholder="رقم الهاتف"
+                                   type="tel" />
+                            <label for="phone"
+                                   class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 transition-all duration-200
+                                          peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base
+                                          peer-focus:top-2.5 peer-focus:text-xs peer-focus:text-primary
+                                          peer-[&:not(:placeholder-shown)]:top-2.5 peer-[&:not(:placeholder-shown)]:text-xs">
+                                رقم الهاتف
+                            </label>
+                            <span asp-validation-for="PhoneNumber" class="text-red-600 text-sm mt-1 block"></span>
+                        </div>
+
+                        <!-- Password Field -->
+                        <div class="relative">
+                            <input asp-for="Password"
+                                   class="form-input peer block h-14 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70 py-3 pl-12 pr-4 text-base text-slate-900 dark:text-white focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all placeholder-transparent"
+                                   id="password"
+                                   placeholder="كلمة المرور"
+                                   type="password" />
+                            <label for="password"
+                                   class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 transition-all duration-200
+                                          peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base
+                                          peer-focus:top-2.5 peer-focus:text-xs peer-focus:text-primary
+                                          peer-[&:not(:placeholder-shown)]:top-2.5 peer-[&:not(:placeholder-shown)]:text-xs">
+                                كلمة المرور
+                            </label>
+                            <button class="absolute top-1/2 left-4 -translate-y-1/2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 z-10" type="button" onclick="togglePasswordVisibility('password', this)">
+                                <span class="material-symbols-outlined">visibility_off</span>
+                            </button>
+                            <span asp-validation-for="Password" class="text-red-600 text-sm mt-1 block"></span>
+                        </div>
+
+                        <!-- Confirm Password Field -->
+                        <div class="relative">
+                            <input asp-for="ConfirmPassword"
+                                   class="form-input peer block h-14 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70 py-3 pl-12 pr-4 text-base text-slate-900 dark:text-white focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all placeholder-transparent"
+                                   id="confirm-password"
+                                   placeholder="تأكيد كلمة المرور"
+                                   type="password" />
+                            <label for="confirm-password"
+                                   class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 transition-all duration-200
+                                          peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base
+                                          peer-focus:top-2.5 peer-focus:text-xs peer-focus:text-primary
+                                          peer-[&:not(:placeholder-shown)]:top-2.5 peer-[&:not(:placeholder-shown)]:text-xs">
+                                تأكيد كلمة المرور
+                            </label>
+                            <button class="absolute top-1/2 left-4 -translate-y-1/2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 z-10" type="button" onclick="togglePasswordVisibility('confirm-password', this)">
+                                <span class="material-symbols-outlined">visibility_off</span>
+                            </button>
+                            <span asp-validation-for="ConfirmPassword" class="text-red-600 text-sm mt-1 block"></span>
+                        </div>
+
+                        <!-- User Role Field -->
+                        <div class="relative">
+                            <select asp-for="UserRole"
+                                    class="form-select peer block h-14 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70 pt-6 pb-1 pl-12 pr-4 text-base text-slate-900 dark:text-white focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all"
+                                    style="appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: none;"
+                                    id="user-role">
+                                <option value="" disabled selected></option>
+                                <option value="SuperAdmin">مسؤول النظام</option>
+                                <option value="Admin">مشرف</option>
+                                <option value="Employee">موظف</option>
+                            </select>
+                            <label for="user-role" class="pointer-events-none absolute top-2.5 right-4 text-xs text-slate-500 dark:text-slate-400">
+                                درجة المستخدم
+                            </label>
+                            <span class="material-symbols-outlined pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-slate-500 dark:text-slate-400">keyboard_arrow_down</span>
+                            <span asp-validation-for="UserRole" class="text-red-600 text-sm mt-1 block"></span>
+                        </div>
+
+                        <!-- Submit and Cancel Buttons -->
+                        <div class="pt-4 flex gap-3">
+                            <button class="flex h-14 flex-1 items-center justify-center rounded-xl bg-primary px-6 text-base font-bold text-white shadow-lg hover:shadow-xl hover:bg-primary/90 transition-all" type="submit">
+                                <span class="material-symbols-outlined ml-2">check</span>
+                                إنشاء حساب
+                            </button>
+                            <a asp-action="Index" class="flex h-14 items-center justify-center rounded-xl border-2 border-slate-300 dark:border-slate-700 px-6 text-base font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                إلغاء
+                            </a>
+                        </div>
                     </div>
-
-                    <label class="absolute bottom-0 right-0 bg-custom text-white rounded-full pt-2 pr-2 pl-2 cursor-pointer hover:bg-custom/90" for="ProfilePicture">
-                        <span class="material-symbols-outlined">add_a_photo</span>
-                        <input asp-for="ProfilePicture" class="sr-only" id="ProfilePicture" type="file" accept="image/*" />
-                    </label>
                 </div>
-                <p class="text-lg font-medium text-text-light dark:text-text-dark">صورة شخصية</p>
-                <span asp-validation-for="ProfilePicture" class="text-danger"></span>
+
+                <!-- Profile Picture Section (Right Side) -->
+                <div class="flex flex-col items-center justify-center p-8 sm:p-12 bg-slate-50 dark:bg-slate-900/30 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700 order-1 md:order-2">
+                    <div class="flex w-full flex-col items-center gap-6 text-center">
+                        <p class="text-2xl font-bold text-slate-900 dark:text-white">صورة شخصية</p>
+                        <div class="relative group">
+                            <label class="relative cursor-pointer" for="ProfilePicture">
+                                <div id="profile-picture-preview" class="h-48 w-48 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center border-4 border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden">
+                                    <img id="preview-image" class="hidden w-full h-full object-cover" src="" alt="Profile picture preview" />
+                                    <span id="default-icon" class="material-symbols-outlined text-7xl text-slate-400 dark:text-slate-600">person</span>
+                                </div>
+                                <div class="absolute bottom-2 left-2 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg ring-4 ring-white dark:ring-slate-800 transition-transform group-hover:scale-110">
+                                    <span class="material-symbols-outlined text-3xl">photo_camera</span>
+                                </div>
+                                <input asp-for="ProfilePicture" class="sr-only" id="ProfilePicture" type="file" accept="image/*" />
+                            </label>
+                        </div>
+                        <p class="max-w-xs text-sm text-slate-600 dark:text-slate-400">انقر لتحميل صورة شخصية. يُفضل استخدام صورة مربعة بحجم 500×500 بكسل</p>
+                        <span asp-validation-for="ProfilePicture" class="text-red-600 text-sm"></span>
+                    </div>
+                </div>
             </div>
-
-            <label class="flex flex-col">
-                <span asp-validation-for="FullName" class="text-lg" style="color:#FF0000"></span>
-                <p class="text-lg font-medium pb-2 text-text-light dark:text-text-dark">الاسم الكامل</p>
-                <div class="flex w-full flex-1 items-stretch rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                    <input asp-for="FullName" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg bg-transparent text-text-light dark:text-text-dark focus:outline-none focus:ring-0 border-0 h-14 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-4" placeholder="الاسم الكامل" type="text" />
-                    <div class="flex items-center justify-center pl-4 text-gray-500">
-                        <span class="material-symbols-outlined">person</span>
-                    </div>
-                </div>
-            </label>
-
-            <label class="flex flex-col">
-                <span asp-validation-for="Email" class="text-lg" style="color:#FF0000"></span>
-                <p class="text-lg font-medium pb-2 text-text-light dark:text-text-dark">البريد الإلكتروني</p>
-                <div class="flex w-full flex-1 items-stretch rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                    <input asp-for="Email" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg bg-transparent text-text-light dark:text-text-dark focus:outline-none focus:ring-0 border-0 h-14 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-4" placeholder="البريد الإلكتروني" type="email" />
-                    <div class="flex items-center justify-center pl-4 text-gray-500">
-                        <span class="material-symbols-outlined">mail</span>
-                    </div>
-                </div>
-            </label>
-
-            <label class="flex flex-col">
-                <span asp-validation-for="PhoneNumber" class="text-lg" style="color:#FF0000"></span>
-                <p class="text-lg font-medium pb-2 text-text-light dark:text-text-dark">رقم الهاتف</p>
-                <div class="flex w-full flex-1 items-stretch rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                    <input asp-for="PhoneNumber" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg bg-transparent text-text-light dark:text-text-dark focus:outline-none focus:ring-0 border-0 h-14 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-4" placeholder="رقم الهاتف" type="text" />
-                    <div class="flex items-center justify-center pl-4 text-gray-500">
-                        <span class="material-symbols-outlined">phone</span>
-                    </div>
-                </div>
-            </label>
-
-            <label class="flex flex-col">
-                <span asp-validation-for="Password" class="text-lg" style="color:#FF0000"></span>
-                <p class="text-lg font-medium pb-2 text-text-light dark:text-text-dark">كلمة المرور</p>
-                <div class="flex w-full flex-1 items-stretch rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                    <input asp-for="Password" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg bg-transparent text-text-light dark:text-text-dark focus:outline-none focus:ring-0 border-0 h-14 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-4" placeholder="كلمة المرور" type="password" />
-                    <div class="flex items-center justify-center pl-4 text-gray-500 cursor-pointer">
-                        <span class="material-symbols-outlined">visibility_off</span>
-                    </div>
-                </div>
-            </label>
-
-            <label class="flex flex-col">
-                <span asp-validation-for="ConfirmPassword" class="text-lg" style="color:#FF0000"></span>
-                <p class="text-lg font-medium pb-2 text-text-light dark:text-text-dark">تأكيد كلمة المرور</p>
-                <div class="flex w-full flex-1 items-stretch rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                    <input asp-for="ConfirmPassword" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg bg-transparent text-text-light dark:text-text-dark focus:outline-none focus:ring-0 border-0 h-14 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-4" placeholder="تأكيد كلمة المرور" type="password" />
-                    <div class="flex items-center justify-center pl-4 text-gray-500">
-                        <span class="material-symbols-outlined">lock</span>
-                    </div>
-                </div>
-            </label>
-
-            <label class="flex flex-col">
-                <span asp-validation-for="UserRole" class="text-lg" style="color:#FF0000"></span>
-                <p class="text-base font-medium pb-2 text-text-light dark:text-text-dark">درجة المستخدم</p>
-                <div class="relative w-full">
-                    <select asp-for="UserRole" class="form-select appearance-none w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-light dark:text-text-dark focus:outline-none focus:ring-2 h-14">
-                        <option value="" disabled selected>اختر درجة المستخدم</option>
-                        <option value="SuperAdmin">مسؤول</option>
-                        <option value="Admin">مشرف</option>
-                        <option value="Employee">موظف</option>
-                    </select>
-                </div>
-            </label>
-
-            <button type="submit" class="w-full bg-custom text-xl text-white mt-3 font-bold py-4 px-4 rounded-lg hover:bg-custom/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom dark:focus:ring-offset-background-dark transition-colors duration-300">
-                إنشاء حساب
-            </button>
         </form>
     </div>
 </div>
 
-<script>
-    // Photo preview inside the modal only
-    document.getElementById('ProfilePicture').addEventListener('change', function (event) {
-        const file = event.target.files[0];
-        const previewImage = document.getElementById('preview-image');
+@section Scripts{
+    <script>
+        // Photo preview functionality
+        document.getElementById('ProfilePicture').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            const previewImage = document.getElementById('preview-image');
+            const defaultIcon = document.getElementById('default-icon');
 
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                previewImage.src = e.target.result;
-                previewImage.classList.remove('hidden');
-            };
-            reader.readAsDataURL(file);
-        } else {
-            previewImage.src = '';
-            previewImage.classList.add('hidden');
-        }
-    });
-
-    // AJAX form submit
-    $('#registerForm').submit(function (e) {
-        e.preventDefault();
-        var formData = new FormData(this);
-        $.ajax({
-            url: $(this).attr('action'),
-            method: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function (response) {
-                if (response.success) {
-                    $('#dialogContainer').modal('hide');
-                    location.reload();
-                } else {
-                    $('#dialogBody').html(response);
-                }
+            if (file) {
+                
+                // Read and display the image
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImage.src = e.target.result;
+                    previewImage.classList.remove('hidden');
+                    defaultIcon.classList.add('hidden');
+                };
+                reader.onerror = function() {
+                    alert('حدث خطأ أثناء قراءة الصورة');
+                    event.target.value = '';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // No file selected - reset to default
+                previewImage.src = '';
+                previewImage.classList.add('hidden');
+                defaultIcon.classList.remove('hidden');
             }
         });
-    });
-</script>
+
+        // Toggle password visibility
+        function togglePasswordVisibility(inputId, button) {
+            const input = document.getElementById(inputId);
+            const icon = button.querySelector('.material-symbols-outlined');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility';
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility_off';
+            }
+        }
+
+        let msg = @Html.Raw(Json.Serialize(TempData["SuccessMessage"]));
+        if (msg) {
+            Swal.fire({
+                icon: 'success',
+                title: 'تم بنجاح',
+                text: msg,
+                confirmButtonText: 'حسناً'
+            }).then(() => {
+                window.location.href = '/Account/Index';
+            });}
+    </script>
+}
+
+   
+@{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}
+
+
+
+
+

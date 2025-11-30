@@ -1,14 +1,13 @@
-using BL.Services.Service;
-using BLL.Repository;
+
+using BLL.Mapper;
 using BLL.Services.IService;
 using BLL.Services.Service;
 using DAL.Data;
-using DAL.IRepository;
 using DAL.Models;
-using Google.Apis.Auth.OAuth2;
-using Google.Apis.Auth.OAuth2.Flows;
+using DAL.Repositories.IRepository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,10 +34,17 @@ builder.Services.AddTransient<IEmailSender, SmtpEmailSender>(sp =>
 
 builder.Services.AddSingleton<IFileUploader, FileUploader>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<ISupplierService, SupplierService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IStoreService, StoreService>();
+builder.Services.AddScoped<IProductCategoryService, ProductCategoryService>();
+
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
      options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddAutoMapper(typeof(DomainProfile));
 
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromHours(4))

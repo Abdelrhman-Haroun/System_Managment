@@ -105,18 +105,18 @@ namespace DAL.Migrations
                         {
                             Id = "admin-user-id-12345",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "f448fddf-f99a-4c50-a7c1-d71fd2e6f193",
-                            CreatedAt = new DateTime(2025, 11, 15, 14, 47, 38, 541, DateTimeKind.Utc).AddTicks(7338),
+                            ConcurrencyStamp = "e47276bc-f9a4-48ea-8ce3-a2dc6a20b87f",
+                            CreatedAt = new DateTime(2025, 11, 28, 18, 53, 44, 468, DateTimeKind.Utc).AddTicks(1179),
                             Email = "admin@example.com",
                             EmailConfirmed = true,
                             FullName = "System Administrator",
                             IsDeleted = false,
-                            LockoutEnabled = false,
+                            LockoutEnabled = true,
                             NormalizedEmail = "ADMIN@EXAMPLE.COM",
                             NormalizedUserName = "ADMIN@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEBrsoeinEoipagPvSU/AUNcb9U219+7NA9BsNk94asznseGmmUFRdBMn0GbVqtwU1w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEAtZQ/xBh/cj+g2qdE2+x+/DFd5cGTvh/cxxGxM3J5HyW2uZcT/y5CYjm3P3NP/GIA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "08535539-5f04-40ff-a4f5-bebef60e331f",
+                            SecurityStamp = "a95f8a65-a686-40dc-b5f7-c1aa9aae642e",
                             TwoFactorEnabled = false,
                             UserName = "admin@example.com"
                         });
@@ -184,34 +184,6 @@ namespace DAL.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("CashBoxes");
-                });
-
-            modelBuilder.Entity("DAL.Models.Category", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Category");
                 });
 
             modelBuilder.Entity("DAL.Models.Customer", b =>
@@ -313,6 +285,9 @@ namespace DAL.Migrations
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal>("Weight")
+                        .HasColumnType("decimal(18,2)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
@@ -379,9 +354,6 @@ namespace DAL.Migrations
                     b.Property<int?>("CustomerId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("EmployeeId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -410,8 +382,6 @@ namespace DAL.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.HasIndex("EmployeeId");
-
                     b.HasIndex("MobileWalletId");
 
                     b.HasIndex("SupplierId");
@@ -419,16 +389,13 @@ namespace DAL.Migrations
                     b.ToTable("Payment");
                 });
 
-            modelBuilder.Entity("DAL.Models.Product", b =>
+            modelBuilder.Entity("DAL.Models.ProductCategory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -445,19 +412,9 @@ namespace DAL.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int?>("QuantityInStock")
-                        .HasColumnType("int");
-
-                    b.Property<int>("StoreId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("StoreId");
-
-                    b.ToTable("Products");
+                    b.ToTable("ProductCategory");
                 });
 
             modelBuilder.Entity("DAL.Models.PurchaseInvoice", b =>
@@ -767,9 +724,53 @@ namespace DAL.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Product", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("ProductType")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("StockQuantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("StoreId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("StoreId");
+
+                    b.ToTable("Products");
+                });
+
             modelBuilder.Entity("DAL.Models.InvoiceItem", b =>
                 {
-                    b.HasOne("DAL.Models.Product", "Product")
+                    b.HasOne("Product", "Product")
                         .WithMany("InvoiceItems")
                         .HasForeignKey("ProductId");
 
@@ -802,10 +803,6 @@ namespace DAL.Migrations
                         .WithMany("Payments")
                         .HasForeignKey("CustomerId");
 
-                    b.HasOne("DAL.Models.Employee", "Employee")
-                        .WithMany()
-                        .HasForeignKey("EmployeeId");
-
                     b.HasOne("DAL.Models.MobileWallet", "MobileWallet")
                         .WithMany("Payments")
                         .HasForeignKey("MobileWalletId");
@@ -820,30 +817,9 @@ namespace DAL.Migrations
 
                     b.Navigation("Customer");
 
-                    b.Navigation("Employee");
-
                     b.Navigation("MobileWallet");
 
                     b.Navigation("Supplier");
-                });
-
-            modelBuilder.Entity("DAL.Models.Product", b =>
-                {
-                    b.HasOne("DAL.Models.Category", "Category")
-                        .WithMany("Products")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DAL.Models.Store", "Store")
-                        .WithMany("Products")
-                        .HasForeignKey("StoreId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
-
-                    b.Navigation("Store");
                 });
 
             modelBuilder.Entity("DAL.Models.PurchaseInvoice", b =>
@@ -919,6 +895,25 @@ namespace DAL.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Product", b =>
+                {
+                    b.HasOne("DAL.Models.ProductCategory", "Category")
+                        .WithMany("Products")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DAL.Models.Store", "Store")
+                        .WithMany("Products")
+                        .HasForeignKey("StoreId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Store");
+                });
+
             modelBuilder.Entity("DAL.Models.BankAccount", b =>
                 {
                     b.Navigation("Payments");
@@ -927,11 +922,6 @@ namespace DAL.Migrations
             modelBuilder.Entity("DAL.Models.CashBox", b =>
                 {
                     b.Navigation("Payments");
-                });
-
-            modelBuilder.Entity("DAL.Models.Category", b =>
-                {
-                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("DAL.Models.Customer", b =>
@@ -946,9 +936,9 @@ namespace DAL.Migrations
                     b.Navigation("Payments");
                 });
 
-            modelBuilder.Entity("DAL.Models.Product", b =>
+            modelBuilder.Entity("DAL.Models.ProductCategory", b =>
                 {
-                    b.Navigation("InvoiceItems");
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("DAL.Models.PurchaseInvoice", b =>
@@ -971,6 +961,11 @@ namespace DAL.Migrations
                     b.Navigation("Payments");
 
                     b.Navigation("PurchaseInvoices");
+                });
+
+            modelBuilder.Entity("Product", b =>
+                {
+                    b.Navigation("InvoiceItems");
                 });
 #pragma warning restore 612, 618
         }

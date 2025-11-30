@@ -1,19 +1,17 @@
-﻿using System.Linq.Expressions;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
-namespace DAL.IRepository
+namespace DAL.Repositories.IRepository
 {
     public interface IGenericRepository<T> where T : class
     {
-        //_context.Categories.Include("Products").ToList();
-        //_context.Categories.Where(x=>x.Id == Id).ToList();
-        IEnumerable<T> GetAll(Expression<Func<T, bool>>? predicate = null, string? IncludeWord = null);
-        //_context.Categories.Include("Products").SinglOrDefault();
-        //_context.Categories.Where(x=>x.Id == Id).SinglOrDefault();
-        T GetFirstorDefault(Expression<Func<T, bool>>? perdicate = null, string? IncludeWord = null);
-        //_context.Categories.Add(category);
+        Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? predicate = null, string? includeWord = null);
+        Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>>? predicate = null, string? includeWord = null);
+
         void Add(T entity);
-        //_context.Categories.Remove(category);
+        void Update(T entity);
         void Remove(T entity);
         void RemoveRange(IEnumerable<T> entities);
     }
+
 }
