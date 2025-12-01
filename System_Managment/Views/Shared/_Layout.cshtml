@@ -209,16 +209,17 @@
                     </details>
 
                     <!-- إدارة المخازن -->
-                    <details class="group nav-section" @(IsActive("/warehouses|/stock|/inventory") ? "open" : "")>
+                    <details class="group nav-section" @(IsActive("/store") ? "open" : "")>
                         <summary class="nav-link flex items-center justify-between gap-4 px-4 py-3 rounded-lg cursor-pointer list-none">
                             <div class="flex items-center gap-4"><span class="material-symbols-outlined">warehouse</span><span class="font-medium">إدارة المخازن</span></div>
                             <span class="material-symbols-outlined text-lg dropdown-icon">expand_more</span>
                         </summary>
                         <div class="dropdown-menu space-y-0">
-                            <a asp-controller="Warehouses" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/warehouses") ? "active" : "")">المخازن</a>
-                            <a asp-controller="Stock" asp-action="Movements" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/stock/movements") ? "active" : "")">حركات المخزون</a>
-                            <a asp-controller="Inventory" asp-action="Count" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/inventory/count") ? "active" : "")">الجرد</a>
-                            <a asp-controller="Stock" asp-action="Levels" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/stock/levels") ? "active" : "")">مستويات التخزين</a>
+                            <a asp-controller="store" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/store/index") || full.Contains("/store") && !full.Contains("/store/create") && !full.Contains("/store/orders") ? "active" : "")">قائمة المخازن</a>
+                            <a asp-controller="store" asp-action="Create" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/store/create") ? "active" : "")">إضافة مخزن</a>
+                            <a asp-controller="store" asp-action="Movements" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/stock/movements") ? "active" : "")">حركات المخزون</a>
+                            <a asp-controller="store" asp-action="Count" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/inventory/count") ? "active" : "")">الجرد</a>
+                            <a asp-controller="store" asp-action="Levels" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/stock/levels") ? "active" : "")">مستويات التخزين</a>
                         </div>
                     </details>
 

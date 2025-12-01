@@ -59,8 +59,9 @@
             <span asp-validation-for="Address" class="text-red-500 text-sm mt-1"></span>
         </div>
 
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <!-- الرصيد الافتتاحي -->
-        <div class="flex flex-col md:max-w-md">
+            <div class="flex flex-col">
             <label asp-for="Balance" class="text-slate-800 dark:text-slate-200 text-base font-semibold mb-2"></label>
             <div class="relative">
                 <input asp-for="Balance"
@@ -71,6 +72,7 @@
                               focus:border-primary transition-all duration-200 text-base w-full" />
             </div>
             <span asp-validation-for="Balance" class="text-red-500 text-sm mt-1"></span>
+        </div>
         </div>
 
         <!-- الأزرار -->

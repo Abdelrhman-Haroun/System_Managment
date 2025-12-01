@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BLL.ViewModels.Product;
 using BLL.ViewModels.ProductCategory;
+using BLL.ViewModels.Store;
 using BLL.ViewModels.Supplier;
 using DAL.Models;
 namespace BLL.Mapper

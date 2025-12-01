@@ -1,11 +1,11 @@
-﻿@model Customer
-
+﻿@using System.ComponentModel.DataAnnotations
+@model Product
 
 <!-- الـ Dialog الخارجي هيبقى في الـ JS، والـ Partial ده محتوى داخلي فقط -->
 <div class="w-full max-w-2xl mx-auto bg-white dark:bg-[#1c2c21] rounded-2xl shadow-2xl overflow-hidden">
     <!-- الهيدر -->
     <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-        <h2 class="text-2xl font-bold text-[#121613] dark:text-white">ملف العميل</h2>
+        <h2 class="text-2xl font-bold text-[#121613] dark:text-white">ملف المنتج</h2>
         <button type="button" class="closeDialog p-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
             <span class="material-symbols-outlined text-2xl">close</span>
         </button>
@@ -14,76 +14,112 @@
     <div class="p-8">
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- المعلومات الشخصية -->
+            <!-- المعلومات الرئيسية -->
             <div class="space-y-5">
                 <h4 class="text-lg font-bold text-[#121613] dark:text-white pb-3 border-b border-gray-200 dark:border-gray-700">
-                    المعلومات الشخصية
+                    المعلومات الرئيسية
                 </h4>
 
                 <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                         <span class="material-symbols-outlined">person</span>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">الاسم الكامل</p>
-                        <p class="font-semibold text-[#121613] dark:text-white">@Model.Name</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">اسم المنتج</p>
+                        <p class="font-semibold text-[#121613] dark:text-white break-words">@Model.Name</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                        <span class="material-symbols-outlined">mail</span>
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                        <span class="material-symbols-outlined">description</span>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">العنوان</p>
-                        <p class="font-semibold text-[#121613] dark:text-white font-mono text-sm" dir="ltr">@Model.Address</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">الوصف</p>
+                        <p class="font-semibold text-[#121613] dark:text-white font-mono text-sm break-words">@Model.Description</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                        <span class="material-symbols-outlined">phone</span>
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                        <span class="material-symbols-outlined">inventory_2</span>
+                    </div>
+                    @functions {
+                        string GetProductTypeName(int productTypeId)
+                        {
+                            var type = (ProductType)productTypeId;
+                            var displayAttr = type.GetType()
+                            .GetField(type.ToString())
+                            .GetCustomAttributes(typeof(DisplayAttribute), false)
+                            .FirstOrDefault() as DisplayAttribute;
+                            return displayAttr != null ? displayAttr.Name : type.ToString();
+                        }
+                    }
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">نوع المنتج</p>
+                        <p class="font-semibold text-[#121613] dark:text-white break-words">@GetProductTypeName(Model.ProductType)</p>
+                    </div>
+                </div>    
+                <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                        <span class="material-symbols-outlined">category</span>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">رقم الهاتف</p>
-                        <p class="font-semibold text-[#121613] dark:text-white" dir="ltr">@Model.Phone</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">فئة المنتج</p>
+                        <p class="font-semibold text-[#121613] dark:text-white break-words">@Model.Category?.Name</p>
+                    </div>
+                </div>    
+                <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                        <span class="material-symbols-outlined">store</span>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">المخزن</p>
+                        <p class="font-semibold text-[#121613] dark:text-white break-words">@Model.Store?.Name</p>
                     </div>
                 </div>          
                 
                 <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                        <span class="material-symbols-outlined">payments</span>
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                        <span class="material-symbols-outlined">inventory</span>
                     </div>
+                    @{
+                    string viewdType;
+                    @if (Model.ProductType == 1)
+                        viewdType = string.Format("{0:#,##0}", Model.StockQuantity.GetValueOrDefault());
+                    else
+                            viewdType = ($"{string.Format("{0:#,##0.##}", Model.StockQuantity.GetValueOrDefault())} كجم");
                     <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">رصيد الحساب</p>
-                        <p class="font-semibold text-[#121613] dark:text-white" dir="ltr">@Model.Balance</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">رصيد المنتج بالمخزن</p>
+                            <p class="font-semibold text-[#121613] dark:text-white break-words">@viewdType</p>
                     </div>
+                    }
                 </div>
             </div>
 
-            <!-- معلومات الحساب -->
+            <!-- معلومات المنتج -->
             <div class="space-y-5">
                 <h4 class="text-lg font-bold text-[#121613] dark:text-white pb-3 border-b border-gray-200 dark:border-gray-700">
-                    معلومات الحساب
+                    معلومات المنتج
                 </h4>
 
                 <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                         <span class="material-symbols-outlined">badge</span>
                     </div>
                     <div class="flex-1">
-                        <p class="text-sm text-gray-500 dark:text-gray-400">رقم العميل</p>
-                        <p class="font-mono text-xs text-[#121613] dark:text-gray-300 break-all">@Model.Id</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">رقم المنتج</p>
+                        <p class="font-mono text-xs text-[#121613] dark:text-gray-300 break-words">@Model.Id</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                         <span class="material-symbols-outlined">event</span>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">تاريخ الانضمام</p>
-                        <p class="font-semibold text-[#121613] dark:text-white">@Model.CreatedAt</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">تاريخ الإنشاء</p>
+                        <p class="font-semibold text-[#121613] dark:text-white break-words">@Model.CreatedAt</p>
                     </div>
                 </div>
             </div>

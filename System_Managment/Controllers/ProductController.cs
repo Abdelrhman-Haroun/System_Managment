@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using BLL.Services.IService;
 using BLL.ViewModels.Product;
-using DAL.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -42,8 +41,7 @@ public class ProductController : Controller
 
             // Filter products by name or category ID
             products = products
-                .Where(p => p.Name.ToLower().Contains(searchTerm)
-                            || matchedCategoryIds.Contains(p.CategoryId));
+                .Where(p => p.Name.ToLower().Contains(searchTerm)|| matchedCategoryIds.Contains(p.CategoryId));
         }
 
 
@@ -106,11 +104,15 @@ public class ProductController : Controller
 
         var vm = _mapper.Map<EditProductVM>(Product);
 
+        ViewBag.Stores = new SelectList(await _storeService.GetAllAsync(s => !s.IsDeleted), "Id", "Name");
+        ViewBag.Categories = new SelectList(await _produictCategoryService.GetAllAsync(s => !s.IsDeleted), "Id", "Name");
+
         if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             return PartialView("_EditPartial", vm);
 
         return View(vm);
     }
+
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -134,6 +136,7 @@ public class ProductController : Controller
         Product.Description = model.Description;
         Product.StoreId = model.StoreId;
         Product.CategoryId = model.CategoryId;
+
 
         await _service.UpdateAsync(Product);
 

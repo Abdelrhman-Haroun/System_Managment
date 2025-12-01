@@ -7,6 +7,7 @@ using DAL.Models;
 using DAL.Repositories.IRepository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Westwind.AspNetCore.LiveReload;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,7 @@ builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddLiveReload();
 
 builder.Services.AddTransient<IEmailSender, SmtpEmailSender>(sp =>
 {
@@ -87,6 +89,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 // Configure middleware
+app.UseLiveReload();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();

@@ -1,11 +1,11 @@
-﻿@model Customer
+﻿@model Store
 
 
 <!-- الـ Dialog الخارجي هيبقى في الـ JS، والـ Partial ده محتوى داخلي فقط -->
 <div class="w-full max-w-2xl mx-auto bg-white dark:bg-[#1c2c21] rounded-2xl shadow-2xl overflow-hidden">
     <!-- الهيدر -->
     <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-        <h2 class="text-2xl font-bold text-[#121613] dark:text-white">ملف العميل</h2>
+        <h2 class="text-2xl font-bold text-[#121613] dark:text-white">ملف المخزن</h2>
         <button type="button" class="closeDialog p-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
             <span class="material-symbols-outlined text-2xl">close</span>
         </button>
@@ -17,7 +17,7 @@
             <!-- المعلومات الشخصية -->
             <div class="space-y-5">
                 <h4 class="text-lg font-bold text-[#121613] dark:text-white pb-3 border-b border-gray-200 dark:border-gray-700">
-                    المعلومات الشخصية
+                    المعلومات الرئيسية
                 </h4>
 
                 <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
@@ -25,46 +25,27 @@
                         <span class="material-symbols-outlined">person</span>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">اسم العميل</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">اسم المخزن</p>
                         <p class="font-semibold text-[#121613] dark:text-white break-words">@Model.Name</p>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
+                <div class="flex items-start gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
                     <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
-                        <span class="material-symbols-outlined">location_on</span>
+                        <span class="material-symbols-outlined">description</span>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">العنوان</p>
-                        <p class="font-semibold text-[#121613] dark:text-white font-mono text-sm break-words">@Model.Address</p>
+                    <div class="flex-1">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">الوصف</p>
+                        <p class="font-semibold text-[#121613] dark:text-white font-mono text-sm break-words">@Model.Description</p>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
-                        <span class="material-symbols-outlined">phone</span>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">رقم الهاتف</p>
-                        <p class="font-semibold text-[#121613] dark:text-white break-words">@Model.Phone</p>
-                    </div>
-                </div>          
-                
-                <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
-                        <span class="material-symbols-outlined">payments</span>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">رصيد الحساب</p>
-                        <p class="font-semibold text-[#121613] dark:text-white break-words">ج.م @string.Format(new System.Globalization.CultureInfo("ar-EG"), "{0:#,##0.##}", Model.Balance)</p>
-                    </div>
-                </div>
             </div>
 
             <!-- معلومات الحساب -->
             <div class="space-y-5">
                 <h4 class="text-lg font-bold text-[#121613] dark:text-white pb-3 border-b border-gray-200 dark:border-gray-700">
-                    معلومات الحساب
+                    معلومات المخزن
                 </h4>
 
                 <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
@@ -72,7 +53,7 @@
                         <span class="material-symbols-outlined">badge</span>
                     </div>
                     <div class="flex-1">
-                        <p class="text-sm text-gray-500 dark:text-gray-400">رقم العميل</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">رقم المخزن</p>
                         <p class="font-mono text-xs text-[#121613] dark:text-gray-300 break-words">@Model.Id</p>
                     </div>
                 </div>

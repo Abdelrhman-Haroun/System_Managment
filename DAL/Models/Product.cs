@@ -28,6 +28,7 @@ public enum ProductType
     [Display(Name = "العدد")]
     Count = 1,
 
-    [Display(Name = "الوزن (kg)")]
+    [Display(Name = "الوزن (كجم)")]
     Weight = 2
 }
+

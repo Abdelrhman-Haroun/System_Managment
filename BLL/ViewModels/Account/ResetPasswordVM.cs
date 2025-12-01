@@ -7,16 +7,19 @@ namespace BLL.ViewModels.Account
     {
         [Required(ErrorMessage = "الايميل مطلوب")]
         [EmailAddress(ErrorMessage = "هذا الايميل غير صالح")]
+        [Display(Name = "البريد الالكترونى")]
         public string Email { get; set; }
 
 
         [Required(ErrorMessage = "كلمة المرور مطلوبة")]
         [PasswordPropertyText]
+        [Display(Name = "كلمة المرور")]
         public string Password { get; set; }
 
         [Required(ErrorMessage = "تأكيد كلمة المرور مطلوبة")]
         [PasswordPropertyText]
         [Compare("Password", ErrorMessage = "كلمة المرور غير متطابقة")]
+        [Display(Name = "تأكيد كلمة المرور")]
         public string ConfirmPassword { get; set; }
 
         [Required]

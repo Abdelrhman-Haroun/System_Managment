@@ -101,8 +101,7 @@
                                         <td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white">@user.Name</td>
                                         <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">@user.Address</td>
                                         <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">@user.Phone</td>
-                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">@user.Balance</td>
-  
+                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">ج.م @string.Format(new System.Globalization.CultureInfo("ar-EG"), "{0:#,##0.##}", user.Balance)</td>
                                         <td class="px-6 py-4">
                                             <div class="flex items-center gap-4">
                                                 <a href="@Url.Action("Edit", new { id = user.Id })" class="openEditDialog text-primary hover:text-primary/80" title="تعديل">

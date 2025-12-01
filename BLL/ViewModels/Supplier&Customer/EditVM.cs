@@ -20,5 +20,7 @@ namespace BLL.ViewModels.Supplier
         [Display(Name = "العنوان")]
         [StringLength(500)]
         public string? Address { get; set; }
+
+        public decimal? Balance { get; set; }
     }
 }

@@ -6,6 +6,7 @@ namespace BLL.ViewModels.Account
     {
         [Required(ErrorMessage = "الايميل مطلوب")]
         [EmailAddress(ErrorMessage = "هذا الايميل غير صالح")]
+        [Display(Name = "البريد الالكترونى")]
         public string Email { get; set; }
     }
 

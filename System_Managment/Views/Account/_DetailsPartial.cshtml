@@ -1,5 +1,5 @@
-﻿
-@model ApplicationUser
+﻿@model ApplicationUser
+
 @{
     var roleName = ViewBag.UserRole as string ?? "غير محدد";
     var displayRole = roleName switch
@@ -15,15 +15,14 @@
         : "غير معروف";
 
     var fileName = string.IsNullOrEmpty(Model.ProfilePicture)
-                         ? "~/files/images/alter.png"       
+                         ? "~/files/images/alter.png"
                          : Model.ProfilePicture.TrimStart('/');
 
     var profileImage = Url.Content("~/files/" + fileName);
 }
 
-<!-- الـ Dialog الخارجي هيبقى في الـ JS، والـ Partial ده محتوى داخلي فقط -->
 <div class="w-full max-w-2xl mx-auto bg-white dark:bg-[#1c2c21] rounded-2xl shadow-2xl overflow-hidden">
-    <!-- الهيدر -->
+    <!-- Header -->
     <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
         <h2 class="text-2xl font-bold text-[#121613] dark:text-white">ملف المستخدم</h2>
         <button type="button" class="closeDialog p-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
@@ -32,7 +31,7 @@
     </div>
 
     <div class="p-8">
-        <!-- الصورة والاسم والدور -->
+        <!-- Profile Image & Role -->
         <div class="flex flex-col items-center text-center mb-10">
             <div class="relative mb-6">
                 <div class="w-32 h-32 rounded-full ring-8 ring-white dark:ring-[#1c2c21] shadow-2xl overflow-hidden bg-gray-100"
@@ -43,73 +42,83 @@
                 </div>
             </div>
 
-            <h3 class="text-2xl font-bold text-[#121613] dark:text-white">@Model.FullName</h3>
+            <h3 class="text-2xl font-bold text-[#121613] dark:text-white break-words">@Model.FullName</h3>
             <span class="inline-flex items-center px-4 py-2 mt-2 rounded-full text-sm font-bold bg-primary/10 text-primary">
                 @displayRole
             </span>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- المعلومات الشخصية -->
+            <!-- Personal Information -->
             <div class="space-y-5">
                 <h4 class="text-lg font-bold text-[#121613] dark:text-white pb-3 border-b border-gray-200 dark:border-gray-700">
                     المعلومات الشخصية
                 </h4>
 
                 <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                         <span class="material-symbols-outlined">person</span>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">الاسم الكامل</p>
-                        <p class="font-semibold text-[#121613] dark:text-white">@Model.FullName</p>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">اسم المستخدم</p>
+                        <p class="font-semibold text-[#121613] dark:text-white break-words overflow-wrap-anywhere">
+                            @Model.FullName
+                        </p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                         <span class="material-symbols-outlined">mail</span>
                     </div>
-                    <div>
+                    <div class="flex-1 min-w-0">
                         <p class="text-sm text-gray-500 dark:text-gray-400">البريد الإلكتروني</p>
-                        <p class="font-semibold text-[#121613] dark:text-white font-mono text-sm" dir="ltr">@Model.Email</p>
+                        <p class="font-semibold text-[#121613] dark:text-white font-mono text-sm break-words overflow-wrap-anywhere">
+                            @Model.Email
+                        </p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                         <span class="material-symbols-outlined">phone</span>
                     </div>
-                    <div>
+                    <div class="flex-1 min-w-0">
                         <p class="text-sm text-gray-500 dark:text-gray-400">رقم الهاتف</p>
-                        <p class="font-semibold text-[#121613] dark:text-white" dir="ltr">@Model.PhoneNumber</p>
+                        <p class="font-semibold text-[#121613] dark:text-white break-words overflow-wrap-anywhere">
+                            @Model.PhoneNumber
+                        </p>
                     </div>
                 </div>
             </div>
 
-            <!-- معلومات الحساب -->
+            <!-- Account Information -->
             <div class="space-y-5">
                 <h4 class="text-lg font-bold text-[#121613] dark:text-white pb-3 border-b border-gray-200 dark:border-gray-700">
                     معلومات الحساب
                 </h4>
 
                 <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                         <span class="material-symbols-outlined">badge</span>
                     </div>
-                    <div class="flex-1">
+                    <div class="flex-1 min-w-0">
                         <p class="text-sm text-gray-500 dark:text-gray-400">رقم المستخدم</p>
-                        <p class="font-mono text-xs text-[#121613] dark:text-gray-300 break-all">@Model.Id</p>
+                        <p class="font-mono text-xs text-[#121613] dark:text-gray-300 break-words overflow-wrap-anywhere">
+                            @Model.Id
+                        </p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                         <span class="material-symbols-outlined">event</span>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">تاريخ الانضمام</p>
-                        <p class="font-semibold text-[#121613] dark:text-white">@createdAt</p>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">تاريخ الإنشاء</p>
+                        <p class="font-semibold text-[#121613] dark:text-white break-words overflow-wrap-anywhere">
+                            @createdAt
+                        </p>
                     </div>
                 </div>
             </div>

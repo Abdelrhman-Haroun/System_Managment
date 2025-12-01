@@ -1,8 +1,8 @@
-﻿@model EditVM
+﻿@model EditStoreVM
 
 <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-2xl mx-auto max-h-screen overflow-y-auto">
     <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">تعديل العميل</h2>
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">تعديل المخزن</h2>
         <button type="button" class="closeDialog text-slate-500 hover:text-red-600 transition-colors">
             <span class="material-symbols-outlined text-3xl">close</span>
         </button>
@@ -16,30 +16,18 @@
             <!-- الحقول -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">الاسم الكامل</label>
+                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">الاسم</label>
                     <input name="Name" value="@Model.Name" required
                            class="w-full h-14 px-5 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none transition-all" />
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">العنوان</label>
-                    <input name="Address" value="@Model.Address" type="text" required
+                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">الوصف</label>
+                    <input name="Description" value="@Model.Description" type="text" required
                            class="w-full h-14 px-5 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none transition-all" />
                 </div>
 
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">رقم الهاتف</label>
-                    <input name="Phone" value="@Model.Phone"
-                           class="w-full h-14 px-5 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none transition-all" />
-                </div>    
-                
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">رصيد الحساب</label>
-                    <input name="Phone" value="@Model.Balance" disabled
-                           class="w-full h-14 px-5 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none transition-all" />
-                </div>
-
-
+  
             </div>
 
             <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-200 dark:border-slate-700">
@@ -55,7 +43,7 @@
                 <button type="button" id="deleteUserBtn"
                         class="flex-1 h-14 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
                     <span class="material-symbols-outlined">delete</span>
-                    حذف العميل
+                    حذف المخزن
                 </button>
 
 
@@ -73,7 +61,7 @@
         const formData = new FormData(this);
 
         $.ajax({
-            url: '@Url.Action("Edit", "Customer")',
+            url: '@Url.Action("Edit", "Store")',
             type: 'POST',
             data: formData,
             processData: false,
@@ -118,7 +106,7 @@
 
         Swal.fire({
             title: 'هل أنت متأكد؟',
-            text: "لن تتمكن من استعادة هذا العميل بعد الحذف!",
+            text: "لن تتمكن من استعادة المخزن بعد الحذف!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'نعم، احذف',
@@ -130,7 +118,7 @@
             if (result.isConfirmed) {
 
                 $.ajax({
-                    url: '@Url.Action("Delete", "Customer")',
+                    url: '@Url.Action("Delete", "Store")',
                     type: 'POST',
                     data: {
                         id: '@Model.Id',
@@ -141,7 +129,7 @@
                             Swal.fire({
                                 icon: 'success',
                                 title: 'تم الحذف',
-                                text: 'تم حذف العميل بنجاح.',
+                                text: 'تم حذف المخزن بنجاح.',
                                 confirmButtonColor: '#10b981'
                             }).then(() => {
                                 location.reload();

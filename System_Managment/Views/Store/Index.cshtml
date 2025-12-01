@@ -1,9 +1,9 @@
-﻿@model IEnumerable<Supplier>
+﻿@model IEnumerable<Store>
 
 
 
 @{
-    ViewData["Title"] = "إدارة الموردين";
+    ViewData["Title"] = "إدارة المخازن";
     var searchTerm = Context.Request.Query["searchTerm"].ToString();
     var pageNumber = int.TryParse(Context.Request.Query["page"].ToString(), out var page) ? page : 1;
     var pageSize = 8;
@@ -23,10 +23,10 @@
             <div class="flex flex-col gap-6">
                 <div>
                     <h1 class="text-4xl font-black text-slate-900 dark:text-white tracking-tight">
-                        إدارة الموردين
+                        إدارة المخازن
                     </h1>
                     <p class="text-slate-600 dark:text-slate-400 mt-2 text-lg">
-                        إجمالي الموردين: <strong class="font-bold">@totalUsers</strong>
+                        إجمالي المخازن: <strong class="font-bold">@totalUsers</strong>
                         @if (!string.IsNullOrEmpty(searchTerm))
                         {
                             <span class="text-primary"> | نتائج البحث عن: "@searchTerm"</span>
@@ -42,7 +42,7 @@
                             <span class="material-symbols-outlined text-2xl">search</span>
                         </button>
                         <input type="text" name="searchTerm" value="@searchTerm" id="searchInput"
-                               placeholder="ابحث بالاسم، الهاتف..."
+                               placeholder="ابحث بالاسم..."
                                class="w-full h-14 ps-14 pe-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70 text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary transition-all duration-300 text-lg font-medium shadow-sm" />
                         @if (!string.IsNullOrEmpty(searchTerm))
                         {
@@ -52,9 +52,9 @@
                         }
                     </form>
 
-                    <a asp-action="Create" asp-controller="Supplier" class="openRegisterDialog hidden sm:flex items-center justify-center gap-2 h-14 px-7 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg hover:shadow-xl transition-all whitespace-nowrap">
+                    <a asp-action="Create" asp-controller="Store" class="openRegisterDialog hidden sm:flex items-center justify-center gap-2 h-14 px-7 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg hover:shadow-xl transition-all whitespace-nowrap">
                         <span class="material-symbols-outlined text-xl">add</span>
-                        إضافة مورد
+                        إضافة مخزن
                     </a>
                 </div>
             </div>
@@ -67,14 +67,14 @@
                     <h3 class="text-2xl font-bold text-slate-600 dark:text-slate-400 mb-3">لا توجد نتائج</h3>
                     @if (!string.IsNullOrEmpty(searchTerm))
                     {
-                        <p class="text-slate-500 mb-6">لم يتم العثور على موردين يطابقون "<strong>@searchTerm</strong>"</p>
+                        <p class="text-slate-500 mb-6">لم يتم العثور على فئات يطابقون "<strong>@searchTerm</strong>"</p>
                         <a asp-action="Index" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary/90">
                             <span class="material-symbols-outlined">refresh</span> عرض الكل
                         </a>
                     }
                     else
                     {
-                        <p class="text-slate-500">لا يوجد موردين في النظام حاليًا</p>
+                        <p class="text-slate-500">لا يوجد فئات في النظام حاليًا</p>
                     }
                 </div>
             }
@@ -86,10 +86,8 @@
                         <table class="w-full">
                             <thead class="bg-slate-50 dark:bg-slate-900/50">
                                 <tr>
-                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-32">الاسم الكامل</th>
-                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-48">العنوان</th>
-                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-20">رقم الهاتف</th>
-                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-20">رصيد الحساب</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-32">الاسم</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-48">الوصف</th>
                                     <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-24">إجراءات</th>
                                 </tr>
                             </thead>
@@ -99,9 +97,8 @@
 
                                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                         <td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white">@user.Name</td>
-                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">@user.Address</td>
-                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">@user.Phone</td>
-                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">@($"ج.م {string.Format(new System.Globalization.CultureInfo("ar-EG"), "{0:#,##0.##}", user.Balance)}")</td>
+                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">@user.Description</td>
+  
                                         <td class="px-6 py-4">
                                             <div class="flex items-center gap-4">
                                                 <a href="@Url.Action("Edit", new { id = user.Id })" class="openEditDialog text-primary hover:text-primary/80" title="تعديل">
@@ -197,7 +194,7 @@
 
 <!-- زر إضافة عائم للموبايل -->
 <div class="fixed bottom-6 end-6 z-50 sm:hidden">
-    <a asp-action="Create" asp-controller="Supplier" class="flex size-16 items-center justify-center rounded-full bg-primary text-white shadow-2xl hover:scale-110 transition-all">
+    <a asp-action="Create" asp-controller="Store" class="flex size-16 items-center justify-center rounded-full bg-primary text-white shadow-2xl hover:scale-110 transition-all">
         <span class="material-symbols-outlined text-3xl">add</span>
     </a>
 </div>

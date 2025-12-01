@@ -20,11 +20,6 @@ namespace BLL.ViewModels.Product
         [Display(Name = "المخزن")]
         public int StoreId { get; set; }
 
-        [Required(ErrorMessage = "نوع المنتج مطلوب")]
-        [Display(Name = "نوع المنتج")]
-        public ProductType ProductType { get; set; }
-
-
         [Required(ErrorMessage = "الفئة مطلوبة")]
         [Display(Name = "فئة المنتج")]
         public int CategoryId { get; set; }

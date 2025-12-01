@@ -21,42 +21,42 @@
                 </h4>
 
                 <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                         <span class="material-symbols-outlined">person</span>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">الاسم الكامل</p>
-                        <p class="font-semibold text-[#121613] dark:text-white">@Model.Name</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">اسم المورد</p>
+                        <p class="font-semibold text-[#121613] dark:text-white break-words">@Model.Name</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                        <span class="material-symbols-outlined">mail</span>
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                        <span class="material-symbols-outlined">location_on</span>
                     </div>
                     <div>
                         <p class="text-sm text-gray-500 dark:text-gray-400">العنوان</p>
-                        <p class="font-semibold text-[#121613] dark:text-white font-mono text-sm" dir="ltr">@Model.Address</p>
+                        <p class="font-semibold text-[#121613] dark:text-white font-mono text-sm break-words">@Model.Address</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                         <span class="material-symbols-outlined">phone</span>
                     </div>
                     <div>
                         <p class="text-sm text-gray-500 dark:text-gray-400">رقم الهاتف</p>
-                        <p class="font-semibold text-[#121613] dark:text-white" dir="ltr">@Model.Phone</p>
+                        <p class="font-semibold text-[#121613] dark:text-white break-words">@Model.Phone</p>
                     </div>
                 </div>          
                 
                 <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                         <span class="material-symbols-outlined">payments</span>
                     </div>
                     <div>
                         <p class="text-sm text-gray-500 dark:text-gray-400">رصيد الحساب</p>
-                        <p class="font-semibold text-[#121613] dark:text-white" dir="ltr">@Model.Balance</p>
+                        <p class="font-semibold text-[#121613] dark:text-white break-words">ج.م @string.Format(new System.Globalization.CultureInfo("ar-EG"), "{0:#,##0.##}", Model.Balance)</p>
                     </div>
                 </div>
             </div>
@@ -68,22 +68,22 @@
                 </h4>
 
                 <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                         <span class="material-symbols-outlined">badge</span>
                     </div>
                     <div class="flex-1">
                         <p class="text-sm text-gray-500 dark:text-gray-400">رقم المورد</p>
-                        <p class="font-mono text-xs text-[#121613] dark:text-gray-300 break-all">@Model.Id</p>
+                        <p class="font-mono text-xs text-[#121613] dark:text-gray-300 break-words">@Model.Id</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                         <span class="material-symbols-outlined">event</span>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">تاريخ الانضمام</p>
-                        <p class="font-semibold text-[#121613] dark:text-white">@Model.CreatedAt</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">تاريخ الإنشاء</p>
+                        <p class="font-semibold text-[#121613] dark:text-white break-words">@Model.CreatedAt</p>
                     </div>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BLL.ViewModels.Product
+namespace BLL.ViewModels.Store
 {
     public class CreateStoreVM
     {

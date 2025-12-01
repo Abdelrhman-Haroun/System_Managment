@@ -14,15 +14,18 @@ namespace BLL.ViewModels.Account
     {
         [Required(ErrorMessage = "كلمة المرور الحالية مطلوبة")]
         [DataType(DataType.Password)]
+        [Display(Name = "كلمة المرور الحالية")]
         public string CurrentPassword { get; set; }
 
         [Required(ErrorMessage = "كلمة المرور الجديدة مطلوبة")]
         [DataType(DataType.Password)]
+        [Display(Name = "كلمة المرور الجديدة")]
         public string NewPassword { get; set; }
 
         [Required(ErrorMessage = "تأكيد كلمة المرور مطلوب")]
         [DataType(DataType.Password)]
         [Compare("NewPassword", ErrorMessage = "كلمة المرور وتأكيدها غير متطابقتين")]
+        [Display(Name = "تأكيد كلمة المرور الجديدة")]
         public string ConfirmPassword { get; set; }
     }
 }

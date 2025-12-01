@@ -1,7 +1,5 @@
 ﻿@model IEnumerable<Product>
 
-
-
 @{
     ViewData["Title"] = "إدارة المنتجات";
     var searchTerm = Context.Request.Query["searchTerm"].ToString();
@@ -42,8 +40,8 @@
                             <span class="material-symbols-outlined text-2xl">search</span>
                         </button>
                         <input type="text" name="searchTerm" value="@searchTerm" id="searchInput"
-                               placeholder="ابحث بالاسم، فئة المنتج..."
-                               class="w-full h-14 ps-14 pe-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70 text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary transition-all duration-300 text-lg font-medium shadow-sm" />
+                        placeholder="ابحث بالاسم، فئة المنتج..."
+                        class="w-full h-14 ps-14 pe-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70 text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary transition-all duration-300 text-lg font-medium shadow-sm" />
                         @if (!string.IsNullOrEmpty(searchTerm))
                         {
                             <a asp-action="Index" class="absolute start-5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-red-600">
@@ -97,11 +95,15 @@
                             <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
                                 @foreach (var user in paginatedUsers)
                                 {
-
+                                    string viewdType;
                                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                         <td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white">@user.Name</td>
                                         <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">@user.Description</td>
-                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">@user.StockQuantity</td>
+                                        @if(user.ProductType == 1)
+                                            viewdType = string.Format("{0:#,##0}", user.StockQuantity.GetValueOrDefault());
+                                        else
+                                            viewdType = ($"{string.Format("{0:#,##0.##}", user.StockQuantity.GetValueOrDefault())} كجم");
+                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">@viewdType</td>
                                         <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">@user.Store?.Name</td>
                                         <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">@user.Category?.Name</td>
   
