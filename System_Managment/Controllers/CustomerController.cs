@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using BLL.Services.IService;
-using BLL.ViewModels.Supplier;
+using BLL.ViewModels.Customer;
 using DAL.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -47,33 +47,39 @@ public class CustomerController : Controller
     [HttpGet]
     public IActionResult Create()
     {
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            return PartialView("_CreatePartial");
+
         return View();
     }
 
+
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(CreateVM model)
+    public async Task<IActionResult> Create(CreateCustomerVM model)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            // Default balance = 0 if empty
-            model.Balance ??= 0;
-
-            // Check duplicate name
-            var exists = await _service.GetByNameAsync(model.Name);
-            if (exists != null)
+            return Json(new
             {
-                ModelState.AddModelError("Name", "هذا المورد موجود بالفعل");
-                return View(model);
-            }
-
-            var Customer = _mapper.Map<Customer>(model);
-
-            await _service.CreateAsync(Customer);
-            TempData["SuccessMessage"] = "تم إضافة المورد بنجاح";
+                success = false,
+                message = string.Join(", ",
+                    ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))
+            });
         }
-        return View(model);
+
+        model.Balance ??= 0;
+
+        var exists = await _service.GetByNameAsync(model.Name);
+        if (exists != null)
+            return Json(new { success = false, message = "هذا العميل موجود بالفعل" });
+
+        var customer = _mapper.Map<Customer>(model);
+        await _service.CreateAsync(customer);
+
+        return Json(new { success = true, message = "تم إضافة العميل بنجاح" });
     }
+
     #endregion
 
     #region Edit
@@ -84,7 +90,7 @@ public class CustomerController : Controller
         if (Customer == null)
             return NotFound();
 
-        var vm = _mapper.Map<EditVM>(Customer);
+        var vm = _mapper.Map<EditCustomerVM>(Customer);
 
         if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             return PartialView("_EditPartial", vm);
@@ -94,7 +100,7 @@ public class CustomerController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(EditVM model)
+    public async Task<IActionResult> Edit(EditCustomerVM model)
     {
         if (!ModelState.IsValid)
             return Json(new { success = false, message = "بيانات غير صحيحة: " + string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)) });
@@ -102,12 +108,12 @@ public class CustomerController : Controller
         // Get the existing Customer (tracked by EF)
         var Customer = await _service.GetByIdAsync(model.Id);
         if (Customer == null)
-            return Json(new { success = false, message = "المورد غير موجود" });
+            return Json(new { success = false, message = "العميل غير موجود" });
 
         // Check duplicate name
         var exists = await _service.GetByNameAsync(model.Name);
         if (exists != null && exists.Id != model.Id)
-            return Json(new { success = false, message = "هذا الاسم مستخدم من مورد آخر" });
+            return Json(new { success = false, message = "هذا الاسم مستخدم من عميل آخر" });
 
         // Update tracked entity
         Customer.Name = model.Name;

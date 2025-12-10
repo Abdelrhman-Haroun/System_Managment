@@ -60,8 +60,11 @@ public class ProductController : Controller
     [HttpGet]
     public async Task<IActionResult> Create()
     {
-        ViewBag.Stores = new SelectList(await _storeService.GetAllAsync(s=>!s.IsDeleted), "Id", "Name");
+        ViewBag.Stores = new SelectList(await _storeService.GetAllAsync(s => !s.IsDeleted), "Id", "Name");
         ViewBag.Categories = new SelectList(await _produictCategoryService.GetAllAsync(s => !s.IsDeleted), "Id", "Name");
+
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            return PartialView("_CreatePartial");
 
         return View();
     }
@@ -71,27 +74,24 @@ public class ProductController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateProductVM model)
     {
-        if (ModelState.IsValid)
-        {
-            // Check duplicate name
-            var exists = await _service.GetByNameAsync(model.Name);
-            if (exists != null)
+        if (!ModelState.IsValid)
+            return Json(new
             {
-                ModelState.AddModelError("Name", "هذا المنتج موجود بالفعل");
-                return View(model);
-            }
+                success = false,
+                message =
+                string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))
+            });
 
-            var Product = _mapper.Map<Product>(model);
+        var exists = await _service.GetByNameAsync(model.Name);
+        if (exists != null)
+            return Json(new { success = false, message = "هذا المنتج موجود بالفعل" });
 
-            await _service.CreateAsync(Product);
-            TempData["SuccessMessage"] = "تم إضافة المنتج بنجاح";
-        }
+        var product = _mapper.Map<Product>(model);
+        await _service.CreateAsync(product);
 
-        // reload dropdowns
-        ViewBag.Stores = new SelectList(await _storeService.GetAllAsync(s => !s.IsDeleted), "Id", "Name");
-        ViewBag.Categories = new SelectList(await _produictCategoryService.GetAllAsync(s => !s.IsDeleted), "Id", "Name");
-        return View(model);
+        return Json(new { success = true, message = "تم إضافة المنتج بنجاح" });
     }
+
     #endregion
 
     #region Edit

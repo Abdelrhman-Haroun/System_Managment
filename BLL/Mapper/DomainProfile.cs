@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BLL.ViewModels.Customer;
 using BLL.ViewModels.Product;
 using BLL.ViewModels.ProductCategory;
 using BLL.ViewModels.Store;
@@ -11,17 +12,16 @@ namespace BLL.Mapper
         public DomainProfile()
         {    
             // Create
-            CreateMap<CreateVM, Supplier>();
+            CreateMap<CreateCustomerVM, Customer>();
             // Edit
-            CreateMap<Supplier, EditVM>();
-            CreateMap<EditVM, Supplier>();
-
+            CreateMap<Customer, EditCustomerVM>();
+            CreateMap<EditCustomerVM, Customer>();
 
             // Create
-            CreateMap<CreateVM, Customer>();
+            CreateMap<CreateSupplierVM, Supplier>();
             // Edit
-            CreateMap<Customer, EditVM>();
-            CreateMap<EditVM, Customer>();
+            CreateMap<Supplier, EditSupplierVM>();
+            CreateMap<EditSupplierVM, Supplier>();
             
             // Create
             CreateMap<CreateProductCategoryVM, ProductCategory>();

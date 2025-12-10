@@ -17,93 +17,18 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">اسم المنتج</label>
-                    <input name="Name" value="@Model.Name" required
+                    <input asp-for="Name" value="@Model.Name" 
                            class="w-full h-14 px-5 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none transition-all" />
+                           <span asp-validation-for="Name"></span>
                 </div>
 
 
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">الوصف</label>
-                    <input name="Description" value="@Model.Description" type="text"
+                    <label asp-for="Description" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2"></label>
+                    <input asp-for="Description" value="@Model.Description" type="text"
                            class="w-full h-14 px-5 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none transition-all" />
                 </div>
-             @*    <div>
-                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                        فئة المنتج
-                    </label>
 
-                    <div class="relative">
-                        <select asp-for="CategoryId"
-                                class="w-full h-14 px-5 rounded-xl border-2 border-slate-300 dark:border-slate-600
-                       bg-white dark:bg-slate-700 text-slate-900 dark:text-white
-                       focus:border-emerald-500 focus:outline-none"
-                                style="appearance:none;-webkit-appearance:none;-moz-appearance:none;
-                       background-image:none;direction:rtl;"
-                                name="CategoryId">
-
-                            <option value="">فئة المنتج</option>
-
-                            @foreach (var category in ViewBag.Categories)
-                            {
-                                if (Model.CategoryId == category.Id)
-                                {
-                                    <option value="@category.Id" selected>@category.Name</option>
-                                }
-                                else
-                                {
-                                    <option value="@category.Id">@category.Name</option>
-                                }
-                            }
-                        </select>
-
-                        <!-- LEFT ARROW ICON -->
-                        <span class="material-symbols-outlined absolute top-1/2 left-4 -translate-y-1/2
-                     text-slate-500 dark:text-slate-400 pointer-events-none">
-                            keyboard_arrow_down
-                        </span>
-                    </div>
-
-                    <span asp-validation-for="CategoryId" class="text-red-500 text-sm mt-1"></span>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                        المخزن
-                    </label>
-
-                    <div class="relative">
-                        <select asp-for="StoreId"
-                                class="w-full h-14 px-5 rounded-xl border-2 border-slate-300 dark:border-slate-600
-                       bg-white dark:bg-slate-700 text-slate-900 dark:text-white
-                       focus:border-emerald-500 focus:outline-none"
-                                style="appearance:none;-webkit-appearance:none;-moz-appearance:none;
-                       background-image:none;direction:rtl;"
-                                name="StoreId">
-
-                            <option value="">المخزن</option>
-
-                            @foreach (var store in ViewBag.Stores)
-                            {
-                                if (Model.StoreId == store.Id)
-                                {
-                                    <option value="@store.Id" selected>@store.Name</option>
-                                }
-                                else
-                                {
-                                    <option value="@store.Id">@store.Name</option>
-                                }
-                            }
-                        </select>
-
-                        <!-- LEFT ARROW ICON -->
-                        <span class="material-symbols-outlined absolute top-1/2 left-4 -translate-y-1/2
-                     text-slate-500 dark:text-slate-400 pointer-events-none">
-                            keyboard_arrow_down
-                        </span>
-                    </div>
-
-                    <span asp-validation-for="StoreId" class="text-red-500 text-sm mt-1"></span>
-                </div> *@
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                         فئة المنتج
@@ -112,16 +37,16 @@
                     <div class="relative">
                         <select asp-for="CategoryId" asp-items="ViewBag.Categories"
                                 class="w-full h-14 px-5 rounded-xl border-2 border-slate-300 dark:border-slate-600
-               bg-white dark:bg-slate-700 text-slate-900 dark:text-white
-               focus:border-emerald-500 focus:outline-none"
+                                 bg-white dark:bg-slate-700 text-slate-900 dark:text-white
+                                 focus:border-emerald-500 focus:outline-none"
                                 style="appearance:none;-webkit-appearance:none;-moz-appearance:none;
-               background-image:none;direction:rtl;">
+                                 background-image:none;direction:rtl;">
                             <option value="">اختر فئة المنتج</option>
                         </select>
 
                         <!-- LEFT ARROW ICON -->
                         <span class="material-symbols-outlined absolute top-1/2 left-4 -translate-y-1/2
-             text-slate-500 dark:text-slate-400 pointer-events-none">
+                            text-slate-500 dark:text-slate-400 pointer-events-none">
                             keyboard_arrow_down
                         </span>
                     </div>
@@ -137,20 +62,19 @@
                     <div class="relative">
                         <select asp-for="StoreId" asp-items="ViewBag.Stores"
                                 class="w-full h-14 px-5 rounded-xl border-2 border-slate-300 dark:border-slate-600
-               bg-white dark:bg-slate-700 text-slate-900 dark:text-white
-               focus:border-emerald-500 focus:outline-none"
+                                bg-white dark:bg-slate-700 text-slate-900 dark:text-white
+                                 focus:border-emerald-500 focus:outline-none"
                                 style="appearance:none;-webkit-appearance:none;-moz-appearance:none;
-               background-image:none;direction:rtl;">
+                                background-image:none;direction:rtl;">
                             <option value="">اختر المخزن</option>
                         </select>
 
                         <!-- LEFT ARROW ICON -->
                         <span class="material-symbols-outlined absolute top-1/2 left-4 -translate-y-1/2
-             text-slate-500 dark:text-slate-400 pointer-events-none">
+                            text-slate-500 dark:text-slate-400 pointer-events-none">
                             keyboard_arrow_down
                         </span>
                     </div>
-
                     <span asp-validation-for="StoreId" class="text-red-500 text-sm mt-1"></span>
                 </div>
 

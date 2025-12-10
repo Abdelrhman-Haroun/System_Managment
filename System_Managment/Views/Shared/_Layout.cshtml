@@ -176,7 +176,6 @@
                         </summary>
                         <div class="dropdown-menu space-y-0">
                             <a asp-controller="Customer" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/customer/index") || full.Contains("/customer") && !full.Contains("/customer/create") && !full.Contains("/customer/rating") ? "active" : "")">قائمة العملاء</a>
-                            <a asp-controller="Customer" asp-action="Create" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/customer/create") ? "active" : "")">إضافة عميل جديد</a>
                             <a asp-controller="Customer" asp-action="Rating" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/customer/rating") ? "active" : "")">تقييم العملاء</a>
                         </div>
                     </details>
@@ -189,7 +188,6 @@
                         </summary>
                         <div class="dropdown-menu space-y-0">
                             <a asp-controller="Supplier" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/supplier/index") || full.Contains("/supplier") && !full.Contains("/supplier/create") && !full.Contains("/supplier/orders") ? "active" : "")">قائمة الموردين</a>
-                            <a asp-controller="Supplier" asp-action="Create" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/supplier/create") ? "active" : "")">إضافة مورد جديد</a>
                             <a asp-controller="Supplier" asp-action="Orders" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/supplier/orders") ? "active" : "")">طلبات التوريد</a>
                         </div>
                     </details>
@@ -202,9 +200,7 @@
                         </summary>
                         <div class="dropdown-menu space-y-0">
                             <a asp-controller="Product" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/product/index") || full.Contains("/product") && !full.Contains("/product/create") && !full.Contains("/productcategory") ? "active" : "")">قائمة المنتجات</a>
-                            <a asp-controller="Product" asp-action="Create" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/product/create") ? "active" : "")">إضافة منتج</a>
                             <a asp-controller="ProductCategory" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/productcategory/index") || full.Contains("/productcategory") && !full.Contains("/productcategory/create") ? "active" : "")">قائمة فئات المنتجات</a>
-                            <a asp-controller="ProductCategory" asp-action="Create" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/productcategory/create") ? "active" : "")">إضافة فئة منتج</a>
                         </div>
                     </details>
 
@@ -216,7 +212,6 @@
                         </summary>
                         <div class="dropdown-menu space-y-0">
                             <a asp-controller="store" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/store/index") || full.Contains("/store") && !full.Contains("/store/create") && !full.Contains("/store/orders") ? "active" : "")">قائمة المخازن</a>
-                            <a asp-controller="store" asp-action="Create" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/store/create") ? "active" : "")">إضافة مخزن</a>
                             <a asp-controller="store" asp-action="Movements" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/stock/movements") ? "active" : "")">حركات المخزون</a>
                             <a asp-controller="store" asp-action="Count" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/inventory/count") ? "active" : "")">الجرد</a>
                             <a asp-controller="store" asp-action="Levels" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/stock/levels") ? "active" : "")">مستويات التخزين</a>

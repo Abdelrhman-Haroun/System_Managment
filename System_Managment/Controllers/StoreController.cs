@@ -46,6 +46,8 @@ public class StoreController : Controller
     [HttpGet]
     public IActionResult Create()
     {
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            return PartialView("_CreatePartial");
         return View();
     }
 
@@ -53,22 +55,24 @@ public class StoreController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateStoreVM model)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            // Check duplicate name
-            var exists = await _service.GetByNameAsync(model.Name);
-            if (exists != null)
+            return Json(new
             {
-                ModelState.AddModelError("Name", "هذة الفئة موجودة بالفعل");
-                return View(model);
-            }
-
-            var Store = _mapper.Map<Store>(model);
-
-            await _service.CreateAsync(Store);
-            TempData["SuccessMessage"] = "تم إضافة المخزن بنجاح";
+                success = false,
+                message = string.Join(", ",
+                    ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))
+            });
         }
-        return View(model);
+
+        var exists = await _service.GetByNameAsync(model.Name);
+        if (exists != null)
+            return Json(new { success = false, message = "هذا المخزن موجود بالفعل" });
+
+        var Store = _mapper.Map<Store>(model);
+        await _service.CreateAsync(Store);
+        
+        return Json(new { success = true, message = "تم إضافة المخزن بنجاح" });
     }
     #endregion
 

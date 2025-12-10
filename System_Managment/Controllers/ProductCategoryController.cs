@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BLL.Services.IService;
 using BLL.ViewModels.ProductCategory;
+using BLL.ViewModels.ProductCategory;
 using DAL.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -46,6 +47,8 @@ public class ProductCategoryController : Controller
     [HttpGet]
     public IActionResult Create()
     {
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            return PartialView("_CreatePartial");
         return View();
     }
 
@@ -53,22 +56,24 @@ public class ProductCategoryController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateProductCategoryVM model)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            // Check duplicate name
-            var exists = await _service.GetByNameAsync(model.Name);
-            if (exists != null)
+            return Json(new
             {
-                ModelState.AddModelError("Name", "هذة الفئة موجودة بالفعل");
-                return View(model);
-            }
-
-            var ProductCategory = _mapper.Map<ProductCategory>(model);
-
-            await _service.CreateAsync(ProductCategory);
-            TempData["SuccessMessage"] = "تم إضافة فئة المنتج بنجاح";
+                success = false,
+                message = string.Join(", ",
+                    ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))
+            });
         }
-        return View(model);
+
+        var exists = await _service.GetByNameAsync(model.Name);
+        if (exists != null)
+            return Json(new { success = false, message = "هذة الفئة موجودة بالفعل" });
+
+        var ProductCategory = _mapper.Map<ProductCategory>(model);
+        await _service.CreateAsync(ProductCategory);
+
+        return Json(new { success = true, message = "تم إضافة الفئة بنجاح" });
     }
     #endregion
 

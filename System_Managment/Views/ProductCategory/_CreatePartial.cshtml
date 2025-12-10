@@ -1,0 +1,97 @@
+﻿@model CreateProductCategoryVM
+
+<div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-2xl mx-auto max-h-screen overflow-y-auto">
+    <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">إضافة فئة منتج جديدة</h2>
+        <button type="button" class="closeDialog text-slate-700 hover:text-red-600 transition-colors">
+            <span class="material-symbols-outlined text-3xl">close</span>
+        </button>
+    </div>
+
+    <div class="p-8 pt-6">
+        <form id="createUserForm" class="space-y-8">
+            @Html.AntiForgeryToken()
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- NAME -->
+                <div>
+                    <label class="block text-sm font-semibold dark:text-slate-300 mb-2">الاسم الكامل</label>
+                    <input asp-for="Name"
+                           class="form-input w-full h-14 px-5 rounded-xl border dark:border-slate-600 bg-white
+                                  dark:bg-slate-700 text-slate-900 dark:text-white focus:border-emerald-700 focus:outline-none transition-all" />
+                    <span asp-validation-for="Name"
+                          class="text-red-600 text-sm font-medium mt-1 block"></span>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label class="block text-sm font-semibold dark:text-slate-300 mb-2">الوصف</label>
+                    <input asp-for="Description"
+                           class="form-input w-full h-14 px-5 rounded-xl border dark:border-slate-600 bg-white
+                                  dark:bg-slate-700 text-slate-900 dark:text-white focus:border-emerald-700 focus:outline-none transition-all" />
+                    <span asp-validation-for="Description"
+                          class="text-red-600 text-sm font-medium mt-1 block"></span>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t dark:border-slate-700">
+                <button type="submit"
+                        class="flex-1 h-14 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl shadow-lg
+                               transition-all flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">save</span>
+                    حفظ الفئة منتج
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+
+      // 3. إرسال النموذج عبر AJAX + SweetAlert2
+    $('#createUserForm').on('submit', function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        $.ajax({
+            url: '@Url.Action("Create", "ProductCategory")',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم بنجاح!',
+                        text: 'تم اضافه فئة المنتج بنجاح.',
+                        confirmButtonText: 'حسناً',
+                        confirmButtonColor: '#10b981',
+                    }).then(() => {
+                        location.reload();
+                    });
+
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطأ',
+                        text: res.message || 'حدث خطأ غير متوقع.',
+                        confirmButtonText: 'حسناً',
+                        confirmButtonColor: '#ef4444',
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ في الاتصال',
+                    text: 'حدث خطأ أثناء الاتصال بالخادم.',
+                    confirmButtonText: 'حسناً',
+                    confirmButtonColor: '#ef4444',
+                });
+            }
+          });
+    });
+
+</script>

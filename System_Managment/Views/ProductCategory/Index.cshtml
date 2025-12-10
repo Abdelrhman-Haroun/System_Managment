@@ -52,7 +52,7 @@
                         }
                     </form>
 
-                    <a asp-action="Create" asp-controller="ProductCategory" class="openRegisterDialog hidden sm:flex items-center justify-center gap-2 h-14 px-7 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg hover:shadow-xl transition-all whitespace-nowrap">
+                    <a href="@Url.Action("Create")" class="openCreateDialog hidden sm:flex items-center justify-center gap-2 h-14 px-7 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg hover:shadow-xl transition-all whitespace-nowrap">
                         <span class="material-symbols-outlined text-xl">add</span>
                         إضافة فئة منتج
                     </a>
@@ -194,7 +194,7 @@
 
 <!-- زر إضافة عائم للموبايل -->
 <div class="fixed bottom-6 end-6 z-50 sm:hidden">
-    <a asp-action="Create" asp-controller="ProductCategory" class="flex size-16 items-center justify-center rounded-full bg-primary text-white shadow-2xl hover:scale-110 transition-all">
+    <a href="@Url.Action("Create")" class="openCreateDialog flex size-16 items-center justify-center rounded-full bg-primary text-white shadow-2xl hover:scale-110 transition-all">
         <span class="material-symbols-outlined text-3xl">add</span>
     </a>
 </div>
@@ -243,8 +243,12 @@
             openDialog(this.dataset.url || this.href);
         });
 
-            // فتح Details Dialog
         $(document).on('click', '.openDetailsDialog', function (e) {
+            e.preventDefault();
+            openDialog($(this).data('url') || this.href);
+        });        
+        
+        $(document).on('click', '.openCreateDialog', function (e) {
             e.preventDefault();
             openDialog($(this).data('url') || this.href);
         });

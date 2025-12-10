@@ -83,7 +83,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-500 dark:text-gray-400">تاريخ الإنشاء</p>
-                        <p class="font-semibold text-[#121613] dark:text-white break-words">@Model.CreatedAt</p>
+                        <p class="font-semibold text-[#121613] dark:text-white break-words">@Model.CreatedAt.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("ar-EG"))</p>
                     </div>
                 </div>
             </div>

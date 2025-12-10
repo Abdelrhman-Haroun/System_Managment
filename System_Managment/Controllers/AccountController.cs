@@ -48,7 +48,7 @@ namespace System_Managment.Controllers
             }
 
             // Order by creation date
-            var userList = await users.OrderBy(u => u.CreatedAt).ToListAsync();
+            var userList = await users.OrderByDescending(u => u.CreatedAt).ToListAsync();
 
             ViewBag.SearchTerm = searchTerm;
             ViewBag.CurrentPage = page;

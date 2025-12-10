@@ -47,32 +47,37 @@ public class SupplierController : Controller
     [HttpGet]
     public IActionResult Create()
     {
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            return PartialView("_CreatePartial");
+
         return View();
     }
 
+
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(CreateVM model)
+    public async Task<IActionResult> Create(CreateSupplierVM model)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            // Default balance = 0 if empty
-            model.Balance ??= 0;
-
-            // Check duplicate name
-            var exists = await _service.GetByNameAsync(model.Name);
-            if (exists != null)
+            return Json(new
             {
-                ModelState.AddModelError("Name", "هذا المورد موجود بالفعل");
-                return View(model);
-            }
-
-            var supplier = _mapper.Map<Supplier>(model);
-
-            await _service.CreateAsync(supplier);
-            TempData["SuccessMessage"] = "تم إضافة المورد بنجاح";
+                success = false,
+                message = string.Join(", ",
+                    ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))
+            });
         }
-        return View(model);
+
+        model.Balance ??= 0;
+
+        var exists = await _service.GetByNameAsync(model.Name);
+        if (exists != null)
+            return Json(new { success = false, message = "هذا المورد موجود بالفعل" });
+
+        var Supplier = _mapper.Map<Supplier>(model);
+        await _service.CreateAsync(Supplier);
+
+        return Json(new { success = true, message = "تم إضافة المورد بنجاح" });
     }
     #endregion
 
@@ -84,7 +89,7 @@ public class SupplierController : Controller
         if (supplier == null)
             return NotFound();
 
-        var vm = _mapper.Map<EditVM>(supplier);
+        var vm = _mapper.Map<EditSupplierVM>(supplier);
 
         if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             return PartialView("_EditPartial", vm);
@@ -94,7 +99,7 @@ public class SupplierController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(EditVM model)
+    public async Task<IActionResult> Edit(EditSupplierVM model)
     {
         if (!ModelState.IsValid)
             return Json(new { success = false, message = "بيانات غير صحيحة: " + string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)) });

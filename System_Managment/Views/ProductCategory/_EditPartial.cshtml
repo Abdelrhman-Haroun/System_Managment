@@ -17,17 +17,17 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">الاسم</label>
-                    <input name="Name" value="@Model.Name" required
+                    <input asp-for="Name" value="@Model.Name"
                            class="w-full h-14 px-5 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none transition-all" />
+                           <span asp-validation-for="Name"></span>
                 </div>
 
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">الوصف</label>
-                    <input name="Description" value="@Model.Description" type="text" required
+                    <input asp-for="Description" value="@Model.Description" type="text"
                            class="w-full h-14 px-5 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none transition-all" />
+                           <span asp-validation-for="Description"></span>
                 </div>
-
-  
             </div>
 
             <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-200 dark:border-slate-700">
