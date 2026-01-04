@@ -1,0 +1,376 @@
+﻿@model RegisterationVM
+
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <!-- Dialog Header -->
+        <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+            <h2 class="text-2xl font-black text-slate-900 dark:text-white">
+                إنشاء حساب جديد
+            </h2>
+            <button type="button" class="closeDialog text-slate-500 hover:text-red-600 transition">
+                <span class="material-symbols-outlined text-3xl">close</span>
+            </button>
+        </div>
+
+        <div class="p-8">
+            <form id="registerForm"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="grid md:grid-cols-2 gap-8"
+                  novalidate>
+                @Html.AntiForgeryToken()
+
+                <!-- Left Side: Form Fields -->
+                <div class="flex flex-col justify-center space-y-5 order-2 md:order-1">
+                    <!-- Full Name -->
+                    <div class="relative">
+                        <span class="material-symbols-outlined pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-slate-500 dark:text-slate-400">person</span>
+                        <input asp-for="FullName"
+                               class="form-input peer block h-14 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70 py-3 pl-12 pr-4 text-base text-slate-900 dark:text-white focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all placeholder-transparent"
+                               id="full-name-dialog"
+                               placeholder="الاسم الكامل"
+                               type="text" />
+                        <label for="full-name-dialog"
+                               class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 transition-all duration-200
+                                      peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base
+                                      peer-focus:top-2.5 peer-focus:text-xs peer-focus:text-primary
+                                      peer-[&:not(:placeholder-shown)]:top-2.5 peer-[&:not(:placeholder-shown)]:text-xs">
+                            الاسم الكامل
+                        </label>
+                        <span asp-validation-for="FullName" class="text-red-600 text-sm mt-1 block"></span>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="relative">
+                        <span class="material-symbols-outlined pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-slate-500 dark:text-slate-400">mail</span>
+                        <input asp-for="Email"
+                               class="form-input peer block h-14 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70 py-3 pl-12 pr-4 text-base text-slate-900 dark:text-white focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all placeholder-transparent"
+                               id="email-dialog"
+                               placeholder="البريد الإلكتروني"
+                               type="email" />
+                        <label for="email-dialog"
+                               class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 transition-all duration-200
+                                      peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base
+                                      peer-focus:top-2.5 peer-focus:text-xs peer-focus:text-primary
+                                      peer-[&:not(:placeholder-shown)]:top-2.5 peer-[&:not(:placeholder-shown)]:text-xs">
+                            البريد الإلكتروني
+                        </label>
+                        <span asp-validation-for="Email" class="text-red-600 text-sm mt-1 block"></span>
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div class="relative">
+                        <span class="material-symbols-outlined pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-slate-500 dark:text-slate-400">phone</span>
+                        <input asp-for="PhoneNumber"
+                               class="form-input peer block h-14 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70 py-3 pl-12 pr-4 text-base text-slate-900 dark:text-white focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all placeholder-transparent"
+                               id="phone-dialog"
+                               dir="rtl"
+                               placeholder="رقم الهاتف"
+                               type="tel" />
+                        <label for="phone-dialog"
+                               class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 transition-all duration-200
+                                      peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base
+                                      peer-focus:top-2.5 peer-focus:text-xs peer-focus:text-primary
+                                      peer-[&:not(:placeholder-shown)]:top-2.5 peer-[&:not(:placeholder-shown)]:text-xs">
+                            رقم الهاتف
+                        </label>
+                        <span asp-validation-for="PhoneNumber" class="text-red-600 text-sm mt-1 block"></span>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="relative">
+                        <input asp-for="Password"
+                               class="form-input peer block h-14 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70 py-3 pl-12 pr-4 text-base text-slate-900 dark:text-white focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all placeholder-transparent"
+                               id="password-dialog"
+                               placeholder="كلمة المرور"
+                               type="password" />
+                        <label for="password-dialog"
+                               class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 transition-all duration-200
+                                      peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base
+                                      peer-focus:top-2.5 peer-focus:text-xs peer-focus:text-primary
+                                      peer-[&:not(:placeholder-shown)]:top-2.5 peer-[&:not(:placeholder-shown)]:text-xs">
+                            كلمة المرور
+                        </label>
+                        <button type="button" onclick="togglePasswordVisibility('password-dialog', this)"
+                                class="absolute top-1/2 left-4 -translate-y-1/2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 z-10">
+                            <span class="material-symbols-outlined">visibility_off</span>
+                        </button>
+                        <span asp-validation-for="Password" class="text-red-600 text-sm mt-1 block"></span>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="relative">
+                        <input asp-for="ConfirmPassword"
+                               class="form-input peer block h-14 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70 py-3 pl-12 pr-4 text-base text-slate-900 dark:text-white focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all placeholder-transparent"
+                               id="confirm-password-dialog"
+                               placeholder="تأكيد كلمة المرور"
+                               type="password" />
+                        <label for="confirm-password-dialog"
+                               class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 transition-all duration-200
+                                      peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base
+                                      peer-focus:top-2.5 peer-focus:text-xs peer-focus:text-primary
+                                      peer-[&:not(:placeholder-shown)]:top-2.5 peer-[&:not(:placeholder-shown)]:text-xs">
+                            تأكيد كلمة المرور
+                        </label>
+                        <button type="button" onclick="togglePasswordVisibility('confirm-password-dialog', this)"
+                                class="absolute top-1/2 left-4 -translate-y-1/2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 z-10">
+                            <span class="material-symbols-outlined">visibility_off</span>
+                        </button>
+                        <span asp-validation-for="ConfirmPassword" class="text-red-600 text-sm mt-1 block"></span>
+                    </div>
+
+                    <!-- User Role -->
+                    <div class="relative">
+                        <select asp-for="UserRole"
+                                class="form-select peer block h-14 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70 pt-6 pb-1 pl-12 pr-4 text-base text-slate-900 dark:text-white focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all"
+                                style="appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: none;"
+                                id="user-role-dialog">
+                            <option value="" disabled selected></option>
+                            <option value="SuperAdmin">مسؤول النظام</option>
+                            <option value="Admin">مشرف</option>
+                            <option value="Employee">موظف</option>
+                        </select>
+                        <label for="user-role-dialog"
+                               class="pointer-events-none absolute top-2.5 right-4 text-xs text-slate-500 dark:text-slate-400">
+                            درجة المستخدم
+                        </label>
+                        <span class="material-symbols-outlined pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-slate-500 dark:text-slate-400">
+                            keyboard_arrow_down
+                        </span>
+                        <span asp-validation-for="UserRole" class="text-red-600 text-sm mt-1 block"></span>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex gap-4 pt-4">
+                        <button type="submit"
+                                class="flex-1 h-14 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl flex items-center justify-center shadow-lg transition">
+                            <span class="material-symbols-outlined ml-2">check</span>
+                            إنشاء الحساب
+                        </button>
+                        <button type="button" class="closeDialog flex-1 h-14 border-2 border-slate-300 dark:border-slate-700 rounded-xl font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                            إلغاء
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Side: Profile Picture -->
+                <div class="flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900/30 p-8 rounded-2xl order-1 md:order-2">
+                    <p class="text-2xl font-bold text-slate-900 dark:text-white mb-6">صورة شخصية</p>
+                    <div class="relative group">
+                        <label class="cursor-pointer block" for="ProfilePictureDialog">
+                            <div id="profile-picture-preview" class="h-48 w-48 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center border-4 border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden">
+                                <img id="preview-image" class="hidden w-full h-full object-cover" src="" alt="Preview" />
+                                <span id="default-icon" class="material-symbols-outlined text-7xl text-slate-400 dark:text-slate-600">person</span>
+                            </div>
+                            <div class="absolute bottom-2 left-2 h-14 w-14 rounded-full bg-primary text-white flex items-center justify-center shadow-lg ring-4 ring-white dark:ring-slate-800 group-hover:scale-110 transition">
+                                <span class="material-symbols-outlined text-3xl">photo_camera</span>
+                            </div>
+                            <input asp-for="ProfilePicture" id="ProfilePictureDialog" type="file" accept="image/*" class="hidden" />
+                        </label>
+                    </div>
+                    <p class="mt-6 text-center text-sm text-slate-600 dark:text-slate-400 max-w-xs">
+                        انقر لتحميل صورة شخصية. يُفضل استخدام صورة مربعة بحجم 500×500 بكسل
+                    </p>
+                    <span asp-validation-for="ProfilePicture" class="text-red-600 text-sm mt-2 block"></span>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Load validation scripts if not already loaded -->
+<script>
+    // Function to load script dynamically
+    function loadScript(src) {
+        return new Promise((resolve, reject) => {
+            // Check if already loaded
+            if (document.querySelector(`script[src="${src}"]`)) {
+                resolve();
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    // Load validation scripts if not already loaded
+    (async function() {
+        try {
+            // Check if jQuery Validation is loaded
+            if (typeof $.validator === 'undefined') {
+                await loadScript('https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js');
+            }
+            // Check if Unobtrusive Validation is loaded
+            if (typeof $.validator.unobtrusive === 'undefined') {
+                await loadScript('https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@4.0.0/dist/jquery.validate.unobtrusive.min.js');
+            }
+
+            // Initialize validation after scripts are loaded
+            initializeDialog();
+        } catch (error) {
+            console.error('Error loading validation scripts:', error);
+            initializeDialog(); // Try to initialize anyway
+        }
+    })();
+
+    function initializeDialog() {
+        // Close dialog
+        document.querySelectorAll('.closeDialog').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const container = document.getElementById('dialogContainer');
+                if (container) container.remove();
+            });
+        });
+
+        // Profile picture preview
+        const profileInput = document.getElementById('ProfilePictureDialog');
+        if (profileInput) {
+            profileInput.addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                const preview = document.getElementById('preview-image');
+                const defaultIcon = document.getElementById('default-icon');
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        preview.src = e.target.result;
+                        preview.classList.remove('hidden');
+                        defaultIcon.classList.add('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.src = '';
+                    preview.classList.add('hidden');
+                    defaultIcon.classList.remove('hidden');
+                }
+            });
+        }
+
+        // Parse validation attributes
+        if (typeof $.validator !== 'undefined' && typeof $.validator.unobtrusive !== 'undefined') {
+            $.validator.unobtrusive.parse('#registerForm');
+
+            // Enhance validation visuals
+            $.validator.setDefaults({
+                highlight: function (element) {
+                    $(element).addClass('border-red-500');
+                },
+                unhighlight: function (element) {
+                    $(element).removeClass('border-red-500');
+                }
+            });
+        }
+
+        // Form submission with full client & server validation
+        $('#registerForm').on('submit', function (e) {
+            e.preventDefault();
+
+            console.log('Form submitted'); // Debug log
+
+            // Clear previous errors and red borders
+            $('span[data-valmsg-for]').text('');
+            $('input, select').removeClass('border-red-500');
+
+            const form = this;
+            const formData = new FormData(form);
+
+            // Client-side validation (jQuery Unobtrusive) if available
+            if (typeof $.validator !== 'undefined' && !$(form).valid()) {
+                console.log('Client-side validation failed'); // Debug log
+                return; // Stop if invalid
+            }
+
+            console.log('Sending AJAX request...'); // Debug log
+
+            $.ajax({
+                url: '@Url.Action("Register", "Account")',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    console.log('Response received:', res); // Debug log
+
+                    if (res.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'تم بنجاح!',
+                            text: res.message || 'تم إنشاء الحساب بنجاح',
+                            confirmButtonText: 'حسناً'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        let hasFieldErrors = false;
+
+                        // Display server-side validation errors under each field
+                        if (res.errors) {
+                            for (const key in res.errors) {
+                                const messages = res.errors[key];
+                                const message = Array.isArray(messages) ? messages[0] : messages;
+
+                                // Skip 'General' errors - we'll show them as a SweetAlert
+                                if (key.toLowerCase() === 'general') {
+                                    Swal.fire('خطأ', message, 'error');
+                                    continue;
+                                }
+
+                                // Try multiple selectors to find the validation span
+                                let span = $(`span[data-valmsg-for="${key}"]`);
+                                if (!span.length) {
+                                    span = $(`span[asp-validation-for="${key}"]`);
+                                }
+                                if (!span.length) {
+                                    span = $(`#${key}`).siblings('span.text-red-600');
+                                }
+
+                                if (span.length) {
+                                    span.text(message);
+                                    span.closest('.relative').find('input, select').addClass('border-red-500');
+                                    hasFieldErrors = true;
+                                } else {
+                                    console.log(`Could not find validation span for: ${key}`);
+                                }
+                            }
+                        }
+
+                        // Show general error message if provided and no field errors were shown
+                        if (res.message && !hasFieldErrors) {
+                            Swal.fire('خطأ', res.message, 'error');
+                        }
+
+                        // Fallback if nothing was displayed
+                        if (!res.errors && !res.message) {
+                            Swal.fire('خطأ', 'حدث خطأ أثناء التسجيل', 'error');
+                        }
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('AJAX Error:', status, error, xhr); // Debug log
+                    let msg = 'حدث خطأ أثناء الاتصال بالخادم';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        msg = xhr.responseJSON.message;
+                    } else if (xhr.responseText) {
+                        console.log('Response text:', xhr.responseText);
+                    }
+                    Swal.fire('خطأ', msg, 'error');
+                }
+            });
+        });
+    }
+
+    // Toggle password visibility
+    function togglePasswordVisibility(inputId, button) {
+        const input = document.getElementById(inputId);
+        const icon = button.querySelector('.material-symbols-outlined');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.textContent = 'visibility';
+        } else {
+            input.type = 'password';
+            icon.textContent = 'visibility_off';
+        }
+    }
+</script>

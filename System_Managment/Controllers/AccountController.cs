@@ -117,52 +117,124 @@ namespace System_Managment.Controllers
         [HttpGet]
         public IActionResult Register()
         {
-            return View();
+            // When requested via AJAX (e.g., for modal dialog)
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest" ||
+                Request.Headers.Accept.Any(h => h?.Contains("application/json") == true))
+            {
+                return PartialView("_RegisterDialog", new RegisterationVM());
+            }
+
+            // Regular full page request
+            return View(new RegisterationVM());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterationVM model)
         {
-            string wwwRootPath = _hostingEnvironment.WebRootPath;
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var username = await _userManager.Users.AnyAsync(u => u.UserName == model.Email);
-                var fullName = await _userManager.Users.AnyAsync(u => u.FullName == model.FullName);
-
-                if (fullName)
-                    ModelState.AddModelError("FullName", "الاسم الكامل مستخدم من قبل");
-                else if(username)
-                    ModelState.AddModelError("Email", "البريد الإلكتروني مستخدم من قبل");
-
-                else
+                return Json(new
                 {
-                    var user = new ApplicationUser
-                    {
-                        UserName = model.Email,
-                        Email = model.Email,
-                        FullName = model.FullName,
-                        PhoneNumber = model.PhoneNumber,
-                        ProfilePicture = await _fileUploader.UploadImageAsync(model.ProfilePicture, wwwRootPath)
-                    };
-
-                    var result = await _userManager.CreateAsync(user, model.Password);
-
-                    if (result.Succeeded)
-                    {
-                        await _userManager.AddToRoleAsync(user, model.UserRole);
-                        TempData["SuccessMessage"] = "تم إنشاء الحساب بنجاح";
-                        //return RedirectToAction("Index");
-                    }
-
-                    foreach (var error in result.Errors)
-                        ModelState.AddModelError("", error.Description);
-
-                    TempData["RegisterError"] = "حدث خطأ أثناء إنشاء الحساب";
-                }
+                    success = false,
+                    errors = ModelState
+                        .Where(x => x.Value.Errors.Any())
+                        .ToDictionary(
+                            x => x.Key,
+                            x => x.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                        )
+                });
             }
-            return View(model);
+
+            try
+            {
+                if (await _userManager.Users.AnyAsync(u => u.Email == model.Email))
+                {
+                    return Json(new { success = false, errors = new { Email = new[] { "البريد الإلكتروني مستخدم من قبل" } } });
+                }
+
+                if (await _userManager.Users.AnyAsync(u => u.FullName == model.FullName))
+                {
+                    return Json(new { success = false, errors = new { FullName = new[] { "الاسم الكامل مستخدم من قبل" } } });
+                }
+
+                string profilePicturePath = null;
+                if (model.ProfilePicture != null && model.ProfilePicture.Length > 0)
+                {
+                    try
+                    {
+                        profilePicturePath = await _fileUploader.UploadImageAsync(
+                            model.ProfilePicture,
+                            _hostingEnvironment.WebRootPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Image upload error: {ex.Message}");
+                        return Json(new { success = false, errors = new { ProfilePicture = new[] { "فشل رفع الصورة، تأكد من نوع وحجم الملف" } } });
+                    }
+                }
+
+                var user = new ApplicationUser
+                {
+                    UserName = model.Email,
+                    Email = model.Email,
+                    FullName = model.FullName,
+                    PhoneNumber = model.PhoneNumber,
+                    ProfilePicture = profilePicturePath,
+                    CreatedAt = DateTime.UtcNow,
+                };
+
+                var createResult = await _userManager.CreateAsync(user, model.Password);
+
+                if (!createResult.Succeeded)
+                {
+                    var identityErrors = createResult.Errors
+                        .GroupBy(e => e.Code.Contains("Password") ? "Password" :
+                                      e.Code.Contains("Email") ? "Email" :
+                                      e.Code.Contains("User") ? "Email" : "General")
+                        .ToDictionary(
+                            g => g.Key,
+                            g => g.Select(e => e.Description).ToArray()
+                        );
+
+                    return Json(new { success = false, errors = identityErrors });
+                }
+
+                var roleResult = await _userManager.AddToRoleAsync(user, model.UserRole);
+                if (!roleResult.Succeeded)
+                {
+                    await _userManager.DeleteAsync(user);
+                    return Json(new
+                    {
+                        success = false,
+                        errors = new { UserRole = new[] { "فشل تعيين الدور، حاول مرة أخرى" } }
+                    });
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = "تم إنشاء الحساب بنجاح"
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Registration error: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+
+                return Json(new
+                {
+                    success = false,
+                    message = "حدث خطأ غير متوقع. يرجى المحاولة لاحقًا."
+                });
+            }
         }
+
         #endregion
 
         #region Logout

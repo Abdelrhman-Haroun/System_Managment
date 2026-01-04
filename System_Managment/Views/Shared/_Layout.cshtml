@@ -268,7 +268,6 @@
                         </summary>
                         <div class="dropdown-menu space-y-0">
                             <a asp-controller="Account" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/account/index") || (full.Contains("/account") && !full.Contains("/account/register") && !full.Contains("/account/activity") && !full.Contains("/account/changepassword")) ? "active" : "")">قائمة المستخدمين</a>
-                            <a asp-controller="Account" asp-action="Register" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/account/register") ? "active" : "")">إضافة مستخدم جديد</a>
                             <a asp-controller="Account" asp-action="Activity" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/account/activity") ? "active" : "")">سجل النشاط</a>
                         </div>
                     </details>
@@ -420,7 +419,17 @@
             });
         });
     </script>
+    <!-- jQuery (must be first) -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- jQuery Validation -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+
+    <!-- jQuery Unobtrusive Validation -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@4.0.0/dist/jquery.validate.unobtrusive.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

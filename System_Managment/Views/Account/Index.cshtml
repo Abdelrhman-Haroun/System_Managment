@@ -257,7 +257,7 @@
 
 <!-- زر إضافة عائم للموبايل -->
 <div class="fixed bottom-6 end-6 z-50 sm:hidden">
-    <a asp-action="Register" asp-controller="Account" class="flex size-16 items-center justify-center rounded-full bg-primary text-white shadow-2xl hover:scale-110 transition-all">
+    <a asp-action="Register" asp-controller="Account" class="openRegisterDialog flex size-16 items-center justify-center rounded-full bg-primary text-white shadow-2xl hover:scale-110 transition-all">
         <span class="material-symbols-outlined text-3xl">add</span>
     </a>
 </div>
@@ -306,8 +306,12 @@
             openDialog(this.dataset.url || this.href);
         });
 
-            // فتح Details Dialog
         $(document).on('click', '.openDetailsDialog', function (e) {
+            e.preventDefault();
+            openDialog($(this).data('url') || this.href);
+        });
+
+        $(document).on('click', '.openRegisterDialog', function (e) {
             e.preventDefault();
             openDialog($(this).data('url') || this.href);
         });
