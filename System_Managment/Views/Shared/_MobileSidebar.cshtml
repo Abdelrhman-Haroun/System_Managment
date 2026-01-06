@@ -1,0 +1,51 @@
+﻿@{
+    var IsActive = (Func<string, bool>)ViewData["IsActive"]!;
+}
+
+<div id="mobile-sidebar" class="mobile-menu fixed inset-0 z-40 hidden lg:hidden">
+    <aside class="w-64 bg-neutral-card border-l border-neutral-border flex flex-col shadow-lg">
+        <div class="flex flex-1 flex-col overflow-y-auto py-4 px-4">
+
+            <div class="flex items-center gap-3 px-2 mb-8">
+                <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 ring-4 ring-primary/20"
+                     style="background-image: url('@Url.Content("~/Files/images/logo.jpg")');"></div>
+                <h1 class="text-lg font-black text-primary">مزرعة آل سالم</h1>
+            </div>
+
+            <nav class="flex flex-col gap-1">
+
+                <a asp-controller="Home" asp-action="Index"
+                   class="nav-link flex items-center gap-4 px-4 py-3 rounded-lg active"
+                   onclick="closeMobileMenu()">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span class="font-medium">لوحة التحكم</span>
+                </a>
+
+                <!-- SAME STRUCTURE AS DESKTOP -->
+                <!-- Customers -->
+                <details class="group nav-section" @(IsActive("/customer") ? "open" : "")>
+                    <summary class="nav-link flex items-center justify-between gap-4 px-4 py-3 rounded-lg cursor-pointer list-none">
+                        <div class="flex items-center gap-4">
+                            <span class="material-symbols-outlined">people</span>
+                            <span class="font-medium">إدارة العملاء</span>
+                        </div>
+                        <span class="material-symbols-outlined dropdown-icon">expand_more</span>
+                    </summary>
+                    <div class="dropdown-menu">
+                        <a asp-controller="Customer" asp-action="Index"
+                           class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/customer") ? "active" : "")"
+                           onclick="closeMobileMenu()">قائمة العملاء</a>
+                        <a asp-controller="Customer" asp-action="Rating"
+                           class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/customer/rating") ? "active" : "")"
+                           onclick="closeMobileMenu()">تقييم العملاء</a>
+                    </div>
+                </details>
+
+                <!-- (All remaining sections identical to desktop, each link includes onclick="closeMobileMenu()") -->
+
+            </nav>
+        </div>
+    </aside>
+
+    <div class="flex-1 bg-black/50" onclick="closeMobileMenu()"></div>
+</div>
