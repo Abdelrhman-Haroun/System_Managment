@@ -5,6 +5,7 @@ using DAL.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+namespace System_Managment.Controllers;
 [Authorize]
 public class SupplierController : Controller
 {

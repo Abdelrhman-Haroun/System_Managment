@@ -5,40 +5,37 @@ using DAL.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+namespace System_Managment.Controllers;
+
 [Authorize]
 public class StoreController : Controller
 {
-    #region ctor
     private readonly IStoreService _service;
     private readonly IMapper _mapper;
-    
+
     public StoreController(IStoreService service, IMapper mapper)
     {
         _service = service;
         _mapper = mapper;
     }
-    #endregion
 
-    #region All
+    #region Index
     public async Task<IActionResult> Index(string searchTerm, int page = 1)
     {
-        var Stores = await _service.GetAllAsync(s=>!s.IsDeleted);
-        // Filter by search term if provided
-        if (!string.IsNullOrWhiteSpace(searchTerm))
+        try
         {
-            searchTerm = searchTerm.Trim().ToLower();
-            Stores = Stores.Where(u =>
-                u.Name.ToLower().Contains(searchTerm) 
-            );
+            var Stores = await _service.GetAllAsync(searchTerm);
+
+            ViewBag.SearchTerm = searchTerm;
+            ViewBag.CurrentPage = page;
+
+            return View(Stores);
         }
-      
-        // Order by creation date
-        var StoresList = Stores.OrderBy(u => u.CreatedAt).ToList();
-
-        ViewBag.SearchTerm = searchTerm;
-        ViewBag.CurrentPage = page;
-
-        return View(StoresList);
+        catch (Exception ex)
+        {
+            TempData["Error"] = "حدث خطأ أثناء تحميل البيانات";
+            return View(new List<Store>());
+        }
     }
     #endregion
 
@@ -48,6 +45,7 @@ public class StoreController : Controller
     {
         if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             return PartialView("_CreatePartial");
+
         return View();
     }
 
@@ -55,24 +53,35 @@ public class StoreController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateStoreVM model)
     {
-        if (!ModelState.IsValid)
+        try
         {
+            if (!ModelState.IsValid)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = string.Join(", ",
+                        ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))
+                });
+            }
+
+            var Store = await _service.CreateAsync(model);
+
             return Json(new
             {
-                success = false,
-                message = string.Join(", ",
-                    ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))
+                success = true,
+                message = "تم إضافة المخزن بنجاح",
+                data = Store
             });
         }
-
-        var exists = await _service.GetByNameAsync(model.Name);
-        if (exists != null)
-            return Json(new { success = false, message = "هذا المخزن موجود بالفعل" });
-
-        var Store = _mapper.Map<Store>(model);
-        await _service.CreateAsync(Store);
-        
-        return Json(new { success = true, message = "تم إضافة المخزن بنجاح" });
+        catch (InvalidOperationException ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = "حدث خطأ أثناء إضافة المخزن" });
+        }
     }
     #endregion
 
@@ -80,72 +89,115 @@ public class StoreController : Controller
     [HttpGet]
     public async Task<IActionResult> Edit(int id)
     {
-        var Store = await _service.GetByIdAsync(id);
-        if (Store == null)
+        try
+        {
+            var Store = await _service.GetByIdAsync(id);
+            if (Store == null)
+                return NotFound();
+
+            var vm = _mapper.Map<EditStoreVM>(Store);
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return PartialView("_EditPartial", vm);
+
+            return View(vm);
+        }
+        catch (Exception ex)
+        {
             return NotFound();
-
-        var vm = _mapper.Map<EditStoreVM>(Store);
-
-        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            return PartialView("_EditPartial", vm);
-
-        return View(vm);
+        }
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(EditStoreVM model)
     {
-        if (!ModelState.IsValid)
-            return Json(new { success = false, message = "بيانات غير صحيحة: " + string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)) });
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "بيانات غير صحيحة: " + string.Join(", ",
+                        ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))
+                });
+            }
 
-        // Get the existing Store (tracked by EF)
-        var Store = await _service.GetByIdAsync(model.Id);
-        if (Store == null)
-            return Json(new { success = false, message = "المخزن غير موجودة" });
+            var Store = await _service.UpdateAsync(model);
 
-        // Check duplicate name
-        var exists = await _service.GetByNameAsync(model.Name);
-        if (exists != null && exists.Id != model.Id)
-            return Json(new { success = false, message = "هذا الاسم مستخدم من قبل" });
-
-        // Update tracked entity
-        Store.Name = model.Name;
-        Store.Description = model.Description;
-     
-        await _service.UpdateAsync(Store);
-
-        return Json(new { success = true, message = "تم الحفظ بنجاح" });
+            return Json(new
+            {
+                success = true,
+                message = "تم الحفظ بنجاح",
+                data = Store
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = "حدث خطأ أثناء تحديث المخزن" });
+        }
     }
-
-
     #endregion
 
     #region Details
     [HttpGet]
     public async Task<IActionResult> Details(int id)
     {
-        var Store = await _service.GetByIdAsync(id);
-        if (Store == null)
+        try
+        {
+            var Store = await _service.GetByIdAsync(id);
+            if (Store == null)
+                return NotFound();
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return PartialView("_DetailsPartial", Store);
+
+            return View(Store);
+        }
+        catch (Exception ex)
+        {
             return NotFound();
-
-        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            return PartialView("_DetailsPartial", Store);
-
-        return View(Store);
+        }
     }
     #endregion
 
     #region Delete
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
     {
-        await _service.DeleteAsync(id);
-        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            return Json(new { success = true });
+        try
+        {
+            var result = await _service.DeleteAsync(id);
 
-        return RedirectToAction(nameof(Index));
+            if (!result)
+            {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return Json(new { success = false, message = "المخزن غير موجود" });
+
+                TempData["Error"] = "المخزن غير موجود";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return Json(new { success = true, message = "تم الحذف بنجاح" });
+
+            TempData["Success"] = "تم الحذف بنجاح";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
+        {
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return Json(new { success = false, message = "حدث خطأ أثناء الحذف" });
+
+            TempData["Error"] = "حدث خطأ أثناء الحذف";
+            return RedirectToAction(nameof(Index));
+        }
     }
     #endregion
 }
-

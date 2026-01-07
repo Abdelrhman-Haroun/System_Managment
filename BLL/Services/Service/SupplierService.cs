@@ -32,14 +32,14 @@ namespace BLL.Services.Service
         public async Task<Supplier> CreateAsync(Supplier supplier)
         {
             _unit.Supplier.Add(supplier);
-            _unit.Complete();
+            _unit.CompleteAsync();
             return supplier;
         }
 
         public async Task<Supplier> UpdateAsync(Supplier supplier)
         {
             _unit.Supplier.Update(supplier); 
-            _unit.Complete();
+            _unit.CompleteAsync();
             return supplier;
         }
 
@@ -50,7 +50,7 @@ namespace BLL.Services.Service
             {
                 //_unit.Supplier.Remove(supplier);
                 supplier.IsDeleted = true;
-                _unit.Complete();
+                _unit.CompleteAsync();
             }
         }
     }

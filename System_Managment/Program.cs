@@ -32,8 +32,6 @@ builder.Services.AddTransient<IEmailSender, SmtpEmailSender>(sp =>
         senderName: config["SenderName"]
     );
 });
-
-
 builder.Services.AddSingleton<IFileUploader, FileUploader>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
@@ -41,6 +39,7 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IStoreService, StoreService>();
 builder.Services.AddScoped<IProductCategoryService, ProductCategoryService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

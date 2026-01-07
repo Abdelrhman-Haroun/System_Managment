@@ -1,17 +1,18 @@
-﻿using DAL.Models;
+﻿using BLL.ViewModels.Store;
+using DAL.Models;
 using System.Linq.Expressions;
 
 namespace BLL.Services.IService
 {
-    public interface IProductCategoryService
+    public interface IStoreService
     {
-
-            Task<IEnumerable<ProductCategory>> GetAllAsync(Expression<Func<ProductCategory, bool>> filter = null);
-            Task<ProductCategory> GetByIdAsync(int id);
-            Task<ProductCategory> GetByNameAsync(string name);
-            Task<ProductCategory> CreateAsync(ProductCategory ProductCategory);
-            Task<ProductCategory> UpdateAsync(ProductCategory ProductCategory);
-            Task DeleteAsync(int id);
+        Task<IEnumerable<Store>> GetAllAsync(string searchTerm = null);
+        Task<IEnumerable<Store>> GetAllAsync(Expression<Func<Store, bool>> filter = null, string includes = null);
+        Task<Store> GetByIdAsync(int id);
+        Task<Store> GetByNameAsync(string name);
+        Task<Store> CreateAsync(CreateStoreVM model);
+        Task<Store> UpdateAsync(EditStoreVM model);
+        Task<bool> DeleteAsync(int id);
     }
     
 }

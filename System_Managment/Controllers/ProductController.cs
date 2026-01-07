@@ -1,176 +1,237 @@
 ﻿using AutoMapper;
 using BLL.Services.IService;
 using BLL.ViewModels.Product;
+using DAL.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-[Authorize]
-public class ProductController : Controller
+namespace System_Managment.Controllers
 {
-    #region ctor
-    private readonly IProductService _service;
-    private readonly IStoreService _storeService;
-    private readonly IProductCategoryService _produictCategoryService;
-    private readonly IMapper _mapper;
-
-    public ProductController(IProductService service, IProductCategoryService catService, IStoreService storeService, IMapper mapper)
+    [Authorize]
+    public class ProductController : Controller
     {
-        _service = service;
-        _produictCategoryService = catService;
-        _storeService = storeService;
-        _mapper = mapper;
-    }
-    #endregion
+        private readonly IProductService _service;
+        private readonly IStoreService _storeService;
+        private readonly IProductCategoryService _productCategoryService;
+        private readonly IMapper _mapper;
 
-    #region All
-    public async Task<IActionResult> Index(string searchTerm, int page = 1)
-    {
-        var products = await _service.GetAllAsync(p => !p.IsDeleted, "Category,Store");
-        var categories = await _produictCategoryService.GetAllAsync(c => !c.IsDeleted);
-
-        if (!string.IsNullOrWhiteSpace(searchTerm))
+        public ProductController(
+            IProductService service,
+            IProductCategoryService categoryService,
+            IStoreService storeService,
+            IMapper mapper)
         {
-            searchTerm = searchTerm.Trim().ToLower();
-
-            // Get category IDs that match the search term
-            var matchedCategoryIds = categories
-                .Where(c => c.Name.ToLower().Contains(searchTerm))
-                .Select(c => c.Id)
-                .ToList();
-
-            // Filter products by name or category ID
-            products = products
-                .Where(p => p.Name.ToLower().Contains(searchTerm)|| matchedCategoryIds.Contains(p.CategoryId));
+            _service = service;
+            _productCategoryService = categoryService;
+            _storeService = storeService;
+            _mapper = mapper;
         }
 
-
-        // Order by creation date
-        var ProductsList = products.OrderBy(u => u.CreatedAt).ToList();
-
-        ViewBag.SearchTerm = searchTerm;
-        ViewBag.CurrentPage = page;
-
-        return View(ProductsList);
-    }
-
-    #endregion
-
-    #region Create
-    [HttpGet]
-    public async Task<IActionResult> Create()
-    {
-        ViewBag.Stores = new SelectList(await _storeService.GetAllAsync(s => !s.IsDeleted), "Id", "Name");
-        ViewBag.Categories = new SelectList(await _produictCategoryService.GetAllAsync(s => !s.IsDeleted), "Id", "Name");
-
-        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            return PartialView("_CreatePartial");
-
-        return View();
-    }
-
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(CreateProductVM model)
-    {
-        if (!ModelState.IsValid)
-            return Json(new
+        #region Index
+        public async Task<IActionResult> Index(string searchTerm, int page = 1)
+        {
+            try
             {
-                success = false,
-                message =
-                string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))
-            });
+                // Get all products with related data (Category, Store)
+                var products = await _service.GetAllAsync(searchTerm, "Category,Store");
 
-        var exists = await _service.GetByNameAsync(model.Name);
-        if (exists != null)
-            return Json(new { success = false, message = "هذا المنتج موجود بالفعل" });
+                ViewBag.SearchTerm = searchTerm;
+                ViewBag.CurrentPage = page;
 
-        var product = _mapper.Map<Product>(model);
-        await _service.CreateAsync(product);
+                return View(products);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "حدث خطأ أثناء تحميل البيانات";
+                return View(new List<Product>());
+            }
+        }
+        #endregion
 
-        return Json(new { success = true, message = "تم إضافة المنتج بنجاح" });
+        #region Create
+        [HttpGet]
+        public async Task<IActionResult> Create()
+        {
+            try
+            {
+                await LoadSelectLists();
+
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return PartialView("_CreatePartial");
+
+                return View();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "حدث خطأ أثناء تحميل البيانات";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(CreateProductVM model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = string.Join(", ",
+                            ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))
+                    });
+                }
+
+                var product = await _service.CreateAsync(model);
+
+                return Json(new
+                {
+                    success = true,
+                    message = "تم إضافة المنتج بنجاح",
+                    data = product
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "حدث خطأ أثناء إضافة المنتج" });
+            }
+        }
+        #endregion
+
+        #region Edit
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            try
+            {
+                var product = await _service.GetByIdAsync(id);
+                if (product == null)
+                    return NotFound();
+
+                var vm = _mapper.Map<EditProductVM>(product);
+
+                await LoadSelectLists();
+
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return PartialView("_EditPartial", vm);
+
+                return View(vm);
+            }
+            catch (Exception ex)
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(EditProductVM model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = "بيانات غير صحيحة: " + string.Join(", ",
+                            ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))
+                    });
+                }
+
+                var product = await _service.UpdateAsync(model);
+
+                return Json(new
+                {
+                    success = true,
+                    message = "تم الحفظ بنجاح",
+                    data = product
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "حدث خطأ أثناء تحديث المنتج" });
+            }
+        }
+        #endregion
+
+        #region Details
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            try
+            {
+                var product = await _service.GetByIdAsync(id);
+                if (product == null)
+                    return NotFound();
+
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return PartialView("_DetailsPartial", product);
+
+                return View(product);
+            }
+            catch (Exception ex)
+            {
+                return NotFound();
+            }
+        }
+        #endregion
+
+        #region Delete
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                var result = await _service.DeleteAsync(id);
+
+                if (!result)
+                {
+                    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                        return Json(new { success = false, message = "المنتج غير موجود" });
+
+                    TempData["Error"] = "المنتج غير موجود";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return Json(new { success = true, message = "تم الحذف بنجاح" });
+
+                TempData["Success"] = "تم الحذف بنجاح";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return Json(new { success = false, message = "حدث خطأ أثناء الحذف" });
+
+                TempData["Error"] = "حدث خطأ أثناء الحذف";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+        #endregion
+
+        #region Helper Methods
+        private async Task LoadSelectLists()
+        {
+            var stores = await _storeService.GetAllAsync(s => !s.IsDeleted);
+            var categories = await _productCategoryService.GetAllAsync(c => !c.IsDeleted);
+
+            ViewBag.Stores = new SelectList(stores, "Id", "Name");
+            ViewBag.Categories = new SelectList(categories, "Id", "Name");
+        }
+        #endregion
     }
-
-    #endregion
-
-    #region Edit
-    [HttpGet]
-    public async Task<IActionResult> Edit(int id)
-    {
-        var Product = await _service.GetByIdAsync(id);
-        if (Product == null)
-            return NotFound();
-
-        var vm = _mapper.Map<EditProductVM>(Product);
-
-        ViewBag.Stores = new SelectList(await _storeService.GetAllAsync(s => !s.IsDeleted), "Id", "Name");
-        ViewBag.Categories = new SelectList(await _produictCategoryService.GetAllAsync(s => !s.IsDeleted), "Id", "Name");
-
-        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            return PartialView("_EditPartial", vm);
-
-        return View(vm);
-    }
-
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(EditProductVM model)
-    {
-        if (!ModelState.IsValid)
-            return Json(new { success = false, message = "بيانات غير صحيحة: " + string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)) });
-
-        // Get the existing Product (tracked by EF)
-        var Product = await _service.GetByIdAsync(model.Id);
-        if (Product == null)
-            return Json(new { success = false, message = "المنتج غير موجود" });
-
-        // Check duplicate name
-        var exists = await _service.GetByNameAsync(model.Name);
-        if (exists != null && exists.Id != model.Id)
-            return Json(new { success = false, message = "هذا الاسم مستخدم من منتج آخر" });
-
-        // Update tracked entity
-        Product.Name = model.Name;
-        Product.Description = model.Description;
-        Product.StoreId = model.StoreId;
-        Product.CategoryId = model.CategoryId;
-
-
-        await _service.UpdateAsync(Product);
-
-        return Json(new { success = true, message = "تم الحفظ بنجاح" });
-    }
-
-
-    #endregion
-
-    #region Details
-    [HttpGet]
-    public async Task<IActionResult> Details(int id)
-    {
-        var Product = await _service.GetByIdAsync(id);
-        if (Product == null)
-            return NotFound();
-
-        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            return PartialView("_DetailsPartial", Product);
-
-        return View(Product);
-    }
-    #endregion
-
-    #region Delete
-    [HttpPost]
-    public async Task<IActionResult> Delete(int id)
-    {
-        await _service.DeleteAsync(id);
-        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            return Json(new { success = true });
-
-        return RedirectToAction(nameof(Index));
-    }
-    #endregion
 }
-

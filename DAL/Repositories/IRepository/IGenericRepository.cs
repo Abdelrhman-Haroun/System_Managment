@@ -7,7 +7,6 @@ namespace DAL.Repositories.IRepository
     {
         Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? predicate = null, string? includeWord = null);
         Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>>? predicate = null, string? includeWord = null);
-
         void Add(T entity);
         void Update(T entity);
         void Remove(T entity);

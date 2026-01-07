@@ -8,6 +8,7 @@ namespace DAL.Repositories.IRepository
         IProductCategoryRepository ProductCategory { get; }
         ISupplierRepository Supplier { get; }
         ICustomerRepository Customer { get; }
-        int Complete();
+        IUserRepository User { get; }
+        Task<int> CompleteAsync();
     }
 }
