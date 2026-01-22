@@ -127,7 +127,6 @@ namespace BLL.Services.Service
                     FullName = model.FullName,
                     PhoneNumber = model.PhoneNumber,
                     ProfilePicture = profilePicturePath,
-                    CreatedAt = DateTime.UtcNow,
                 };
 
                 var createdUser = await _unitOfWork.User.CreateAsync(user, model.Password);
@@ -176,6 +175,7 @@ namespace BLL.Services.Service
                 user.Email = model.Email;
                 user.UserName = model.Email;
                 user.PhoneNumber = model.PhoneNumber;
+                user.UpdateAt = DateTime.UtcNow;
 
                 if (model.ProfilePictureFile != null && model.ProfilePictureFile.Length > 0)
                 {

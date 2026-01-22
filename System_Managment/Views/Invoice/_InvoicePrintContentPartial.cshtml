@@ -1,0 +1,143 @@
+﻿@model InvoiceDetailsVM
+
+<!-- Header -->
+<div class="invoice-header">
+    <div class="company-info">
+        @if (!string.IsNullOrEmpty(ViewBag.LogoPath))
+        {
+            <img src="@ViewBag.LogoPath" alt="Company Logo" class="company-logo" />
+        }
+        <div class="company-name">@ViewBag.CompanyName</div>
+        <div class="company-details">
+            <div>📍 @ViewBag.CompanyAddress</div>
+            <div>📞 @ViewBag.CompanyPhone</div>
+            <div>📧 @ViewBag.CompanyEmail</div>
+            <div>🏢 الرقم الضريبي: @ViewBag.CompanyTaxNumber</div>
+        </div>
+    </div>
+
+    <div class="invoice-title">
+        <h1>فـاتــورة</h1>
+        @if (Model.InvoiceType == "Purchase")
+        {
+            <span class="invoice-type-badge badge-purchase">فاتورة مشتريات</span>
+        }
+        else
+        {
+            <span class="invoice-type-badge badge-sales">فاتورة مبيعات</span>
+        }
+    </div>
+</div>
+
+<!-- Invoice Information -->
+<div class="invoice-info">
+    <div class="info-group">
+        <label>رقم الفاتورة</label>
+        <div class="value">@Model.InvoiceNumber</div>
+    </div>
+
+    <div class="info-group">
+        <label>التاريخ</label>
+        <div class="value">@Model.InvoiceDate.ToString("dd/MM/yyyy")</div>
+    </div>
+
+    <div class="info-group">
+        <label>@(Model.InvoiceType == "Purchase" ? "المورد" : "العميل")</label>
+        <div class="value">@Model.CustomerOrSupplierName</div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.ReferenceNumber))
+    {
+        <div class="info-group">
+            <label>رقم المرجع</label>
+            <div class="value">@Model.ReferenceNumber</div>
+        </div>
+    }
+</div>
+
+<!-- Items Table -->
+<table class="items-table">
+    <thead>
+        <tr>
+            <th style="width: 5%">#</th>
+            <th style="width: 35%">المنتج</th>
+            <th style="width: 10%" class="text-center">الكمية</th>
+            <th style="width: 15%" class="text-center">الوزن (كجم)</th>
+            <th style="width: 15%" class="text-left">سعر الوحدة</th>
+            <th style="width: 20%" class="text-left">الإجمالي</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            var index = 1;
+        }
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td class="text-center">@index</td>
+                <td>@item.ProductName</td>
+                <td class="text-center">@item.Quantity</td>
+                <td class="text-center">@item.Weight.ToString("N2")</td>
+                <td class="text-left">@item.UnitPrice.ToString("N2") جنيه</td>
+                <td class="text-left">@((item.Weight * item.UnitPrice).ToString("N2")) جنيه</td>
+            </tr>
+            index++;
+        }
+    </tbody>
+</table>
+
+<!-- Totals -->
+<div class="totals-section">
+    <div class="totals-box">
+        <div class="total-row">
+            <span class="total-label">الإجمالي الفرعي:</span>
+            <span class="total-value">@Model.SubTotal.ToString("N2") جنيه</span>
+        </div>
+
+        @if (Model.DiscountAmount > 0)
+        {
+            <div class="total-row">
+                <span class="total-label">الخصم:</span>
+                <span class="total-value" style="color: #dc2626;">- @Model.DiscountAmount.ToString("N2") جنيه</span>
+            </div>
+        }
+
+        @if (Model.TaxAmount > 0)
+        {
+            <div class="total-row">
+                <span class="total-label">الضريبة:</span>
+                <span class="total-value">@Model.TaxAmount.ToString("N2") جنيه</span>
+            </div>
+        }
+
+        <div class="total-row grand-total">
+            <span class="total-label">المبلغ الإجمالي:</span>
+            <span class="total-value">@Model.TotalAmount.ToString("N2") جنيه</span>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<div class="invoice-footer">
+    <!-- Notes -->
+    @if (!string.IsNullOrEmpty(Model.Notes))
+    {
+        <div class="notes-section">
+            <h4>ملاحظات:</h4>
+            <div class="notes-content">@Model.Notes</div>
+        </div>
+    }
+
+    <!-- Signatures -->
+    <div class="signatures">
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div class="signature-label">توقيع المحاسب</div>
+        </div>
+
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div class="signature-label">@(Model.InvoiceType == "Purchase" ? "توقيع المورد" : "توقيع العميل")</div>
+        </div>
+    </div>
+</div>

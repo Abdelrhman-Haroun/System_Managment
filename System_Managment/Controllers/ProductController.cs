@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BLL.Services.IService;
+using BLL.Services.Service;
 using BLL.ViewModels.Product;
 using DAL.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -14,18 +15,21 @@ namespace System_Managment.Controllers
         private readonly IProductService _service;
         private readonly IStoreService _storeService;
         private readonly IProductCategoryService _productCategoryService;
+        private readonly ITransactionReportService _transactionReportService;
         private readonly IMapper _mapper;
 
         public ProductController(
             IProductService service,
             IProductCategoryService categoryService,
             IStoreService storeService,
-            IMapper mapper)
+            IMapper mapper,
+            ITransactionReportService transactionReportService)
         {
             _service = service;
             _productCategoryService = categoryService;
             _storeService = storeService;
             _mapper = mapper;
+            _transactionReportService = transactionReportService;
         }
 
         #region Index
@@ -172,7 +176,7 @@ namespace System_Managment.Controllers
         {
             try
             {
-                var product = await _service.GetByIdAsync(id);
+                var product = await _service.GetByIdContainsAsync(id, "Category,Store");
                 if (product == null)
                     return NotFound();
 
@@ -233,5 +237,114 @@ namespace System_Managment.Controllers
             ViewBag.Categories = new SelectList(categories, "Id", "Name");
         }
         #endregion
+
+        [HttpGet]
+        public async Task<IActionResult> Transactions(int id, DateTime? fromDate, DateTime? toDate)
+        {
+            try
+            {
+                var product = await _service.GetByIdContainsAsync(id, "Category,Store");
+                if (product == null)
+                {
+                    TempData["Error"] = "المنتج غير موجود";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Get all transactions for this product (includes internal usage)
+                var transactions = await _transactionReportService
+                    .GetProductTransactionsByProductIdAsync(id);
+
+                // Apply date filtering if provided
+                if (fromDate.HasValue)
+                {
+                    transactions = transactions.Where(t => t.TransactionDate >= fromDate.Value);
+                }
+
+                if (toDate.HasValue)
+                {
+                    var endDate = toDate.Value.AddDays(1);
+                    transactions = transactions.Where(t => t.TransactionDate < endDate);
+                }
+
+                // Calculate summary including internal usage
+                var totalPurchases = transactions
+                    .Where(t => t.TransactionType == "Purchase")
+                    .Sum(t => t.QuantityChanged);
+
+                var totalSales = transactions
+                    .Where(t => t.TransactionType == "Sales")
+                    .Sum(t => Math.Abs(t.QuantityChanged));
+
+                // NEW: Calculate internal usage separately
+                var totalInternalUsage = transactions
+                    .Where(t => t.TransactionType == "استخدام داخلي")
+                    .Sum(t => Math.Abs(t.QuantityChanged));
+
+                var totalPurchaseValue = transactions
+                    .Where(t => t.TransactionType == "Purchase")
+                    .Sum(t => t.TotalAmount);
+
+                var totalSalesValue = transactions
+                    .Where(t => t.TransactionType == "Sales")
+                    .Sum(t => t.TotalAmount);
+
+                // NEW: Calculate internal usage value
+                var totalInternalUsageValue = transactions
+                    .Where(t => t.TransactionType == "استخدام داخلي")
+                    .Sum(t => t.TotalAmount);
+
+                ViewBag.Product = product;
+                ViewBag.FromDate = fromDate;
+                ViewBag.ToDate = toDate;
+                ViewBag.TotalPurchases = totalPurchases;
+                ViewBag.TotalSales = totalSales;
+                ViewBag.TotalInternalUsage = totalInternalUsage; // NEW
+                ViewBag.TotalPurchaseValue = totalPurchaseValue;
+                ViewBag.TotalSalesValue = totalSalesValue;
+                ViewBag.TotalInternalUsageValue = totalInternalUsageValue; // NEW
+                ViewBag.CurrentStock = product.StockQuantity;
+                ViewBag.ProductType = product.ProductType;
+
+                return View(transactions.OrderByDescending(t => t.TransactionDate));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "حدث خطأ أثناء تحميل المعاملات";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportTransactions(int id, DateTime? fromDate, DateTime? toDate, string format = "excel")
+        {
+            try
+            {
+                var product = await _service.GetByIdAsync(id);
+                if (product == null)
+                    return NotFound();
+
+                var transactions = await _transactionReportService
+                    .GetProductTransactionsByProductIdAsync(id);
+
+                // Apply date filtering
+                if (fromDate.HasValue)
+                    transactions = transactions.Where(t => t.TransactionDate >= fromDate.Value);
+
+                if (toDate.HasValue)
+                    transactions = transactions.Where(t => t.TransactionDate < toDate.Value.AddDays(1));
+
+                // TODO: Implement Excel/PDF export logic
+                return Json(new
+                {
+                    success = true,
+                    product = product.Name,
+                    transactions = transactions.OrderByDescending(t => t.TransactionDate)
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "حدث خطأ أثناء التصدير" });
+            }
+        }
     }
 }

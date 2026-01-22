@@ -147,6 +147,7 @@ namespace BLL.Services.Service
                 // Update properties
                 ProductCategory.Name = model.Name.Trim();
                 ProductCategory.Description = model.Description?.Trim();
+                ProductCategory.UpdatedAt = DateTime.UtcNow;
 
                 // Save changes
                 _unit.ProductCategory.Update(ProductCategory);

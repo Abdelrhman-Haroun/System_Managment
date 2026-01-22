@@ -148,6 +148,7 @@ namespace BLL.Services.Service
                 customer.Name = model.Name.Trim();
                 customer.Phone = model.Phone?.Trim();
                 customer.Address = model.Address?.Trim();
+                customer.UpdatedAt = DateTime.UtcNow;
 
                 // Save changes
                 _unit.Customer.Update(customer);

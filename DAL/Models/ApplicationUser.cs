@@ -11,7 +11,7 @@ namespace DAL.Models
         public bool IsDeleted { get; set; } = false;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
+        public DateTime UpdateAt { get; set; } = DateTime.UtcNow;
         public string? ProfilePicture { get; set; }
     }
 }

@@ -1,0 +1,182 @@
+﻿
+
+@model IEnumerable<InvoiceListVM>
+
+@{
+    ViewData["Title"] = "الفواتير";
+}
+
+<div class="container">
+    <!-- Header -->
+    <div class="mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+            <div class="size-12 text-primary bg-white rounded-xl shadow-sm border border-border-light p-2.5 flex items-center justify-center">
+                <span class="material-symbols-outlined text-[28px]">receipt_long</span>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-text-main tracking-tight">إدارة الفواتير</h1>
+                <p class="text-sm text-text-secondary mt-1">عرض وإدارة فواتير المشتريات والمبيعات</p>
+            </div>
+        </div>
+        <a asp-action="Create" class="px-6 py-2.5 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl shadow-lg transition-all flex items-center gap-2">
+            <span class="material-symbols-outlined">add</span>
+            إنشاء فاتورة جديدة
+        </a>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="bg-white rounded-xl shadow-sm border border-border-light p-2 mb-6 flex gap-2">
+        <a asp-action="Index" class="flex-1 text-center py-2.5 rounded-lg @(ViewBag.SelectedType == null ? "bg-primary text-white" : "text-text-secondary hover:bg-gray-50") font-bold text-sm transition-all">
+            جميع الفواتير
+        </a>
+        <a asp-action="Index" asp-route-type="Purchase" class="flex-1 text-center py-2.5 rounded-lg @(ViewBag.SelectedType?.ToString() == "Purchase" ? "bg-primary text-white" : "text-text-secondary hover:bg-gray-50") font-bold text-sm transition-all">
+            فواتير المشتريات
+        </a>
+        <a asp-action="Index" asp-route-type="Sales" class="flex-1 text-center py-2.5 rounded-lg @(ViewBag.SelectedType?.ToString() == "Sales" ? "bg-primary text-white" : "text-text-secondary hover:bg-gray-50") font-bold text-sm transition-all">
+            فواتير المبيعات
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6 flex items-center gap-3">
+            <span class="material-symbols-outlined text-green-600">check_circle</span>
+            <span class="text-green-800 font-medium">@TempData["Success"]</span>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center gap-3">
+            <span class="material-symbols-outlined text-red-600">error</span>
+            <span class="text-red-800 font-medium">@TempData["Error"]</span>
+        </div>
+    }
+
+    <!-- Invoices Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-border-light overflow-hidden">
+        @if (Model != null && Model.Any())
+        {
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-border-light">
+                        <tr>
+                            <th class="py-4 px-6 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">رقم الفاتورة</th>
+                            <th class="py-4 px-6 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">النوع</th>
+                            <th class="py-4 px-6 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">العميل/المورد</th>
+                            <th class="py-4 px-6 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">التاريخ</th>
+                            <th class="py-4 px-6 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">عدد البنود</th>
+                            <th class="py-4 px-6 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">المبلغ الإجمالي</th>
+                            <th class="py-4 px-6 text-center text-xs font-bold text-text-secondary uppercase tracking-wider">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-border-light">
+                        @foreach (var invoice in Model)
+                        {
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="py-4 px-6 text-sm font-bold text-primary">
+                                    @invoice.InvoiceNumber
+                                </td>
+                                <td class="py-4 px-6 text-sm">
+                                    @if (invoice.InvoiceType == "Purchase")
+                                    {
+                                        <span class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">
+                                            <span class="material-symbols-outlined text-[16px]">shopping_bag</span>
+                                            مشتريات
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">
+                                            <span class="material-symbols-outlined text-[16px]">sell</span>
+                                            مبيعات
+                                        </span>
+                                    }
+                                </td>
+                                <td class="py-4 px-6 text-sm font-medium text-text-main">
+                                    @invoice.CustomerOrSupplierName
+                                </td>
+                                <td class="py-4 px-6 text-sm text-text-secondary">
+                                    @invoice.InvoiceDate.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="py-4 px-6 text-sm text-text-secondary">
+                                    @invoice.ItemsCount بند
+                                </td>
+                                <td class="py-4 px-6 text-sm font-bold text-text-main">
+                                    @invoice.TotalAmount.ToString("N2") جنيه
+                                </td>
+                                <td class="py-4 px-6 text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <a asp-action="Details" asp-route-id="@invoice.Id"
+                                           class="text-slate-600 hover:text-slate-800 p-2 hover:bg-slate-100 rounded-lg transition-all"
+                                           title="عرض التفاصيل">
+                                            <span class="material-symbols-outlined text-xl">visibility</span>
+                                        </a>
+
+                                        <a asp-action="TransactionHistory" asp-route-id="@invoice.Id"
+                                           class="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-100 rounded-lg transition-all"
+                                           title="عرض السجل">
+                                            <span class="material-symbols-outlined text-xl">history</span>
+                                        </a>
+
+                                        <a asp-action="Edit" asp-route-id="@invoice.Id"
+                                           class="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all"
+                                           title="تعديل">
+                                            <span class="material-symbols-outlined text-[20px]">edit</span>
+                                        </a>
+                                        <button type="button" onclick="deleteInvoice(@invoice.Id)"
+                                                class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                                title="حذف">
+                                            <span class="material-symbols-outlined text-[20px]">delete</span>
+                                        </button>
+                                        <form id="deleteForm_@invoice.Id" method="post" asp-action="Delete" asp-route-id="@invoice.Id" style="display:none;">
+                                            @Html.AntiForgeryToken()
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="p-12 text-center">
+                <span class="material-symbols-outlined text-gray-400 text-6xl mb-4">receipt_long</span>
+                <p class="text-text-secondary text-lg font-medium mb-2">لا توجد فواتير</p>
+                <p class="text-text-secondary text-sm">ابدأ بإنشاء فاتورة جديدة</p>
+                <a asp-action="Create" class="inline-block mt-4 px-6 py-2.5 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl transition-all">
+                    إنشاء فاتورة
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        function deleteInvoice(id) {
+            Swal.fire({
+                title: 'هل أنت متأكد؟',
+                text: "سيتم حذف الفاتورة وإعادة المخزون إلى حالته السابقة",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#2a7f40',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'نعم، احذف',
+                cancelButtonText: 'إلغاء'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.getElementById('deleteForm_' + id);
+                    if (form) {
+                        form.submit();
+                    } else {
+                        console.error('Form not found for id: ' + id);
+                    }
+                }
+            });
+        }
+    </script>
+}

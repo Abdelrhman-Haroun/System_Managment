@@ -12,11 +12,9 @@
     var paginatedUsers = Model.Skip((pageNumber - 1) * pageSize).Take(pageSize);
 }
 
-<!-- Full Screen Layout بدون أي هوامش خارجية -->
 <div>
     <div>
-        <div class="max-w-7xl mx-auto space-y-8">
-
+        <div class="space-y-8">
             <!-- الهيدر -->
             <div class="flex flex-col gap-6">
                 <div>
@@ -34,14 +32,13 @@
 
                 <!-- البحث والزر في صف واحد -->
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                    <!-- شريط البحث - يأخذ المساحة الكاملة -->
                     <form id="searchForm" asp-action="Index" method="get" class="relative flex-1">
                         <button type="button" id="searchBtn" class="absolute end-5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-primary z-10">
                             <span class="material-symbols-outlined text-2xl">search</span>
                         </button>
                         <input type="text" name="searchTerm" value="@searchTerm" id="searchInput"
-                        placeholder="ابحث بالاسم، فئة المنتج..."
-                        class="w-full h-14 ps-14 pe-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70 text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary transition-all duration-300 text-lg font-medium shadow-sm" />
+                               placeholder="ابحث بالاسم، فئة المنتج..."
+                               class="w-full h-14 ps-14 pe-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70 text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary transition-all duration-300 text-lg font-medium shadow-sm" />
                         @if (!string.IsNullOrEmpty(searchTerm))
                         {
                             <a asp-action="Index" class="absolute start-5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-red-600">
@@ -84,12 +81,12 @@
                         <table class="w-full">
                             <thead class="bg-slate-50 dark:bg-slate-900/50">
                                 <tr>
-                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-32">الاسم</th>
-                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-48">الوصف</th>
-                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-20">كمية المخزون</th>
-                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-20">المخزن</th>
-                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-20">الفئة</th>
-                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-24">إجراءات</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400">الاسم</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400">الوصف</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400">كمية المخزون</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400">المخزن</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400">الفئة</th>
+                                    <th class="px-6 py-4 text-center text-xs font-bold text-slate-600 dark:text-slate-400">إجراءات</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
@@ -98,22 +95,38 @@
                                     string viewdType;
                                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                         <td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white">@user.Name</td>
-                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">@user.Description</td>
-                                        @if(user.ProductType == 1)
+                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">@user.Description</td>
+                                        @if (user.ProductType == 1)
                                             viewdType = string.Format("{0:#,##0}", user.StockQuantity.GetValueOrDefault());
                                         else
                                             viewdType = ($"{string.Format("{0:#,##0.##}", user.StockQuantity.GetValueOrDefault())} كجم");
-                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">@viewdType</td>
-                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">@user.Store?.Name</td>
-                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">@user.Category?.Name</td>
-  
+                                        <td class="px-6 py-4 text-sm font-mono">
+                                            <span class="@(user.StockQuantity < 10 ? "text-red-600 font-bold" : "text-slate-600 dark:text-slate-400")">
+                                                @viewdType
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">@user.Store?.Name</td>
+                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">@user.Category?.Name</td>
+
                                         <td class="px-6 py-4">
-                                            <div class="flex items-center gap-4">
-                                                <a href="@Url.Action("Edit", new { id = user.Id })" class="openEditDialog text-primary hover:text-primary/80" title="تعديل">
-                                                    <span class="material-symbols-outlined text-xl">edit</span>
+                                            <div class="flex items-center justify-center gap-2">
+                                                <!-- NEW: Stock Movements Button -->
+                                                <a href="@Url.Action("Transactions", new { id = user.Id })"
+                                                   class="text-orange-600 hover:text-orange-800 p-2 hover:bg-orange-50 rounded-lg transition-all"
+                                                   title="حركة المخزون">
+                                                    <span class="material-symbols-outlined text-xl">swap_vert</span>
                                                 </a>
-                                                <a href="@Url.Action("Details", new { id = user.Id })" class="openDetailsDialog text-slate-600 hover:text-slate-800" title="تفاصيل">
+
+                                                <a href="@Url.Action("Details", new { id = user.Id })"
+                                                   class="openDetailsDialog text-slate-600 hover:text-slate-800 p-2 hover:bg-slate-100 rounded-lg transition-all"
+                                                   title="تفاصيل">
                                                     <span class="material-symbols-outlined text-xl">visibility</span>
+                                                </a>
+
+                                                <a href="@Url.Action("Edit", new { id = user.Id })"
+                                                   class="openEditDialog text-primary hover:text-primary/80 p-2 hover:bg-primary/10 rounded-lg transition-all"
+                                                   title="تعديل">
+                                                    <span class="material-symbols-outlined text-xl">edit</span>
                                                 </a>
                                             </div>
                                         </td>
@@ -148,18 +161,18 @@
                                 var startPage = Math.Max(1, pageNumber - 2);
                                 var endPage = Math.Min(totalPages, pageNumber + 2);
 
-                                @if (startPage > 1)
+                                if (startPage > 1)
                                 {
                                     <a asp-action="Index" asp-route-page="1" asp-route-searchTerm="@searchTerm" class="size-11 rounded-xl border border-slate-300 dark:border-slate-700 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-sm font-semibold">1</a>
-                                    @if (startPage > 2)
+                                    if (startPage > 2)
                                     {
                                         <span class="px-2 text-slate-500">...</span>
                                     }
                                 }
 
-                                @for (int i = startPage; i <= endPage; i++)
+                                for (int i = startPage; i <= endPage; i++)
                                 {
-                                    @if (i == pageNumber)
+                                    if (i == pageNumber)
                                     {
                                         <button class="size-11 rounded-xl bg-primary text-white font-bold flex items-center justify-center cursor-default">@i</button>
                                     }
@@ -169,9 +182,9 @@
                                     }
                                 }
 
-                                @if (endPage < totalPages)
+                                if (endPage < totalPages)
                                 {
-                                    @if (endPage < totalPages - 1)
+                                    if (endPage < totalPages - 1)
                                     {
                                         <span class="px-2 text-slate-500">...</span>
                                     }
@@ -206,7 +219,6 @@
         <span class="material-symbols-outlined text-3xl">add</span>
     </a>
 </div>
-
 
 @section Scripts {
     <script>
@@ -251,13 +263,11 @@
             openDialog(this.dataset.url || this.href);
         });
 
-          
         $(document).on('click', '.openDetailsDialog', function (e) {
             e.preventDefault();
             openDialog($(this).data('url') || this.href);
-        });   
-        
-        
+        });
+
         $(document).on('click', '.openCreateDialog', function (e) {
             e.preventDefault();
             openDialog($(this).data('url') || this.href);

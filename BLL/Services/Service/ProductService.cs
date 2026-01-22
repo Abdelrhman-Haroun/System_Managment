@@ -48,6 +48,19 @@ namespace BLL.Services.Service
                 throw;
             }
         }
+        public async Task<IEnumerable<Product>> GetAllAsync()
+        {
+            try
+            {
+                var products = await _unit.Product.GetAllAsync(p => !p.IsDeleted, null);
+                return products.OrderBy(p => p.CreatedAt).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving products");
+                throw;
+            }
+        }
 
         public async Task<Product> GetByIdAsync(int id)
         {
@@ -63,6 +76,27 @@ namespace BLL.Services.Service
                 throw;
             }
         }
+        public async Task<Product?> GetByIdContainsAsync(
+                int id,
+                string includes)
+        {
+            try
+            {
+                var product = await _unit.Product
+                    .GetByIdContainsAsync(id, includes);
+
+                if (product == null || product.IsDeleted)
+                    return null;
+
+                return product;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving product with ID {ProductId}", id);
+                throw;
+            }
+        }
+
 
         public async Task<IEnumerable<Product>> GetAllAsync(Expression<Func<Product, bool>> filter = null, string includes = null)
         {
@@ -150,7 +184,8 @@ namespace BLL.Services.Service
                 Product.Description = model.Description?.Trim();
                 Product.StoreId = model.StoreId;
                 Product.CategoryId = model.CategoryId;
-             
+                Product.UpdatedAt = DateTime.UtcNow;
+
 
                 // Save changes
                 _unit.Product.Update(Product);
@@ -196,5 +231,6 @@ namespace BLL.Services.Service
                 throw;
             }
         }
+
     }
 }

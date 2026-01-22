@@ -1,6 +1,6 @@
 ﻿using DAL.Models;
 using System.ComponentModel.DataAnnotations;
-
+namespace DAL.Models;
 public class Product : Base
 {
     [StringLength(100)]

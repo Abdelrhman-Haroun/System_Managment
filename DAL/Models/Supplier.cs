@@ -18,7 +18,7 @@ namespace DAL.Models
         public decimal? Balance { get; set; } = 0; 
 
         // Navigation Properties
-        public virtual ICollection<PurchaseInvoice> PurchaseInvoices { get; set; } = new List<PurchaseInvoice>();
+        public virtual ICollection<Invoice> PurchaseInvoices { get; set; } = new List<Invoice>();
         public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
     }
 }

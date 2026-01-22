@@ -1,0 +1,338 @@
+﻿@using BLL.ViewModels.InternalUsage
+@using DAL.Models
+@model CreateInternalUsageVM
+
+@{
+    ViewData["Title"] = "تسجيل استخدام داخلي جديد";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var products = (List<Product>)ViewBag.Products;
+    var categories = (List<string>)ViewBag.Categories;
+}
+
+<!-- Header -->
+<div class="mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-4">
+        <div class="size-12 text-primary bg-white rounded-xl shadow-sm border border-border-light p-2.5 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[28px]">add_circle</span>
+        </div>
+        <div>
+            <h1 class="text-2xl font-bold text-text-main tracking-tight">تسجيل استخدام داخلي جديد</h1>
+            <p class="text-sm text-text-secondary mt-1">سجل استخدام المنتجات الداخلية للمزرعة</p>
+        </div>
+    </div>
+    <div class="flex gap-3 w-full md:w-auto">
+        <a asp-action="Index"
+           class="flex-1 md:flex-none px-6 py-2.5 text-sm font-medium text-text-secondary bg-white border border-border-light rounded-xl hover:bg-gray-50 transition-all text-center">
+            إلغاء
+        </a>
+    </div>
+</div>
+
+<form id="usageForm" method="post" asp-action="Create">
+    @Html.AntiForgeryToken()
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+        <!-- Main Content -->
+        <div class="lg:col-span-8 flex flex-col gap-6">
+
+            <!-- Error Alert -->
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
+                    <span class="material-symbols-outlined text-red-600 bg-red-100 p-2 rounded-lg">error</span>
+                    <div class="flex-1">
+                        <div class="font-bold text-red-800 mb-1">يوجد أخطاء في النموذج</div>
+                        <div class="text-sm text-red-700">
+                            @Html.ValidationSummary(false, "", new { @class = "mb-0" })
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Product & Basic Info Section -->
+            <section class="bg-surface-light rounded-2xl border border-border-light shadow-sm p-6 lg:p-8">
+                <h3 class="text-lg font-bold text-text-main mb-6 flex items-center gap-2 pb-4 border-b border-border-light">
+                    <span class="material-symbols-outlined text-primary bg-primary/10 p-1.5 rounded-lg">inventory_2</span>
+                    معلومات المنتج الأساسية
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Product Selection -->
+                    <div class="flex flex-col gap-2 md:col-span-2">
+                        <label asp-for="ProductId" class="text-sm font-semibold text-text-main">
+                            المنتج <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <select asp-for="ProductId"
+                                    class="w-full h-12 rounded-xl border-border-light bg-background-light text-text-main text-sm focus:border-primary focus:ring-primary pr-10 pl-3 transition-colors appearance-none"
+                                    required>
+                                <option value="">اختر المنتج...</option>
+                                @foreach (var product in products.OrderBy(p => p.Name))
+                                {
+                                    <option value="@product.Id">@product.Name (المتوفر: @product.StockQuantity.GetValueOrDefault().ToString("N2"))</option>
+                                }
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-text-secondary">
+                                <span class="material-symbols-outlined text-[20px]">expand_more</span>
+                            </div>
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center px-3 text-primary/60">
+                                <span class="material-symbols-outlined text-[20px]">package</span>
+                            </div>
+                        </div>
+                        <span asp-validation-for="ProductId" class="text-red-600 text-sm"></span>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="flex flex-col gap-2">
+                        <label asp-for="UsageCategory" class="text-sm font-semibold text-text-main">
+                            الفئة <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <select asp-for="UsageCategory"
+                                    class="w-full h-12 rounded-xl border-border-light bg-background-light text-text-main text-sm focus:border-primary focus:ring-primary pr-10 pl-3 transition-colors appearance-none"
+                                    required>
+                                <option value="">اختر الفئة...</option>
+                                @foreach (var category in categories)
+                                {
+                                    <option value="@category">@category</option>
+                                }
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-text-secondary">
+                                <span class="material-symbols-outlined text-[20px]">expand_more</span>
+                            </div>
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center px-3 text-primary/60">
+                                <span class="material-symbols-outlined text-[20px]">category</span>
+                            </div>
+                        </div>
+                        <span asp-validation-for="UsageCategory" class="text-red-600 text-sm"></span>
+                    </div>
+
+                    <!-- Usage Date -->
+                    <div class="flex flex-col gap-2">
+                        <label asp-for="UsageDate" class="text-sm font-semibold text-text-main">
+                            تاريخ الاستخدام <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input asp-for="UsageDate" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")"
+                                   class="w-full h-12 rounded-xl border-border-light bg-background-light text-text-main text-sm focus:border-primary focus:ring-primary pl-10 text-right px-3"
+                                   required />
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center px-3 text-primary/60">
+                                <span class="material-symbols-outlined text-[20px]">calendar_today</span>
+                            </div>
+                        </div>
+                        <span asp-validation-for="UsageDate" class="text-red-600 text-sm"></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quantity & Pricing Section -->
+            <section class="bg-surface-light rounded-2xl border border-border-light shadow-sm p-6 lg:p-8">
+                <h3 class="text-lg font-bold text-text-main mb-6 flex items-center gap-2 pb-4 border-b border-border-light">
+                    <span class="material-symbols-outlined text-primary bg-primary/10 p-1.5 rounded-lg">shopping_cart</span>
+                    الكمية والتسعير
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Quantity -->
+                    <div class="flex flex-col gap-2">
+                        <label asp-for="Quantity" class="text-sm font-semibold text-text-main">
+                            الكمية (العدد) <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input asp-for="Quantity" type="number" step="0.01" min="0"
+                                   class="w-full h-12 rounded-xl border-border-light bg-background-light text-text-main text-sm focus:border-primary focus:ring-primary pr-3 pl-10 transition-shadow"
+                                   required placeholder="0.00" />
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center px-3 text-primary/60">
+                                <span class="material-symbols-outlined text-[20px]">tag</span>
+                            </div>
+                        </div>
+                        <span asp-validation-for="Quantity" class="text-red-600 text-sm"></span>
+                    </div>
+
+                    <!-- Weight -->
+                    <div class="flex flex-col gap-2">
+                        <label asp-for="Weight" class="text-sm font-semibold text-text-main">
+                            الوزن (كجم) <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input asp-for="Weight" type="number" step="0.01" min="0" id="weightInput"
+                                   class="w-full h-12 rounded-xl border-border-light bg-background-light text-text-main text-sm focus:border-primary focus:ring-primary pr-3 pl-20 transition-shadow"
+                                   required placeholder="0.00" />
+                            <span class="absolute left-3 top-3.5 text-xs text-text-secondary font-bold">كجم</span>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-primary/60">
+                                <span class="material-symbols-outlined text-[20px]">scale</span>
+                            </div>
+                        </div>
+                        <span asp-validation-for="Weight" class="text-red-600 text-sm"></span>
+                    </div>
+
+                    <!-- Unit Price -->
+                    <div class="flex flex-col gap-2 md:col-span-2">
+                        <label asp-for="UnitPrice" class="text-sm font-semibold text-text-main">
+                            سعر الوحدة <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input asp-for="UnitPrice" type="number" step="0.01" min="0" id="priceInput"
+                                   class="w-full h-12 rounded-xl border-border-light bg-background-light text-text-main text-lg font-medium focus:border-primary focus:ring-primary pr-3 pl-20 text-left transition-shadow"
+                                   dir="ltr" required placeholder="0.00" />
+                            <span class="absolute left-3 top-3 text-xs text-text-secondary font-bold">جنيه</span>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-primary/60">
+                                <span class="material-symbols-outlined text-[20px]">payments</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-text-secondary mt-1">سيتم حساب التكلفة الإجمالية = الوزن × سعر الوحدة</p>
+                        <span asp-validation-for="UnitPrice" class="text-red-600 text-sm"></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Notes Section -->
+            <section class="bg-surface-light rounded-2xl border border-border-light shadow-sm p-6 lg:p-8">
+                <h3 class="text-lg font-bold text-text-main mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary bg-primary/10 p-1.5 rounded-lg">description</span>
+                    ملاحظات إضافية
+                </h3>
+                <textarea asp-for="Notes"
+                          class="w-full rounded-xl border-border-light bg-background-light text-text-main text-sm focus:border-primary focus:ring-primary min-h-[120px] p-4 placeholder:text-gray-400 resize-y leading-relaxed"
+                          placeholder="أضف أي ملاحظات إضافية حول الاستخدام..."></textarea>
+            </section>
+        </div>
+
+        <!-- Summary Sidebar -->
+        <div class="lg:col-span-4 space-y-6">
+            <div class="lg:sticky lg:top-6 lg:self-start">
+                <!-- Cost Summary Card -->
+                <section class="bg-surface-light rounded-2xl border border-border-light shadow-sm p-6 mb-6">
+                    <h3 class="text-lg font-bold text-text-main mb-6 flex items-center gap-2 pb-4 border-b border-border-light">
+                        <span class="material-symbols-outlined text-primary bg-primary/10 p-1.5 rounded-lg">calculate</span>
+                        ملخص التكلفة
+                    </h3>
+
+                    <div class="space-y-5">
+                        <div class="bg-primary/5 rounded-xl p-4 border border-primary/10 text-center">
+                            <span class="block text-sm font-semibold text-text-secondary mb-1">التكلفة الإجمالية</span>
+                            <div class="flex items-center justify-center gap-1 text-primary">
+                                <span id="totalCost" class="text-3xl font-bold tracking-tight">0.00</span>
+                                <span class="text-sm font-bold mt-2">جنيه</span>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-border-light pt-4">
+                            <p class="text-xs text-text-secondary text-center">تحديث تلقائي عند تغيير الوزن أو السعر</p>
+                        </div>
+
+                        <button type="submit"
+                                class="w-full py-4 px-6 bg-primary hover:bg-primary-dark text-white font-bold text-lg rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all transform active:scale-[0.98] flex items-center justify-center gap-3">
+                            <span>حفظ الاستخدام</span>
+                            <span class="material-symbols-outlined">check_circle</span>
+                        </button>
+
+                        <p class="text-xs text-center text-gray-400">
+                            سيتم خصم الكمية من المخزون
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Info Box -->
+                <div class="bg-blue-50/50 rounded-2xl border border-blue-100 p-5 shadow-sm">
+                    <div class="flex items-start gap-3">
+                        <span class="material-symbols-outlined text-blue-600 mt-0.5 bg-blue-100 p-1 rounded-full text-[18px]">info</span>
+                        <div class="flex flex-col gap-1">
+                            <h4 class="text-sm font-bold text-blue-900">معلومة</h4>
+                            <p class="text-xs text-blue-700/80 leading-relaxed">
+                                عند حفظ السجل، سيتم خصم الكمية من المخزون المتاح وإنشاء رقم مرجعي تلقائياً.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function() {
+            const weightInput = document.getElementById('weightInput');
+            const priceInput = document.getElementById('priceInput');
+            const totalDisplay = document.getElementById('totalCost');
+
+            function updateTotal() {
+                const weight = parseFloat(weightInput?.value) || 0;
+                const price = parseFloat(priceInput?.value) || 0;
+                const total = (weight * price).toFixed(2);
+                if (totalDisplay) {
+                    totalDisplay.textContent = total;
+                }
+            }
+
+            if (weightInput) weightInput.addEventListener('input', updateTotal);
+            if (priceInput) priceInput.addEventListener('input', updateTotal);
+
+            // Initial calculation
+            updateTotal();
+
+            // Form submission with AJAX
+            $('#usageForm').on('submit', function(e) {
+                e.preventDefault();
+
+                const formData = $(this).serialize();
+
+                $.ajax({
+                    url: '@Url.Action("Create", "InternalUsage")',
+                    type: 'POST',
+                    data: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    success: function(response) {
+                        console.log('Response:', response); // Debug log
+
+                        if (response.success) {
+                            // Check if Swal is loaded
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'تم بنجاح!',
+                                    text: response.message || 'تم حفظ الاستخدام الداخلي بنجاح',
+                                    confirmButtonText: 'حسناً'
+                                }).then(() => {
+                                    window.location.href = response.redirectUrl || '@Url.Action("Index")';
+                                });
+                            } else {
+                                // Fallback if SweetAlert not loaded
+                                alert(response.message || 'تم حفظ الاستخدام الداخلي بنجاح');
+                                window.location.href = response.redirectUrl || '@Url.Action("Index")';
+                            }
+                        } else {
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire('خطأ', response.message || 'حدث خطأ أثناء حفظ البيانات', 'error');
+                            } else {
+                                alert('خطأ: ' + (response.message || 'حدث خطأ أثناء حفظ البيانات'));
+                            }
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('AJAX Error:', xhr); // Debug log
+                        let msg = 'حدث خطأ أثناء الاتصال بالخادم';
+
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            msg = xhr.responseJSON.message;
+                        } else if (xhr.responseText) {
+                            console.error('Response text:', xhr.responseText);
+                        }
+
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire('خطأ', msg, 'error');
+                        } else {
+                            alert('خطأ: ' + msg);
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+}

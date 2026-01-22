@@ -147,7 +147,7 @@ namespace BLL.Services.Service
                 // Update properties
                 Store.Name = model.Name.Trim();
                 Store.Description = model.Description?.Trim();
-
+                Store.UpdatedAt = DateTime.UtcNow;
                 // Save changes
                 _unit.Store.Update(Store);
                 await _unit.CompleteAsync();

@@ -5,6 +5,7 @@ using BLL.Services.Service;
 using DAL.Data;
 using DAL.Models;
 using DAL.Repositories.IRepository;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Westwind.AspNetCore.LiveReload;
@@ -32,14 +33,20 @@ builder.Services.AddTransient<IEmailSender, SmtpEmailSender>(sp =>
         senderName: config["SenderName"]
     );
 });
+builder.Services.AddScoped<IInternalProductUsageService, InternalProductUsageService>();
+builder.Services.AddScoped<ITransactionReportService, TransactionReportService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddSingleton<IFileUploader, FileUploader>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IStoreService, StoreService>();
 builder.Services.AddScoped<IProductCategoryService, ProductCategoryService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

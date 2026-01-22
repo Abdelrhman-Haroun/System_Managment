@@ -1,7 +1,5 @@
 ﻿@model IEnumerable<Store>
 
-
-
 @{
     ViewData["Title"] = "إدارة المخازن";
     var searchTerm = Context.Request.Query["searchTerm"].ToString();
@@ -14,11 +12,9 @@
     var paginatedUsers = Model.Skip((pageNumber - 1) * pageSize).Take(pageSize);
 }
 
-<!-- Full Screen Layout بدون أي هوامش خارجية -->
 <div>
     <div>
-        <div class="max-w-7xl mx-auto space-y-8">
-
+        <div class="space-y-8">
             <!-- الهيدر -->
             <div class="flex flex-col gap-6">
                 <div>
@@ -36,7 +32,6 @@
 
                 <!-- البحث والزر في صف واحد -->
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                    <!-- شريط البحث - يأخذ المساحة الكاملة -->
                     <form id="searchForm" asp-action="Index" method="get" class="relative flex-1">
                         <button type="button" id="searchBtn" class="absolute end-5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-primary z-10">
                             <span class="material-symbols-outlined text-2xl">search</span>
@@ -67,14 +62,14 @@
                     <h3 class="text-2xl font-bold text-slate-600 dark:text-slate-400 mb-3">لا توجد نتائج</h3>
                     @if (!string.IsNullOrEmpty(searchTerm))
                     {
-                        <p class="text-slate-500 mb-6">لم يتم العثور على فئات يطابقون "<strong>@searchTerm</strong>"</p>
+                        <p class="text-slate-500 mb-6">لم يتم العثور على مخازن تطابق "<strong>@searchTerm</strong>"</p>
                         <a asp-action="Index" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary/90">
                             <span class="material-symbols-outlined">refresh</span> عرض الكل
                         </a>
                     }
                     else
                     {
-                        <p class="text-slate-500">لا يوجد فئات في النظام حاليًا</p>
+                        <p class="text-slate-500">لا يوجد مخازن في النظام حاليًا</p>
                     }
                 </div>
             }
@@ -86,26 +81,37 @@
                         <table class="w-full">
                             <thead class="bg-slate-50 dark:bg-slate-900/50">
                                 <tr>
-                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-32">الاسم</th>
-                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-48">الوصف</th>
-                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400 w-24">إجراءات</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400">الاسم</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400">الوصف</th>
+                                    <th class="px-6 py-4 text-center text-xs font-bold text-slate-600 dark:text-slate-400">إجراءات</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
                                 @foreach (var user in paginatedUsers)
                                 {
-
                                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                         <td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white">@user.Name</td>
-                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">@user.Description</td>
-  
+                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">@user.Description</td>
+
                                         <td class="px-6 py-4">
-                                            <div class="flex items-center gap-4">
-                                                <a href="@Url.Action("Edit", new { id = user.Id })" class="openEditDialog text-primary hover:text-primary/80" title="تعديل">
-                                                    <span class="material-symbols-outlined text-xl">edit</span>
+                                            <div class="flex items-center justify-center gap-2">
+                                                <!-- NEW: Inventory Report Button -->
+                                                <a href="@Url.Action("Inventory", new { id = user.Id })"
+                                                   class="text-green-600 hover:text-green-800 p-2 hover:bg-green-50 rounded-lg transition-all"
+                                                   title="جرد المخزن">
+                                                    <span class="material-symbols-outlined text-xl">warehouse</span>
                                                 </a>
-                                                <a href="@Url.Action("Details", new { id = user.Id })" class="openDetailsDialog text-slate-600 hover:text-slate-800" title="تفاصيل">
+
+                                                <a href="@Url.Action("Details", new { id = user.Id })"
+                                                   class="openDetailsDialog text-slate-600 hover:text-slate-800 p-2 hover:bg-slate-100 rounded-lg transition-all"
+                                                   title="تفاصيل">
                                                     <span class="material-symbols-outlined text-xl">visibility</span>
+                                                </a>
+
+                                                <a href="@Url.Action("Edit", new { id = user.Id })"
+                                                   class="openEditDialog text-primary hover:text-primary/80 p-2 hover:bg-primary/10 rounded-lg transition-all"
+                                                   title="تعديل">
+                                                    <span class="material-symbols-outlined text-xl">edit</span>
                                                 </a>
                                             </div>
                                         </td>
@@ -140,18 +146,18 @@
                                 var startPage = Math.Max(1, pageNumber - 2);
                                 var endPage = Math.Min(totalPages, pageNumber + 2);
 
-                                @if (startPage > 1)
+                                if (startPage > 1)
                                 {
                                     <a asp-action="Index" asp-route-page="1" asp-route-searchTerm="@searchTerm" class="size-11 rounded-xl border border-slate-300 dark:border-slate-700 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-sm font-semibold">1</a>
-                                    @if (startPage > 2)
+                                    if (startPage > 2)
                                     {
                                         <span class="px-2 text-slate-500">...</span>
                                     }
                                 }
 
-                                @for (int i = startPage; i <= endPage; i++)
+                                for (int i = startPage; i <= endPage; i++)
                                 {
-                                    @if (i == pageNumber)
+                                    if (i == pageNumber)
                                     {
                                         <button class="size-11 rounded-xl bg-primary text-white font-bold flex items-center justify-center cursor-default">@i</button>
                                     }
@@ -161,9 +167,9 @@
                                     }
                                 }
 
-                                @if (endPage < totalPages)
+                                if (endPage < totalPages)
                                 {
-                                    @if (endPage < totalPages - 1)
+                                    if (endPage < totalPages - 1)
                                     {
                                         <span class="px-2 text-slate-500">...</span>
                                     }
@@ -198,7 +204,6 @@
         <span class="material-symbols-outlined text-3xl">add</span>
     </a>
 </div>
-
 
 @section Scripts {
     <script>

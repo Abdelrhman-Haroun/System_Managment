@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BLL.Services.IService;
+using BLL.Services.Service;
 using BLL.ViewModels.Store;
 using DAL.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -12,11 +13,15 @@ public class StoreController : Controller
 {
     private readonly IStoreService _service;
     private readonly IMapper _mapper;
+    private readonly IProductService _productService;
+    private readonly ITransactionReportService _transactionReportService;
 
-    public StoreController(IStoreService service, IMapper mapper)
+    public StoreController(IStoreService service, IMapper mapper, ITransactionReportService transactionReportService, IProductService productService)
     {
         _service = service;
         _mapper = mapper;
+        _transactionReportService = transactionReportService;
+        _productService = productService;
     }
 
     #region Index
@@ -200,4 +205,115 @@ public class StoreController : Controller
         }
     }
     #endregion
+
+
+    [HttpGet]
+    public async Task<IActionResult> Inventory(int id, DateTime? fromDate, DateTime? toDate, string searchTerm = null)
+    {
+        try
+        {
+            var store = await _service.GetByIdAsync(id);
+            if (store == null)
+            {
+                TempData["Error"] = "المخزن غير موجود";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Get all products in this store
+            var products = await _productService.GetAllAsync(
+                p => p.StoreId == id && !p.IsDeleted,
+                "Category");
+
+            // Apply search filter if provided
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.Trim().ToLower();
+                products = products.Where(p =>
+                    p.Name.ToLower().Contains(term) ||
+                    (p.Category != null && p.Category.Name.ToLower().Contains(term))
+                );
+            }
+
+            // Calculate stock value for each product
+            var inventoryItems = new List<StoreInventoryItemVM>();
+
+            foreach (var product in products)
+            {
+                // Get transactions for this product within date range
+                var transactions = await _transactionReportService
+                    .GetProductTransactionsByProductIdAsync(product.Id);
+
+                if (fromDate.HasValue)
+                    transactions = transactions.Where(t => t.TransactionDate >= fromDate.Value);
+
+                if (toDate.HasValue)
+                    transactions = transactions.Where(t => t.TransactionDate < toDate.Value.AddDays(1));
+
+                var transactionsList = transactions.ToList();
+
+                var totalIn = transactionsList
+                    .Where(t => t.TransactionType == "Purchase")
+                    .Sum(t => t.QuantityChanged);
+
+                var totalOut = transactionsList
+                    .Where(t => t.TransactionType == "Sales")
+                    .Sum(t => Math.Abs(t.QuantityChanged));
+
+                var avgPurchasePrice = transactionsList
+                    .Where(t => t.TransactionType == "Purchase" && t.UnitPrice > 0)
+                    .Average(t => (decimal?)t.UnitPrice) ?? 0;
+
+                var lastTransaction = transactionsList.FirstOrDefault();
+
+                inventoryItems.Add(new StoreInventoryItemVM
+                {
+                    ProductId = product.Id,
+                    ProductName = product.Name,
+                    ProductType = product.ProductType,
+                    CategoryName = product.Category?.Name ?? "غير محدد",
+                    CurrentStock = product.StockQuantity ?? 0,
+                    TotalIn = totalIn,
+                    TotalOut = totalOut,
+                    AveragePurchasePrice = avgPurchasePrice,
+                    StockValue = (product.StockQuantity ?? 0) * avgPurchasePrice,
+                    LastTransactionDate = lastTransaction?.TransactionDate,
+                    LastUnitPrice = lastTransaction?.UnitPrice ?? 0
+                });
+            }
+
+            ViewBag.Store = store;
+            ViewBag.FromDate = fromDate;
+            ViewBag.ToDate = toDate;
+            ViewBag.SearchTerm = searchTerm;
+            ViewBag.TotalStockValue = inventoryItems.Sum(i => i.StockValue);
+            ViewBag.TotalProducts = inventoryItems.Count;
+            ViewBag.LowStockProducts = inventoryItems.Count(i => i.CurrentStock < 10 && i.ProductType ==1 || i.CurrentStock < 1000 && i.ProductType == 2);
+
+            return View(inventoryItems.OrderBy(i => i.ProductName));
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = "حدث خطأ أثناء تحميل تقرير المخزون";
+            return RedirectToAction(nameof(Index));
+        }
+    }
+
+
+    [HttpGet]
+    public async Task<IActionResult> ExportInventory(int id, DateTime? fromDate, DateTime? toDate, string format = "excel")
+    {
+        try
+        {
+            var store = await _service.GetByIdAsync(id);
+            if (store == null)
+                return NotFound();
+
+            // TODO: Implement Excel/PDF export logic
+            return Json(new { success = true, message = "سيتم إضافة التصدير قريباً" });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = "حدث خطأ أثناء التصدير" });
+        }
+    }
 }

@@ -17,9 +17,14 @@ namespace DAL.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<CashBox> CashBoxes { get; set; }
         public DbSet<Store> Stores { get; set; }
-        public DbSet<PurchaseInvoice> PurchaseInvoices { get; set; }
+        public DbSet<Invoice> Invoices { get; set; }
+        public DbSet<InvoiceItem> InvoiceItems { get; set; }
         public DbSet<Employee> Employees { get; set; }
 
+        public DbSet<ProductTransaction> ProductTransactions { get; set; }
+        public DbSet<CustomerTransaction> CustomerTransactions { get; set; }
+        public DbSet<SupplierTransaction> SupplierTransactions { get; set; }
+        public DbSet<InternalProductUsage> InternalProductUsages { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);

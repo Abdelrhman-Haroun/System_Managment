@@ -8,7 +8,9 @@ namespace BLL.Services.IService
     {
         Task<IEnumerable<Product>> GetAllAsync(Expression<Func<Product, bool>> filter = null, string includes = null);
         Task<IEnumerable<Product>> GetAllAsync(string searchTerm = null, string includes = null);
+        Task<IEnumerable<Product>> GetAllAsync();
         Task<Product> GetByIdAsync(int id);
+        Task<Product> GetByIdContainsAsync(int Id, string includes = null);
         Task<Product> GetByNameAsync(string name);
         Task<Product> CreateAsync(CreateProductVM model);
         Task<Product> UpdateAsync(EditProductVM model);

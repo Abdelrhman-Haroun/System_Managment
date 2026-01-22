@@ -19,7 +19,7 @@ namespace DAL.Models
         public decimal? Balance { get; set; } = 0; // Positive = they owe us
 
         // Navigation Properties
-        public virtual ICollection<SalesInvoice> SalesInvoices { get; set; } = new List<SalesInvoice>();
+        public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
         public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
     }
 

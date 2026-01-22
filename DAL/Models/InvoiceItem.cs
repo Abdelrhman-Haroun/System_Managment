@@ -10,23 +10,33 @@ namespace DAL.Models
 {
     public class InvoiceItem : Base
     {
-        public int Quantity { get; set; } = 1; 
+        [Required]
+        public int InvoiceId { get; set; }
+        [ForeignKey(nameof(InvoiceId))]
+        public virtual Invoice Invoice { get; set; }
+
+        [Required]
+        public int ProductId { get; set; }
+
+        [ForeignKey(nameof(ProductId))]
+        public virtual Product Product { get; set; }
+
+        [Required]
+        [Range(1, int.MaxValue)]
+        public int Quantity { get; set; } = 1;
+
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Weight { get; set; } = 1;
 
-        [Required, Column(TypeName = "decimal(18,2)")]
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal UnitPrice { get; set; }
 
-        public int? ProductId { get; set; }
-        [ForeignKey(nameof(ProductId))]
-        public Product Product { get; set; }
+        [NotMapped]
+        public decimal TotalPrice => Quantity * UnitPrice;
 
-        public int? SaleInvoiceId { get; set; }
-        [ForeignKey(nameof(SaleInvoiceId))]
-        public SalesInvoice SaleInvoice { get; set; }
-
-        public int? PurchaseInvoiceId { get; set; }
-        [ForeignKey(nameof(PurchaseInvoiceId))]
-        public PurchaseInvoice PurchaseInvoice { get; set; }
+        [StringLength(200)]
+        public string? ProductName { get; set; }
     }
 
 }

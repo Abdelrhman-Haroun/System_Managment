@@ -1,0 +1,426 @@
+﻿
+@model UpdateInvoiceVM
+
+@{
+    ViewData["Title"] = "تعديل الفاتورة";
+}
+
+<div class="mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-4">
+        <div class="size-12 text-primary bg-white rounded-xl shadow-sm border border-border-light p-2.5 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[28px]">edit_note</span>
+        </div>
+        <div>
+            <h1 class="text-2xl font-bold text-text-main tracking-tight">تعديل الفاتورة</h1>
+            <p class="text-sm text-text-secondary mt-1">قم بتحديث بيانات الفاتورة</p>
+        </div>
+    </div>
+    <div class="flex gap-3 w-full md:w-auto">
+        <a asp-action="Index" class="flex-1 md:flex-none px-6 py-2.5 text-sm font-medium text-text-secondary bg-white border border-border-light rounded-xl hover:bg-gray-50 hover:text-text-main focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary/20 transition-all text-center">
+            إلغاء
+        </a>
+    </div>
+</div>
+
+<form id="invoiceForm" method="post" asp-action="Edit">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+        <!-- Main Content -->
+        <div class="lg:col-span-8 flex flex-col gap-6">
+
+            <!-- Invoice Type Display (Read-only) -->
+            <div class="bg-surface-light rounded-2xl border border-border-light shadow-sm p-6">
+                @if (Model.InvoiceType == "Purchase")
+                {
+                    <div class="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-800 font-bold rounded-xl">
+                        <span class="material-symbols-outlined text-[24px]">shopping_bag</span>
+                        فاتورة مشتريات
+                    </div>
+                }
+                else
+                {
+                    <div class="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 font-bold rounded-xl">
+                        <span class="material-symbols-outlined text-[24px]">sell</span>
+                        فاتورة مبيعات
+                    </div>
+                }
+                <input type="hidden" asp-for="InvoiceType" />
+            </div>
+
+            <!-- Supplier Section (Purchase) -->
+            @if (Model.InvoiceType == "Purchase")
+            {
+                <section class="bg-surface-light rounded-2xl border border-border-light shadow-sm p-6 lg:p-8">
+                    <h3 class="text-lg font-bold text-text-main mb-6 flex items-center gap-2 pb-4 border-b border-border-light">
+                        <span class="material-symbols-outlined text-primary bg-primary/10 p-1.5 rounded-lg">store</span>
+                        بيانات المورد الأساسية
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex flex-col gap-2 md:col-span-2">
+                            <label class="text-sm font-semibold text-text-main">المورد <span class="text-red-500">*</span></label>
+                            <div class="relative">
+                                <select asp-for="SupplierId" asp-items="@(new SelectList(ViewBag.Suppliers, "Id", "Name"))"
+                                        class="w-full h-12 rounded-xl border-border-light bg-background-light text-text-main text-sm focus:border-primary focus:ring-primary pr-10 pl-3 transition-colors appearance-none">
+                                    <option value="" disabled>اختر المورد...</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-text-secondary">
+                                    <span class="material-symbols-outlined text-[20px]">expand_more</span>
+                                </div>
+                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center px-3 text-primary/60">
+                                    <span class="material-symbols-outlined text-[20px]">store</span>
+                                </div>
+                            </div>
+                            <span asp-validation-for="SupplierId" class="text-red-600 text-sm"></span>
+                        </div>
+
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-semibold text-text-main">رقم المرجع (اختياري)</label>
+                            <div class="relative">
+                                <input asp-for="ReferenceNumber" placeholder="مثال: INV-00123"
+                                       class="w-full h-12 rounded-xl border-border-light bg-background-light text-text-main text-sm focus:border-primary focus:ring-primary placeholder:text-gray-400 pl-10 pr-3" />
+                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center px-3 text-primary/60">
+                                    <span class="material-symbols-outlined text-[20px]">tag</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            }
+
+            <!-- Customer Section (Sales) -->
+            @if (Model.InvoiceType == "Sales")
+            {
+                <section class="bg-surface-light rounded-2xl border border-border-light shadow-sm p-6 lg:p-8">
+                    <h3 class="text-lg font-bold text-text-main mb-6 flex items-center gap-2 pb-4 border-b border-border-light">
+                        <span class="material-symbols-outlined text-primary bg-primary/10 p-1.5 rounded-lg">person</span>
+                        بيانات العميل الأساسية
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex flex-col gap-2 md:col-span-2">
+                            <label class="text-sm font-semibold text-text-main">العميل <span class="text-red-500">*</span></label>
+                            <div class="relative">
+                                <select asp-for="CustomerId" asp-items="@(new SelectList(ViewBag.Customers, "Id", "Name"))"
+                                        class="w-full h-12 rounded-xl border-border-light bg-background-light text-text-main text-sm focus:border-primary focus:ring-primary pr-10 pl-3 transition-colors appearance-none">
+                                    <option value="" disabled>اختر العميل...</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-text-secondary">
+                                    <span class="material-symbols-outlined text-[20px]">expand_more</span>
+                                </div>
+                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center px-3 text-primary/60">
+                                    <span class="material-symbols-outlined text-[20px]">person</span>
+                                </div>
+                            </div>
+                            <span asp-validation-for="CustomerId" class="text-red-600 text-sm"></span>
+                        </div>
+
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-semibold text-text-main">رقم المرجع (اختياري)</label>
+                            <div class="relative">
+                                <input asp-for="ReferenceNumber" placeholder="مثال: SAL-00987"
+                                       class="w-full h-12 rounded-xl border-border-light bg-background-light text-text-main text-sm focus:border-primary focus:ring-primary placeholder:text-gray-400 pl-10 pr-3" />
+                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center px-3 text-primary/60">
+                                    <span class="material-symbols-outlined text-[20px]">tag</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            }
+
+            <!-- Invoice Items -->
+            <section class="bg-surface-light rounded-2xl border border-border-light shadow-sm p-6 lg:p-8">
+                <div class="flex items-center justify-between mb-6 pb-4 border-b border-border-light">
+                    <h3 class="text-lg font-bold text-text-main flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary bg-primary/10 p-1.5 rounded-lg">shopping_cart</span>
+                        بنود الفاتورة
+                    </h3>
+                    <div class="text-xs font-semibold bg-primary/10 text-primary px-3 py-1.5 rounded-full border border-primary/20">
+                        <span id="itemCount">0</span> بنود
+                    </div>
+                </div>
+
+                <div class="overflow-hidden rounded-xl border border-border-light">
+                    <div class="overflow-x-auto">
+                        <table class="w-full min-w-[700px] border-collapse bg-white">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-border-light">
+                                    <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider w-[35%]">المنتج</th>
+                                    <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider w-[15%]">الكمية</th>
+                                    <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider w-[15%]">الوزن (كجم)</th>
+                                    <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider w-[20%]">سعر الوحدة</th>
+                                    <th class="py-4 px-4 text-center text-xs font-bold text-text-secondary uppercase tracking-wider w-[10%]">إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoiceItemsBody" class="divide-y divide-border-light">
+                                <!-- Items will be added here dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="bg-gray-50 p-3 border-t border-border-light">
+                        <button type="button" id="addItemBtn" class="flex items-center gap-2 text-primary hover:text-primary-dark font-bold text-sm transition-colors py-2 px-4 rounded-lg hover:bg-white hover:shadow-sm border border-transparent hover:border-border-light w-full justify-center sm:justify-start sm:w-auto">
+                            <span class="material-symbols-outlined text-[20px]">add_circle</span>
+                            إضافة بند جديد
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Notes -->
+            <section class="bg-surface-light rounded-2xl border border-border-light shadow-sm p-6 lg:p-8">
+                <h3 class="text-lg font-bold text-text-main mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary bg-primary/10 p-1.5 rounded-lg">description</span>
+                    ملاحظات إضافية
+                </h3>
+                <textarea asp-for="Notes" class="w-full rounded-xl border-border-light bg-background-light text-text-main text-sm focus:border-primary focus:ring-primary min-h-[120px] p-4 placeholder:text-gray-400 resize-y leading-relaxed"
+                          placeholder="أضف أي ملاحظات إضافية حول الفاتورة هنا..."></textarea>
+            </section>
+        </div>
+
+        <!-- Summary Sidebar -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- Sticky container for both blocks -->
+            <div class="lg:sticky lg:top-6 lg:self-start">
+                <!-- Summary Card -->
+                <section class="bg-surface-light rounded-2xl border border-border-light shadow-sm p-6 mb-6">
+                    <h3 class="text-lg font-bold text-text-main mb-6 flex items-center gap-2 pb-4 border-b border-border-light">
+                        <span class="material-symbols-outlined text-primary bg-primary/10 p-1.5 rounded-lg">payments</span>
+                        ملخص الفاتورة
+                    </h3>
+
+                    <div class="space-y-5">
+                        <div class="flex items-center justify-between text-sm group">
+                            <span class="text-text-secondary font-medium">الإجمالي الفرعي</span>
+                            <span id="subtotalDisplay" class="font-bold text-text-main text-base">0.00 جنيه مصرى</span>
+                        </div>
+
+                        <div class="pt-2">
+                            <label class="text-xs font-bold text-text-secondary mb-2 block uppercase tracking-wide">قيمة الخصم</label>
+                            <div class="relative">
+                                <input asp-for="DiscountAmount" id="discountInput" type="number" step="0.01" min="0"
+                                       class="w-full h-11 rounded-xl border-border-light bg-background-light text-text-main text-lg font-medium focus:border-primary focus:ring-primary pr-3 pl-20 text-left transition-shadow"
+                                       dir="ltr" placeholder="0.00" />
+                                <span class="absolute left-3 top-3 text-xs text-text-secondary font-bold">جنيه مصرى</span>
+                                <span class="absolute right-3 top-3 text-primary/60 material-symbols-outlined text-[20px]">local_offer</span>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <label class="text-xs font-bold text-text-secondary mb-2 block uppercase tracking-wide">قيمة الضريبة</label>
+                            <div class="relative">
+                                <input asp-for="TaxAmount" id="taxInput" type="number" step="0.01" min="0"
+                                       class="w-full h-11 rounded-xl border-border-light bg-background-light text-text-main text-lg font-medium focus:border-primary focus:ring-primary pr-3 pl-20 text-left transition-shadow"
+                                       dir="ltr" placeholder="0.00" />
+                                <span class="absolute left-3 top-3 text-xs text-text-secondary font-bold">جنيه مصرى</span>
+                                <span class="absolute right-3 top-3 text-primary/60 material-symbols-outlined text-[20px]">account_balance</span>
+                            </div>
+                        </div>
+
+                        <div class="border-t-2 border-dashed border-border-light my-2"></div>
+
+                        <div class="bg-primary/5 rounded-xl p-4 border border-primary/10 text-center">
+                            <span class="block text-sm font-semibold text-text-secondary mb-1">المبلغ الإجمالي</span>
+                            <div class="flex items-center justify-center gap-1 text-primary">
+                                <span id="totalDisplay" class="text-3xl font-bold tracking-tight">0.00</span>
+                                <span class="text-sm font-bold mt-2">جنيه مصرى</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full py-4 px-6 bg-primary hover:bg-primary-dark text-white font-bold text-lg rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all transform active:scale-[0.98] flex items-center justify-center gap-3 mt-4">
+                            <span>حفظ التعديلات</span>
+                            <span class="material-symbols-outlined">save</span>
+                        </button>
+
+                        <p class="text-xs text-center text-gray-400 mt-2">
+                            سيتم تحديث الحسابات والمخزون بعد الحفظ
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Warning Box -->
+                <div class="bg-yellow-50/50 rounded-2xl border border-yellow-100 p-5 shadow-sm">
+                    <div class="flex items-start gap-3">
+                        <span class="material-symbols-outlined text-yellow-600 mt-0.5 bg-yellow-100 p-1 rounded-full text-[18px]">warning</span>
+                        <div class="flex flex-col gap-1">
+                            <h4 class="text-sm font-bold text-yellow-900">تنبيه</h4>
+                            <p class="text-xs text-yellow-700/80 leading-relaxed">
+                                عند حفظ التعديلات، سيتم تسجيل جميع التغييرات. سيتم استرجاع البيانات القديمة أولاً ثم تطبيق الجديدة.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        // Invoice items management
+        let itemIndex = 0;
+        const products = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Products ?? new List<object>()));
+        const existingItems = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Items));
+
+        // Initialize
+        $(document).ready(function() {
+            // Load existing items
+            existingItems.forEach(item => {
+                addInvoiceItem(item);
+            });
+
+            // Event listeners
+            $('#addItemBtn').on('click', () => addInvoiceItem());
+            $('#discountInput, #taxInput').on('input', calculateTotals);
+
+            // Initial calculation
+            calculateTotals();
+        });
+
+        function addInvoiceItem(existingItem = null) {
+            const productOptions = products.map(p =>
+                `<option value="${p.Id}" ${existingItem && existingItem.ProductId == p.Id ? 'selected' : ''}>${p.Name}</option>`
+            ).join('');
+
+            const row = `
+                <tr class="group hover:bg-gray-50/50 transition-colors item-row" data-index="${itemIndex}">
+                    <td class="py-3 px-3 align-top">
+                        <div class="relative">
+                            <select name="Items[${itemIndex}].ProductId" class="item-product w-full rounded-lg border-border-light text-sm text-text-main focus:border-primary focus:ring-primary py-2.5 bg-white pr-8 pl-3" required>
+                                <option value="">اختر المنتج...</option>
+                                ${productOptions}
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-text-secondary">
+                                <span class="material-symbols-outlined text-[18px]">category</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-3 px-3 align-top">
+                        <input name="Items[${itemIndex}].Quantity" type="number" min="1" value="${existingItem ? existingItem.Quantity : 1}"
+                               class="item-quantity w-full rounded-lg border-border-light text-sm text-text-main focus:border-primary focus:ring-primary py-2.5 px-3 text-center bg-white" required />
+                    </td>
+                    <td class="py-3 px-3 align-top">
+                        <input name="Items[${itemIndex}].Weight" type="number" step="0.01" min="0" value="${existingItem ? existingItem.Weight : 0}"
+                               class="item-weight w-full rounded-lg border-border-light text-sm text-text-main focus:border-primary focus:ring-primary py-2.5 px-3 text-center bg-white" />
+                    </td>
+                    <td class="py-3 px-3 align-top">
+                        <div class="relative">
+                            <input name="Items[${itemIndex}].UnitPrice" type="number" step="0.01" min="0" value="${existingItem ? existingItem.UnitPrice : 0}"
+                                   class="item-price w-full rounded-lg border-border-light text-sm text-text-main focus:border-primary focus:ring-primary py-2.5 pr-3 pl-20 bg-white" required />
+                            <span class="absolute left-2.5 top-2.5 text-xs font-medium text-text-secondary">جنيه مصرى</span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-3 text-center align-top">
+                        <button type="button" class="remove-item text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all p-2 rounded-lg">
+                            <span class="material-symbols-outlined text-[20px]">delete_outline</span>
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+            $('#invoiceItemsBody').append(row);
+
+            // Attach event listeners to new row (FIXED: Added space before .item-weight)
+            const $newRow = $(`tr[data-index="${itemIndex}"]`);
+            $newRow.find('.item-quantity, .item-price, .item-weight').on('input', calculateTotals);
+            $newRow.find('.remove-item').on('click', function() {
+                removeInvoiceItem($(this).closest('tr'));
+            });
+
+            itemIndex++;
+            updateItemCount();
+        }
+
+        function removeInvoiceItem($row) {
+            if ($('.item-row').length > 1) {
+                $row.remove();
+                updateItemCount();
+                calculateTotals();
+            } else {
+                Swal.fire('تنبيه', 'يجب أن يحتوي الفاتورة على بند واحد على الأقل', 'warning');
+            }
+        }
+
+        function updateItemCount() {
+            const count = $('.item-row').length;
+            $('#itemCount').text(count);
+        }
+
+        function calculateTotals() {
+            let subtotal = 0;
+
+            // Calculate subtotal (FIXED: Using weight * price, not quantity)
+            $('.item-row').each(function() {
+                const weight = parseFloat($(this).find('.item-weight').val()) || 0;
+                const price = parseFloat($(this).find('.item-price').val()) || 0;
+                subtotal += weight * price;
+            });
+
+            // Get discount and tax
+            const discount = parseFloat($('#discountInput').val()) || 0;
+            const tax = parseFloat($('#taxInput').val()) || 0;
+
+            // Calculate total
+            const total = subtotal - discount + tax;
+
+            // Update displays
+            $('#subtotalDisplay').text(subtotal.toFixed(2) + ' جنيه مصرى');
+            $('#totalDisplay').text(total.toFixed(2));
+        }
+
+        // Form submission
+        $('#invoiceForm').on('submit', function(e) {
+            e.preventDefault();
+
+            // Validate items
+            if ($('.item-row').length === 0) {
+                Swal.fire('خطأ', 'يجب إضافة بند واحد على الأقل', 'error');
+                return;
+            }
+
+            // Validate product selection
+            let hasEmptyProduct = false;
+            $('.item-product').each(function() {
+                if (!$(this).val()) {
+                    hasEmptyProduct = true;
+                }
+            });
+
+            if (hasEmptyProduct) {
+                Swal.fire('خطأ', 'يرجى اختيار المنتج لجميع البنود', 'error');
+                return;
+            }
+
+            // Submit form
+            const formData = $(this).serialize();
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'تم بنجاح!',
+                            text: response.message || 'تم تحديث الفاتورة بنجاح',
+                            confirmButtonText: 'حسناً'
+                        }).then(() => {
+                            window.location.href = response.redirectUrl || '@Url.Action("Index")';
+                        });
+                    } else {
+                        Swal.fire('خطأ', response.message || 'حدث خطأ أثناء تحديث الفاتورة', 'error');
+                    }
+                },
+                error: function(xhr) {
+                    let msg = 'حدث خطأ أثناء الاتصال بالخادم';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        msg = xhr.responseJSON.message;
+                    }
+                    Swal.fire('خطأ', msg, 'error');
+                }
+            });
+        });
+    </script>
+}

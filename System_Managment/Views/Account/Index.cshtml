@@ -18,7 +18,7 @@
 <!-- Full Screen Layout بدون أي هوامش خارجية -->
 <div>
     <div>
-        <div class="max-w-7xl mx-auto space-y-8">
+        <div class="space-y-8">
 
             <!-- الهيدر -->
             <div class="flex flex-col gap-6">
@@ -53,7 +53,7 @@
                         }
                     </form>
 
-                    <a asp-action="Register" asp-controller="Account" class="openRegisterDialog hidden sm:flex items-center justify-center gap-2 h-14 px-7 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg hover:shadow-xl transition-all whitespace-nowrap">
+                    <a href="@Url.Action("Register")" class="openRegisterDialog hidden sm:flex items-center justify-center gap-2 h-14 px-7 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg hover:shadow-xl transition-all whitespace-nowrap">
                         <span class="material-symbols-outlined text-xl">add</span>
                         إضافة مستخدم
                     </a>
@@ -257,7 +257,7 @@
 
 <!-- زر إضافة عائم للموبايل -->
 <div class="fixed bottom-6 end-6 z-50 sm:hidden">
-    <a asp-action="Register" asp-controller="Account" class="openRegisterDialog flex size-16 items-center justify-center rounded-full bg-primary text-white shadow-2xl hover:scale-110 transition-all">
+    <a href="@Url.Action("Register")" class="openRegisterDialog flex size-16 items-center justify-center rounded-full bg-primary text-white shadow-2xl hover:scale-110 transition-all">
         <span class="material-symbols-outlined text-3xl">add</span>
     </a>
 </div>
@@ -312,9 +312,10 @@
         });
 
         $(document).on('click', '.openRegisterDialog', function (e) {
-            e.preventDefault();
-            openDialog($(this).data('url') || this.href);
+               e.preventDefault();
+               openDialog(this.dataset.url || this.href);
         });
+
 
         $(document).on('keydown', e => {
             if (e.key === 'Escape') $('.fixed.inset-0.z-50').remove();

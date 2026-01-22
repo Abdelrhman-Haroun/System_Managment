@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BLL.Services.IService;
+using BLL.Services.Service;
 using BLL.ViewModels.Customer;
 using DAL.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -12,11 +13,13 @@ public class CustomerController : Controller
 {
     private readonly ICustomerService _service;
     private readonly IMapper _mapper;
+    private readonly ITransactionReportService _transactionReportService;
 
-    public CustomerController(ICustomerService service, IMapper mapper)
+    public CustomerController(ICustomerService service, IMapper mapper, ITransactionReportService transactionReportService)
     {
         _service = service;
         _mapper = mapper;
+        _transactionReportService = transactionReportService;
     }
 
     #region Index
@@ -200,4 +203,91 @@ public class CustomerController : Controller
         }
     }
     #endregion
+
+    [HttpGet]
+    public async Task<IActionResult> Transactions(int id, DateTime? fromDate, DateTime? toDate)
+    {
+        try
+        {
+            var customer = await _service.GetByIdAsync(id);
+            if (customer == null)
+            {
+                TempData["Error"] = "العميل غير موجود";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Get all transactions for this customer
+            var transactions = await _transactionReportService
+                .GetCustomerTransactionsByCustomerIdAsync(id);
+
+            // Apply date filtering if provided
+            if (fromDate.HasValue)
+            {
+                transactions = transactions.Where(t => t.TransactionDate >= fromDate.Value);
+            }
+
+            if (toDate.HasValue)
+            {
+                // Add one day to include the entire end date
+                var endDate = toDate.Value.AddDays(1);
+                transactions = transactions.Where(t => t.TransactionDate < endDate);
+            }
+
+            // Calculate summary
+            var totalDebt = transactions
+                .Where(t => t.TransactionType == "Invoice")
+                .Sum(t => t.AmountChanged);
+
+            var totalPayments = transactions
+                .Where(t => t.TransactionType == "Payment")
+                .Sum(t => Math.Abs(t.AmountChanged));
+
+            ViewBag.Customer = customer;
+            ViewBag.FromDate = fromDate;
+            ViewBag.ToDate = toDate;
+            ViewBag.TotalDebt = totalDebt;
+            ViewBag.TotalPayments = totalPayments;
+            ViewBag.CurrentBalance = customer.Balance;
+
+            return View(transactions.OrderByDescending(t => t.TransactionDate));
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = "حدث خطأ أثناء تحميل المعاملات";
+            return RedirectToAction(nameof(Index));
+        }
+    }
+    [HttpGet]
+    public async Task<IActionResult> ExportTransactions(int id, DateTime? fromDate, DateTime? toDate, string format = "excel")
+    {
+        try
+        {
+            var customer = await _service.GetByIdAsync(id);
+            if (customer == null)
+                return NotFound();
+
+            var transactions = await _transactionReportService
+                .GetCustomerTransactionsByCustomerIdAsync(id);
+
+            // Apply date filtering
+            if (fromDate.HasValue)
+                transactions = transactions.Where(t => t.TransactionDate >= fromDate.Value);
+
+            if (toDate.HasValue)
+                transactions = transactions.Where(t => t.TransactionDate < toDate.Value.AddDays(1));
+
+            // TODO: Implement Excel/PDF export logic
+            // For now, return JSON
+            return Json(new
+            {
+                success = true,
+                customer = customer.Name,
+                transactions = transactions.OrderByDescending(t => t.TransactionDate)
+            });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = "حدث خطأ أثناء التصدير" });
+        }
+    }
 }
