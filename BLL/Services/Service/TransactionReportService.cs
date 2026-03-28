@@ -29,7 +29,7 @@ namespace BLL.Services.Service
 
                 // Map regular transactions
                 var transactionList = transactions
-                    .Where(t => !t.IsDeleted)
+                    .Where(t => !t.IsDeleted && !IsInternalUsageLog(t))
                     .Select(t => new ProductTransactionVM
                     {
                         Id = t.Id,
@@ -61,9 +61,9 @@ namespace BLL.Services.Service
                         ProductName = product?.Name ?? "غير معروف",
                         ProductType = u.Product?.ProductType ?? 1,
                         InvoiceId = 0, // No invoice for internal usage
-                        TransactionType = "استخدام داخلي",
+                        TransactionType = TransactionTypes.InternalUsage,
                         QuantityBefore = u.StockQuantityBefore,
-                        QuantityChanged = (u.ProductType == 1) ? u.Quantity : u.Weight, // Negative because it's being removed
+                        QuantityChanged = (u.ProductType == 1) ? u.Quantity : u.Weight,
                         WeightChanged = u.Weight,
                         QuantityAfter = u.StockQuantityAfter,
                         UnitPrice = u.UnitPrice,
@@ -135,7 +135,7 @@ namespace BLL.Services.Service
 
                 // Map regular transactions
                 var transactionList = transactions
-                    .Where(t => !t.IsDeleted)
+                    .Where(t => !t.IsDeleted && !IsInternalUsageLog(t))
                     .Select(t => new ProductTransactionVM
                     {
                         Id = t.Id,
@@ -167,7 +167,7 @@ namespace BLL.Services.Service
                         ProductName = u.Product?.Name ?? "غير معروف",
                         ProductType = u.Product?.ProductType ?? 1,
                         InvoiceId = 0,
-                        TransactionType = "استخدام داخلي",
+                        TransactionType = TransactionTypes.InternalUsage,
                         QuantityBefore = u.StockQuantityBefore,
                         QuantityChanged = (u.ProductType == 1) ? u.Quantity : u.Weight,
                         WeightChanged = u.Weight,
@@ -214,7 +214,7 @@ namespace BLL.Services.Service
                         ProductName = u.Product?.Name ?? "غير معروف",
                         ProductType = (int)(u.Product?.ProductType),
                         InvoiceId = 0,
-                        TransactionType = "استخدام داخلي",
+                        TransactionType = TransactionTypes.InternalUsage,
                         QuantityBefore = u.StockQuantityBefore,
                         QuantityChanged = (u.ProductType == 1) ? u.Quantity : u.Weight,
                         WeightChanged = u.Weight,
@@ -254,7 +254,7 @@ namespace BLL.Services.Service
                         ProductName = u.Product?.Name ?? "غير معروف",
                         ProductType = (int)(u.Product?.ProductType),
                         InvoiceId = 0,
-                        TransactionType = "استخدام داخلي",
+                        TransactionType = TransactionTypes.InternalUsage,
                         QuantityBefore = u.StockQuantityBefore,
                         QuantityChanged = (u.ProductType==1)?u.Quantity:u.Weight,
                         WeightChanged = u.Weight,
@@ -487,11 +487,11 @@ namespace BLL.Services.Service
                 var internalUsages = await _unitOfWork.InternalProductUsage.GetByProductIdAsync(productId);
 
                 var totalIn = transactions
-                    .Where(t => !t.IsDeleted && t.TransactionType == "Purchases")
+                    .Where(t => !t.IsDeleted && TransactionTypes.IsPurchase(t.TransactionType))
                     .Sum(t => t.QuantityChanged);
 
                 var totalOut = transactions
-                    .Where(t => !t.IsDeleted && t.TransactionType == "Sales")
+                    .Where(t => !t.IsDeleted && TransactionTypes.IsSales(t.TransactionType))
                     .Sum(t => Math.Abs(t.QuantityChanged));
 
                 // Add internal usage to total out
@@ -515,12 +515,12 @@ namespace BLL.Services.Service
                 var transactions = await _unitOfWork.CustomerTransaction.GetByCustomerIdAsync(customerId);
 
                 var invoices = transactions
-                    .Where(t => !t.IsDeleted && t.TransactionType == "Sales")
+                    .Where(t => !t.IsDeleted && TransactionTypes.IsSales(t.TransactionType))
                     .GroupBy(t => t.InvoiceId)
                     .Count();
 
                 var totalDebt = transactions
-                    .Where(t => !t.IsDeleted && t.TransactionType == "Sales")
+                    .Where(t => !t.IsDeleted && TransactionTypes.IsSales(t.TransactionType))
                     .Sum(t => t.AmountChanged);
 
                 return (totalDebt, invoices);
@@ -539,12 +539,12 @@ namespace BLL.Services.Service
                 var transactions = await _unitOfWork.SupplierTransaction.GetBySupplierIdAsync(supplierId);
 
                 var invoices = transactions
-                    .Where(t => !t.IsDeleted && t.TransactionType == "Purchases")
+                    .Where(t => !t.IsDeleted && TransactionTypes.IsPurchase(t.TransactionType))
                     .GroupBy(t => t.InvoiceId)
                     .Count();
 
                 var totalCredit = transactions
-                    .Where(t => !t.IsDeleted && t.TransactionType == "Purchases")
+                    .Where(t => !t.IsDeleted && TransactionTypes.IsPurchase(t.TransactionType))
                     .Sum(t => t.AmountChanged);
 
                 return (totalCredit, invoices);
@@ -554,6 +554,12 @@ namespace BLL.Services.Service
                 Console.WriteLine($"Error getting supplier credit summary: {ex.Message}");
                 return (0, 0);
             }
+        }
+
+        private static bool IsInternalUsageLog(ProductTransaction transaction)
+        {
+            return transaction.InvoiceId == 0 &&
+                   TransactionTypes.IsInternalUsage(transaction.TransactionType);
         }
     }
 }

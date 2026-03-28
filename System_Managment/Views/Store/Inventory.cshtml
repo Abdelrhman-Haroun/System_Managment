@@ -129,7 +129,9 @@
                 <tbody class="divide-y divide-border-light">
                     @foreach (var item in Model)
                     {
-                        var stockClass = item.CurrentStock < 10 && item.ProductType == 1 || item.CurrentStock < 1000 && item.ProductType == 2 ? "text-red-600" : "text-text-main";
+                        var stockClass = ProductTypeExtensions.IsLowStock(item.ProductType, item.CurrentStock)
+                            ? "text-red-600"
+                            : "text-text-main";
 
                         <tr class="hover:bg-gray-50/50 transition-colors">
                             <td class="py-4 px-4 text-sm font-medium text-text-main">
@@ -139,7 +141,7 @@
                                 @item.CategoryName
                             </td>
                             <td class="py-4 px-4 text-sm">
-                                @if (item.ProductType == 1)
+                                @if (ProductTypeExtensions.IsCountType(item.ProductType))
                                 {
                                     <span class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">
                                         <span class="material-symbols-outlined text-[14px]">counter_1</span>
@@ -156,7 +158,7 @@
                             </td>
                             <td class="py-4 px-4 text-sm font-bold @stockClass">
                                 @item.CurrentStock.ToString("N2")
-                                @if (item.CurrentStock < 10 && item.ProductType == 1 || item.CurrentStock < 1000 && item.ProductType == 2)
+                                @if (ProductTypeExtensions.IsLowStock(item.ProductType, item.CurrentStock))
                                 {
                                     <span class="material-symbols-outlined text-red-600 text-[16px] ml-1">warning</span>
                                 }

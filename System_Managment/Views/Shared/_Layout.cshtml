@@ -1,27 +1,21 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - مزرعة آل سالم</title>
 
-    <!-- Favicon -->
     <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="shortcut icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
-
-    <!-- Tailwind CDN -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 
     <style type="text/tailwindcss">
         body {
@@ -29,410 +23,216 @@
         }
 
         .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
 
-        .dropdown-menu {
-            max-height: 0;
-            overflow: hidden;
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        details[open] > .dropdown-menu {
-            max-height: 600px;
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .dropdown-icon {
-            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        details[open] .dropdown-icon {
-            transform: rotate(-180deg);
-        }
-
-        /* Navigation Link Base */
-        .nav-link {
-            position: relative;
-            transition: all 0.2s ease;
-        }
-
-            .nav-link:hover {
-                background-color: #f1f5f9;
-                color: #2a7f40;
-            }
-
-            .nav-link.active {
-                background-color: rgba(42,127,64,0.1);
-                color: #2a7f40;
-                font-weight: 600;
-            }
-
-                .nav-link.active::before {
-                    content: '';
-                    position: absolute;
-                    right: 0;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    width: 4px;
-                    height: 24px;
-                    background-color: #2a7f40;
-                    border-radius: 0 4px 4px 0;
-                }
-
-        /* Dropdown Links */
+        .nav-link,
         .dropdown-link {
-            position: relative;
             transition: all 0.2s ease;
         }
 
-            .dropdown-link:hover {
-                background-color: #f1f5f9 !important;
-                color: #2a7f40;
-                padding-right: 1.75rem;
-            }
-
-            .dropdown-link.active {
-                background-color: rgba(42,127,64,0.1);
-                color: #2a7f40;
-                font-weight: 600;
-            }
-
-                .dropdown-link.active::after {
-                    content: '';
-                    position: absolute;
-                    right: 0.5rem;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    width: 6px;
-                    height: 6px;
-                    background-color: #2a7f40;
-                    border-radius: 50%;
-                }
-
-        /* Mobile Menu Animation */
-        .mobile-menu {
-            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            transform: translateX(0);
-            opacity: 1;
-            visibility: visible;
+        .nav-link:hover,
+        .dropdown-link:hover {
+            background-color: #f1f5f9;
+            color: #2a7f40;
         }
 
-            .mobile-menu.hidden {
-                transform: translateX(-100%);
-                opacity: 0;
-                visibility: hidden;
-                pointer-events: none;
-            }
+        .nav-link.active,
+        .dropdown-link.active {
+            background-color: rgba(42, 127, 64, 0.1);
+            color: #2a7f40;
+            font-weight: 700;
+        }
+
+        .nav-disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .mobile-menu.hidden {
+            transform: translateX(-100%);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
     </style>
 
-    <script id="tailwind-config">
-        tailwind.config = { darkMode: "class", theme: { extend: {
-            colors: {
-                primary: "#2a7f40", "background-light": "#f1f5f9", secondary: "#D2B48C",
-                "neutral-bg": "#F8F9FA", "neutral-card": "#FFFFFF", "neutral-text": "#343A40", "neutral-border": "#E9ECEF",
-            },
-            fontFamily: { display: ["Cairo", "sans-serif"] },
-        }}}
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#2a7f40",
+                        secondary: "#D2B48C",
+                        "background-light": "#f1f5f9",
+                        "neutral-card": "#ffffff",
+                        "neutral-text": "#1f2937",
+                        "neutral-border": "#e5e7eb"
+                    },
+                    fontFamily: {
+                        display: ["Cairo", "sans-serif"]
+                    }
+                }
+            }
+        };
     </script>
 </head>
 <body class="font-display bg-background-light text-neutral-text">
-
     @inject IHttpContextAccessor HttpContextAccessor
     @{
-        var path = HttpContextAccessor.HttpContext?.Request.Path.ToString().ToLowerInvariant() ?? "";
-        var full = (path + HttpContextAccessor.HttpContext?.Request.QueryString).ToLowerInvariant();
-        bool IsActive(string paths) => paths.Split('|').Any(p => full.Contains(p.Trim()));
+        var path = HttpContextAccessor.HttpContext?.Request.Path.ToString().ToLowerInvariant() ?? string.Empty;
+        bool IsActive(string fragment) => path.StartsWith(fragment, StringComparison.OrdinalIgnoreCase);
     }
 
-    <div class="flex min-h-screen w-full">
-        <!-- Desktop Sidebar -->
-        <aside class="sticky top-0 h-screen w-66 bg-neutral-card border-l border-neutral-border hidden lg:flex flex-col justify-between shadow-sm">
-            <div class="flex flex-1 flex-col overflow-y-auto py-4 px-4">
-                <!-- Logo -->
-                <div class="flex items-center gap-3 px-2 mb-8">
-                    <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 ring-4 ring-primary/20"
-                         style="background-image: url('@Url.Content("~/Files/images/logo.jpg")');"></div>
-                    <h1 class="text-lg font-black text-primary">مزرعة آل سالم</h1>
+    <div class="flex min-h-screen w-full max-w-full overflow-x-clip">
+        <aside class="sticky top-0 hidden h-screen w-72 shrink-0 flex-col justify-between border-l border-neutral-border bg-neutral-card shadow-sm lg:flex">
+            <div class="flex flex-1 flex-col overflow-y-auto px-4 py-4">
+                <div class="mb-8 flex items-center gap-3 px-2">
+                    <div class="size-12 rounded-full bg-cover bg-center ring-4 ring-primary/20" style="background-image: url('@Url.Content("~/Files/images/logo.jpg")');"></div>
+                    <div>
+                        <h1 class="text-lg font-black text-primary">مزرعة آل سالم</h1>
+                        <p class="text-xs text-slate-500">نظام الإدارة والمحاسبة</p>
+                    </div>
                 </div>
 
-                <nav class="flex flex-col gap-1">
-
-                    <!-- لوحة التحكم دائمًا مُظلّلة (active) في كل الصفحات -->
-                    <a asp-controller="Home" asp-action="Index"
-                       class="nav-link flex items-center gap-4 px-4 py-3 rounded-lg active">
+                <nav class="flex flex-col gap-1 text-sm">
+                    <a asp-controller="Home" asp-action="Index" class="nav-link @(IsActive("/home") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
                         <span class="material-symbols-outlined">dashboard</span>
-                        <span class="font-medium">لوحة التحكم</span>
+                        <span>لوحة التحكم</span>
                     </a>
-
-                    <!-- إدارة العملاء -->
-                    <details class="group nav-section" @(IsActive("/customer") ? "open" : "")>
-                        <summary class="nav-link flex items-center justify-between gap-4 px-4 py-3 rounded-lg cursor-pointer list-none">
-                            <div class="flex items-center gap-4"><span class="material-symbols-outlined">people</span><span class="font-medium">إدارة العملاء</span></div>
-                            <span class="material-symbols-outlined text-lg dropdown-icon">expand_more</span>
-                        </summary>
-                        <div class="dropdown-menu space-y-0">
-                            <a asp-controller="Customer" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/customer/index") || full.Contains("/customer") && !full.Contains("/customer/create") && !full.Contains("/customer/rating") ? "active" : "")">قائمة العملاء</a>
-                            <a asp-controller="Customer" asp-action="Rating" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/customer/rating") ? "active" : "")">تقييم العملاء</a>
-                        </div>
-                    </details>
-
-                    <!-- إدارة الموردين -->
-                    <details class="group nav-section" @(IsActive("/supplier") ? "open" : "")>
-                        <summary class="nav-link flex items-center justify-between gap-4 px-4 py-3 rounded-lg cursor-pointer list-none">
-                            <div class="flex items-center gap-4"><span class="material-symbols-outlined">local_shipping</span><span class="font-medium">إدارة الموردين</span></div>
-                            <span class="material-symbols-outlined text-lg dropdown-icon">expand_more</span>
-                        </summary>
-                        <div class="dropdown-menu space-y-0">
-                            <a asp-controller="Supplier" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/supplier/index") || full.Contains("/supplier") && !full.Contains("/supplier/create") && !full.Contains("/supplier/orders") ? "active" : "")">قائمة الموردين</a>
-                            <a asp-controller="Supplier" asp-action="Orders" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/supplier/orders") ? "active" : "")">طلبات التوريد</a>
-                        </div>
-                    </details>
-
-                    <!-- المنتجات -->
-                    <details class="group nav-section" @(IsActive("/product") || IsActive("/productcategory") ? "open" : "")>
-                        <summary class="nav-link flex items-center justify-between gap-4 px-4 py-3 rounded-lg cursor-pointer list-none">
-                            <div class="flex items-center gap-4"><span class="material-symbols-outlined">inventory</span><span class="font-medium">إدارة المنتجات</span></div>
-                            <span class="material-symbols-outlined text-lg dropdown-icon">expand_more</span>
-                        </summary>
-                        <div class="dropdown-menu space-y-0">
-                            <a asp-controller="Product" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/product/index") || full.Contains("/product") && !full.Contains("/product/create") && !full.Contains("/productcategory") ? "active" : "")">قائمة المنتجات</a>
-                            <a asp-controller="ProductCategory" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/productcategory/index") || full.Contains("/productcategory") && !full.Contains("/productcategory/create") ? "active" : "")">قائمة فئات المنتجات</a>
-                        </div>
-                    </details>
-
-                    <!-- إدارة المخازن -->
-                    <details class="group nav-section" @(IsActive("/store") ? "open" : "")>
-                        <summary class="nav-link flex items-center justify-between gap-4 px-4 py-3 rounded-lg cursor-pointer list-none">
-                            <div class="flex items-center gap-4"><span class="material-symbols-outlined">warehouse</span><span class="font-medium">إدارة المخازن</span></div>
-                            <span class="material-symbols-outlined text-lg dropdown-icon">expand_more</span>
-                        </summary>
-                        <div class="dropdown-menu space-y-0">
-                            <a asp-controller="Store" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/store/index") || full.Contains("/store") && !full.Contains("/store/create") && !full.Contains("/store/orders") ? "active" : "")">قائمة المخازن</a>
-                            <a asp-controller="Store" asp-action="Movements" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/stock/movements") ? "active" : "")">حركات المخزون</a>
-                            <a asp-controller="Store" asp-action="Count" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/inventory/count") ? "active" : "")">الجرد</a>
-                            <a asp-controller="Store" asp-action="Levels" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/stock/levels") ? "active" : "")">مستويات التخزين</a>
-                        </div>
-                    </details>
-
-                    <!-- الفواتير -->
-                    <details class="group nav-section" @(IsActive("/invoice") ? "open" : "")>
-                        <summary class="nav-link flex items-center justify-between gap-4 px-4 py-3 rounded-lg cursor-pointer list-none">
-                            <div class="flex items-center gap-4"><span class="material-symbols-outlined">receipt</span><span class="font-medium">الفواتير</span></div>
-                            <span class="material-symbols-outlined text-lg dropdown-icon">expand_more</span>
-                        </summary>
-                        <div class="dropdown-menu space-y-0">
-                            <a asp-controller="Invoice" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/invoice/index") || full.Contains("/invoice") && !full.Contains("/invoice/create") && !full.Contains("/invoice/pending") ? "active" : "")">قائمة الفواتير</a>
-                            <a asp-controller="Invoice" asp-action="Pending" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/invoice/pending") ? "active" : "")">الفواتير المعلقة</a>
-                        </div>
-                    </details>
-
-                    <!-- المدفوعات -->
-                    <details class="group nav-section" @(IsActive("/payments") ? "open" : "")>
-                        <summary class="nav-link flex items-center justify-between gap-4 px-4 py-3 rounded-lg cursor-pointer list-none">
-                            <div class="flex items-center gap-4"><span class="material-symbols-outlined">payments</span><span class="font-medium">المدفوعات</span></div>
-                            <span class="material-symbols-outlined text-lg dropdown-icon">expand_more</span>
-                        </summary>
-                        <div class="dropdown-menu space-y-0">
-                            <a asp-controller="Payments" asp-action="Create" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/payments/create") ? "active" : "")">تسجيل دفعة</a>
-                            <a asp-controller="Payments" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/payments/index") || full.Contains("/payments") && !full.Contains("/payments/create") && !full.Contains("/payments/due") && !full.Contains("/payments/late") ? "active" : "")">سجل المدفوعات</a>
-                            <a asp-controller="Payments" asp-action="Due" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/payments/due") ? "active" : "")">الحسابات المستحقة</a>
-                            <a asp-controller="Payments" asp-action="Late" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/payments/late") ? "active" : "")">المتأخرات</a>
-                        </div>
-                    </details>
-
-                    <!-- إدارة الموظفين -->
-                    <details class="group nav-section" @(IsActive("/employees|/salaries|/attendance") ? "open" : "")>
-                        <summary class="nav-link flex items-center justify-between gap-4 px-4 py-3 rounded-lg cursor-pointer list-none">
-                            <div class="flex items-center gap-4"><span class="material-symbols-outlined">work</span><span class="font-medium">إدارة الموظفين</span></div>
-                            <span class="material-symbols-outlined text-lg dropdown-icon">expand_more</span>
-                        </summary>
-                        <div class="dropdown-menu space-y-0">
-                            <a asp-controller="Employees" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/employees/index") || full.Contains("/employees") && !full.Contains("/employees/create") ? "active" : "")">قائمة الموظفين</a>
-                            <a asp-controller="Employees" asp-action="Create" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/employees/create") ? "active" : "")">إضافة موظف</a>
-                            <a asp-controller="Salaries" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/salaries") ? "active" : "")">الرواتب</a>
-                            <a asp-controller="Attendance" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/attendance") ? "active" : "")">الحضور والغياب</a>
-                        </div>
-                    </details>
-
-                    <!-- إدارة المستخدمين -->
-                    <details class="group nav-section" @(IsActive("/account") && !IsActive("/account/changepassword") ? "open" : "")>
-                        <summary class="nav-link flex items-center justify-between gap-4 px-4 py-3 rounded-lg cursor-pointer list-none">
-                            <div class="flex items-center gap-4"><span class="material-symbols-outlined">manage_accounts</span><span class="font-medium">إدارة المستخدمين</span></div>
-                            <span class="material-symbols-outlined text-lg dropdown-icon">expand_more</span>
-                        </summary>
-                        <div class="dropdown-menu space-y-0">
-                            <a asp-controller="Account" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/account/index") || (full.Contains("/account") && !full.Contains("/account/register") && !full.Contains("/account/activity") && !full.Contains("/account/changepassword")) ? "active" : "")">قائمة المستخدمين</a>
-                            <a asp-controller="Account" asp-action="Activity" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/account/activity") ? "active" : "")">سجل النشاط</a>
-                        </div>
-                    </details>
-
-                    <!-- التقارير -->
-                    <details class="group nav-section" @(IsActive("/reports") ? "open" : "")>
-                        <summary class="nav-link flex items-center justify-between gap-4 px-4 py-3 rounded-lg cursor-pointer list-none">
-                            <div class="flex items-center gap-4"><span class="material-symbols-outlined">assessment</span><span class="font-medium">التقارير</span></div>
-                            <span class="material-symbols-outlined text-lg dropdown-icon">expand_more</span>
-                        </summary>
-                        <div class="dropdown-menu space-y-0">
-                            <a asp-controller="Reports" asp-action="Financial" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/reports/financial") ? "active" : "")">التقارير المالية</a>
-                            <a asp-controller="Reports" asp-action="Sales" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/reports/sales") ? "active" : "")">تقارير المبيعات</a>
-                            <a asp-controller="Reports" asp-action="Purchases" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/reports/purchases") ? "active" : "")">تقارير المشتريات</a>
-                            <a asp-controller="Reports" asp-action="Analytics" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/reports/analytics") ? "active" : "")">التحليلات</a>
-                        </div>
-                    </details>
+                    <a asp-controller="Customer" asp-action="Index" class="nav-link @(IsActive("/customer") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
+                        <span class="material-symbols-outlined">people</span>
+                        <span>العملاء</span>
+                    </a>
+                    <a asp-controller="Supplier" asp-action="Index" class="nav-link @(IsActive("/supplier") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
+                        <span class="material-symbols-outlined">local_shipping</span>
+                        <span>الموردون</span>
+                    </a>
+                    <a asp-controller="Product" asp-action="Index" class="nav-link @(IsActive("/product") && !IsActive("/productcategory") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
+                        <span class="material-symbols-outlined">inventory</span>
+                        <span>المنتجات</span>
+                    </a>
+                    <a asp-controller="ProductCategory" asp-action="Index" class="nav-link @(IsActive("/productcategory") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
+                        <span class="material-symbols-outlined">category</span>
+                        <span>فئات المنتجات</span>
+                    </a>
+                    <a asp-controller="Store" asp-action="Index" class="nav-link @(IsActive("/store") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
+                        <span class="material-symbols-outlined">warehouse</span>
+                        <span>المخازن</span>
+                    </a>
+                    <a asp-controller="Invoice" asp-action="Index" class="nav-link @(IsActive("/invoice") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
+                        <span class="material-symbols-outlined">receipt</span>
+                        <span>الفواتير</span>
+                    </a>
+                    <a asp-controller="InternalUsage" asp-action="Index" class="nav-link @(IsActive("/internalusage") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
+                        <span class="material-symbols-outlined">agriculture</span>
+                        <span>الاستخدام الداخلي</span>
+                    </a>
+                    <a asp-controller="Account" asp-action="Index" class="nav-link @(IsActive("/account") && !IsActive("/account/login") && !IsActive("/account/forgotpassword") && !IsActive("/account/resetpassword") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
+                        <span class="material-symbols-outlined">manage_accounts</span>
+                        <span>المستخدمون</span>
+                    </a>
                 </nav>
+
+                <div class="mt-8 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
+                    <div class="mb-2 flex items-center gap-2 font-bold text-slate-700">
+                        <span class="material-symbols-outlined text-base">construction</span>
+                        <span>الأقسام المؤجلة</span>
+                    </div>
+                    <p>المدفوعات والموظفون والتقارير والإعدادات العامة أُزيلت من التنقل مؤقتًا حتى لا تظهر روابط مكسورة قبل تنفيذها.</p>
+                </div>
             </div>
 
-            <!-- Bottom Links (Settings Section) -->
-            <div class="border-t border-neutral-border px-4 py-4 space-y-2">
-                <!-- Settings Dropdown -->
-                <details class="group nav-section" @(IsActive("/settings|/account/changepassword") ? "open" : "")>
-                    <summary class="nav-link flex items-center justify-between gap-4 px-4 py-3 rounded-lg cursor-pointer list-none">
-                        <div class="flex items-center gap-4">
-                            <span class="material-symbols-outlined">settings</span>
-                            <span class="font-medium">الإعدادات</span>
-                        </div>
-                        <span class="material-symbols-outlined text-lg dropdown-icon">expand_more</span>
-                    </summary>
-                    <div class="dropdown-menu space-y-0">
-                        <a asp-controller="Settings" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/settings/index") || full.Contains("/settings") && !full.Contains("/account/changepassword") ? "active" : "")">الإعدادات العامة</a>
-                        <a asp-controller="Account" asp-action="ChangePassword" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/account/changepassword") ? "active" : "")">تغيير كلمة المرور</a>
-                    </div>
-                </details>
-
-                <!-- Logout Button -->
-                <form asp-controller="Account" asp-action="Logout" method="post" class="inline">
+            <div class="space-y-2 border-t border-neutral-border px-4 py-4">
+                <a asp-controller="Account" asp-action="ChangePassword" class="nav-link @(IsActive("/account/changepassword") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
+                    <span class="material-symbols-outlined">password</span>
+                    <span>تغيير كلمة المرور</span>
+                </a>
+                <form asp-controller="Account" asp-action="Logout" method="post">
                     @Html.AntiForgeryToken()
-                    <button type="submit" class="flex w-full items-center gap-4 px-4 py-3 rounded-lg text-red-600 hover:bg-red-500/10 text-left">
-                        <span class="material-symbols-outlined text-xl">logout</span>
-                        <span class="font-medium">تسجيل الخروج</span>
+                    <button type="submit" class="flex w-full items-center gap-4 rounded-lg px-4 py-3 text-red-600 hover:bg-red-50">
+                        <span class="material-symbols-outlined">logout</span>
+                        <span>تسجيل الخروج</span>
                     </button>
                 </form>
             </div>
         </aside>
 
-        <!-- Main Content -->
-        <div class="flex flex-1 flex-col">
-            <header class="sticky top-0 z-50 flex items-center justify-end px-6 py-4 bg-background-light/90 backdrop-blur-sm border-b border-neutral-border">
+        <div class="flex min-w-0 flex-1 flex-col">
+            <header class="sticky top-0 z-40 hidden items-center justify-end border-b border-neutral-border bg-background-light/90 px-6 py-4 backdrop-blur-sm lg:flex">
                 @await Html.PartialAsync("_UserLoginInfo")
             </header>
 
-            <header class="sticky top-0 z-40 flex items-center justify-between px-6 py-4 bg-primary text-white lg:hidden">
-                <button id="mobile-menu-btn" class="p-2 rounded-lg hover:bg-primary/80" onclick="toggleMobileMenu()">
+            <header class="sticky top-0 z-40 flex items-center justify-between bg-primary px-4 py-4 text-white lg:hidden">
+                <button id="mobile-menu-btn" class="rounded-lg p-2 hover:bg-primary/80" type="button" onclick="toggleMobileMenu()">
                     <span class="material-symbols-outlined text-2xl">menu</span>
                 </button>
-                <h1 class="text-xl font-bold">مزرعة آل سالم</h1>
-                <div class="w-10"></div>
+                <h1 class="text-lg font-bold">مزرعة آل سالم</h1>
+                <span class="w-10"></span>
             </header>
 
-@*             <main class="flex-1 p-6 lg:p-8">
-                <div class="mx-auto w-full max-w-7xl">
-                    @RenderBody()
-                </div>
-            </main> *@
-            <main class="flex-1 min-h-screen bg-gray-50/40 dark:bg-gray-950/30">
-                <div class="mx-auto w-full max-w-full px-4 py-6 sm:px-6 lg:px-10 xl:px-12 2xl:px-16">
+            <main class="min-h-screen min-w-0 flex-1 overflow-x-hidden bg-gray-50/60">
+                <div class="mx-auto w-full min-w-0 max-w-screen-2xl px-3 py-4 sm:px-5 sm:py-6 lg:px-8 xl:px-10">
+                    <div id="app-tempdata-alerts"
+                         data-success="@TempData["Success"]"
+                         data-error="@TempData["Error"]"
+                         data-success-message="@TempData["SuccessMessage"]"
+                         data-error-message="@TempData["ErrorMessage"]"
+                         hidden></div>
+
                     @RenderBody()
                 </div>
             </main>
         </div>
     </div>
 
-    <!-- Mobile Sidebar -->
-    <div id="mobile-sidebar" class="mobile-menu fixed inset-0 z-40 hidden lg:hidden">
-        <aside class="w-64 bg-neutral-card border-l border-neutral-border flex flex-col justify-between shadow-lg overflow-hidden">
-            <div class="flex flex-1 flex-col overflow-y-auto py-4 px-4">
-                <div class="flex items-center gap-3 px-2 mb-8">
-                    <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 ring-4 ring-primary/20"
-                         style="background-image: url('@Url.Content("~/Files/images/logo.jpg")');"></div>
-                    <h1 class="text-lg font-black text-primary">مزرعة آل سالم</h1>
+    <div id="mobile-sidebar" class="mobile-menu fixed inset-0 z-50 hidden lg:hidden">
+        <div class="flex h-full">
+            <aside class="w-[min(20rem,85vw)] overflow-y-auto border-l border-neutral-border bg-neutral-card px-4 py-4 shadow-lg">
+                <div class="mb-6 flex items-center gap-3 px-2">
+                    <div class="size-12 rounded-full bg-cover bg-center ring-4 ring-primary/20" style="background-image: url('@Url.Content("~/Files/images/logo.jpg")');"></div>
+                    <div>
+                        <h2 class="text-lg font-black text-primary">مزرعة آل سالم</h2>
+                        <p class="text-xs text-slate-500">الأقسام الجاهزة فقط</p>
+                    </div>
                 </div>
 
-                <nav class="flex flex-col gap-1">
-                    <a asp-controller="Home" asp-action="Index"
-                       class="nav-link flex items-center gap-4 px-4 py-3 rounded-lg active" onclick="closeMobileMenu()">
-                        <span class="material-symbols-outlined">dashboard</span>
-                        <span class="font-medium">لوحة التحكم</span>
-                    </a>
-
-                    <details class="group nav-section" @(IsActive("/customers") ? "open" : "")>
-                        <summary class="nav-link flex items-center justify-between gap-4 px-4 py-3 rounded-lg cursor-pointer list-none">
-                            <div class="flex items-center gap-4"><span class="material-symbols-outlined">people</span><span class="font-medium">إدارة العملاء</span></div>
-                            <span class="material-symbols-outlined text-lg dropdown-icon">expand_more</span>
-                        </summary>
-                        <div class="dropdown-menu space-y-0">
-                            <a asp-controller="Customers" asp-action="Index" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/customers/index") ? "active" : "")" onclick="closeMobileMenu()">قائمة العملاء</a>
-                            <a asp-controller="Customers" asp-action="Create" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/customers/create") ? "active" : "")" onclick="closeMobileMenu()">إضافة عميل جديد</a>
-                            <a asp-controller="Customers" asp-action="Rating" class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/customers/rating") ? "active" : "")" onclick="closeMobileMenu()">تقييم العملاء</a>
-                        </div>
-                    </details>
+                <nav class="flex flex-col gap-1 text-sm">
+                    <a asp-controller="Home" asp-action="Index" class="nav-link @(IsActive("/home") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">لوحة التحكم</a>
+                    <a asp-controller="Customer" asp-action="Index" class="nav-link @(IsActive("/customer") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">العملاء</a>
+                    <a asp-controller="Supplier" asp-action="Index" class="nav-link @(IsActive("/supplier") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">الموردون</a>
+                    <a asp-controller="Product" asp-action="Index" class="nav-link @(IsActive("/product") && !IsActive("/productcategory") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">المنتجات</a>
+                    <a asp-controller="ProductCategory" asp-action="Index" class="nav-link @(IsActive("/productcategory") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">فئات المنتجات</a>
+                    <a asp-controller="Store" asp-action="Index" class="nav-link @(IsActive("/store") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">المخازن</a>
+                    <a asp-controller="Invoice" asp-action="Index" class="nav-link @(IsActive("/invoice") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">الفواتير</a>
+                    <a asp-controller="InternalUsage" asp-action="Index" class="nav-link @(IsActive("/internalusage") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">الاستخدام الداخلي</a>
+                    <a asp-controller="Account" asp-action="Index" class="nav-link @(IsActive("/account") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">المستخدمون</a>
                 </nav>
-            </div>
-        </aside>
-        <div class="flex-1 bg-black/50" onclick="closeMobileMenu()"></div>
+            </aside>
+            <button type="button" class="flex-1 bg-black/40" onclick="closeMobileMenu()"></button>
+        </div>
     </div>
 
-    <!-- JavaScript -->
     <script>
         function toggleMobileMenu() {
-            const sidebar = document.getElementById('mobile-sidebar');
-            sidebar.classList.toggle('hidden');
+            const menu = document.getElementById('mobile-sidebar');
+            const isHidden = menu.classList.contains('hidden');
+            menu.classList.toggle('hidden', !isHidden);
+            document.body.classList.toggle('overflow-hidden', isHidden);
         }
 
         function closeMobileMenu() {
-            const sidebar = document.getElementById('mobile-sidebar');
-            sidebar.classList.add('hidden');
+            document.getElementById('mobile-sidebar').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
         }
-
-        document.addEventListener("DOMContentLoaded", function () {
-            // Only keep the current section open
-            const details = document.querySelectorAll("details.nav-section");
-            details.forEach(d => {
-                if (d.hasAttribute("open")) {
-                    // This detail is already open (it's the current section)
-                    d.addEventListener("toggle", function () {
-                        if (d.open) {
-                            // Close all other details when this one opens
-                            details.forEach(other => {
-                                if (other !== d) {
-                                    other.removeAttribute("open");
-                                }
-                            });
-                        }
-                    });
-                }
-            });
-
-            // Also handle clicks on summaries
-            document.querySelectorAll("details.nav-section > summary").forEach(summary => {
-                summary.addEventListener("click", function (e) {
-                    const detail = this.closest("details");
-                    // Allow toggle for current detail
-                    setTimeout(() => {
-                        details.forEach(d => {
-                            if (d !== detail && d.open) {
-                                d.removeAttribute("open");
-                            }
-                        });
-                    }, 0);
-                });
-            });
-        });
     </script>
-    <!-- jQuery (must be first) -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-    <!-- jQuery Validation -->
-    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
-
-    <!-- jQuery Unobtrusive Validation -->
-    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@4.0.0/dist/jquery.validate.unobtrusive.min.js"></script>
-
-    <!-- SweetAlert2 -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

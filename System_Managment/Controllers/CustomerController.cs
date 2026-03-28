@@ -235,11 +235,11 @@ public class CustomerController : Controller
 
             // Calculate summary
             var totalDebt = transactions
-                .Where(t => t.TransactionType == "Invoice")
+                .Where(t => TransactionTypes.IsSales(t.TransactionType))
                 .Sum(t => t.AmountChanged);
 
             var totalPayments = transactions
-                .Where(t => t.TransactionType == "Payment")
+                .Where(t => TransactionTypes.IsPayment(t.TransactionType))
                 .Sum(t => Math.Abs(t.AmountChanged));
 
             ViewBag.Customer = customer;

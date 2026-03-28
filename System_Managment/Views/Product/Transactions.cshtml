@@ -1,5 +1,6 @@
 ﻿@model IEnumerable<ProductTransactionVM>
 @using BLL.ViewModels.Transactions
+@using DAL.Models
 
 @{
     ViewData["Title"] = "حركة المنتج";
@@ -47,7 +48,7 @@
             <span class="material-symbols-outlined text-blue-600 bg-blue-100 p-2 rounded-lg">inventory</span>
         </div>
         <div class="text-2xl font-bold text-text-main">@currentStock.ToString("N2")</div>
-        <div class="text-xs text-text-secondary mt-1">@(productType == 1 ? "قطعة" : "كجم")</div>
+        <div class="text-xs text-text-secondary mt-1">@(ProductTypeExtensions.IsCountType(productType) ? "قطعة" : "كجم")</div>
     </div>
 
     <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
@@ -56,7 +57,7 @@
             <span class="material-symbols-outlined text-green-600 bg-green-100 p-2 rounded-lg">add_circle</span>
         </div>
         <div class="text-2xl font-bold text-text-main">@totalPurchases.ToString("N2")</div>
-        <div class="text-xs text-text-secondary mt-1">@(productType == 1 ? "قطعة" : "كجم")</div>
+        <div class="text-xs text-text-secondary mt-1">@(ProductTypeExtensions.IsCountType(productType) ? "قطعة" : "كجم")</div>
     </div>
 
     <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
@@ -65,7 +66,7 @@
             <span class="material-symbols-outlined text-red-600 bg-red-100 p-2 rounded-lg">remove_circle</span>
         </div>
         <div class="text-2xl font-bold text-text-main">@totalSales.ToString("N2")</div>
-        <div class="text-xs text-text-secondary mt-1">@(productType == 1 ? "قطعة" : "كجم")</div>
+        <div class="text-xs text-text-secondary mt-1">@(ProductTypeExtensions.IsCountType(productType) ? "قطعة" : "كجم")</div>
     </div>
 
     <!-- NEW: Internal Usage Card -->
@@ -75,7 +76,7 @@
             <span class="material-symbols-outlined text-amber-600 bg-amber-100 p-2 rounded-lg">engineering</span>
         </div>
         <div class="text-2xl font-bold text-text-main">@totalInternalUsage.ToString("N2")</div>
-        <div class="text-xs text-text-secondary mt-1">@(productType == 1 ? "قطعة" : "كجم")</div>
+        <div class="text-xs text-text-secondary mt-1">@(ProductTypeExtensions.IsCountType(productType) ? "قطعة" : "كجم")</div>
     </div>
 
     <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
@@ -165,21 +166,21 @@
                                 @transaction.ReferenceNumber
                             </td>
                             <td class="py-4 px-4 text-sm">
-                                @if (transaction.TransactionType == "Purchases")
+                                @if (TransactionTypes.IsPurchase(transaction.TransactionType))
                                 {
                                     <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">
                                         <span class="material-symbols-outlined text-[14px]">add</span>
                                         إضافة
                                     </span>
                                 }
-                                else if (transaction.TransactionType == "Sales")
+                                else if (TransactionTypes.IsSales(transaction.TransactionType))
                                 {
                                     <span class="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-800 text-xs font-bold rounded-full">
                                         <span class="material-symbols-outlined text-[14px]">remove</span>
                                         خصم
                                     </span>
                                 }
-                                else if (transaction.TransactionType == "استخدام داخلي")
+                                else if (TransactionTypes.IsInternalUsage(transaction.TransactionType))
                                 {
                                     <span class="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full">
                                         <span class="material-symbols-outlined text-[14px]">engineering</span>
@@ -190,8 +191,8 @@
                             <td class="py-4 px-4 text-sm text-text-secondary">
                                 @transaction.QuantityBefore.ToString("N2")
                             </td>
-                            <td class="py-4 px-4 text-sm font-bold @(transaction.TransactionType == "Purchase" ? "text-green-600" : (transaction.TransactionType == "استخدام داخلي" ? "text-amber-600" : "text-red-600"))">
-                                @(transaction.TransactionType == "Purchase" ? "+" : "-")@Math.Abs(transaction.QuantityChanged).ToString("N2")
+                            <td class="py-4 px-4 text-sm font-bold @(TransactionTypes.IsPurchase(transaction.TransactionType) ? "text-green-600" : (TransactionTypes.IsInternalUsage(transaction.TransactionType) ? "text-amber-600" : "text-red-600"))">
+                                @(TransactionTypes.IsPurchase(transaction.TransactionType) ? "+" : "-")@Math.Abs(transaction.QuantityChanged).ToString("N2")
                             </td>
                             <td class="py-4 px-4 text-sm text-text-secondary">
                                 @transaction.WeightChanged.ToString("N2") كجم

@@ -37,6 +37,34 @@ namespace DAL.Data
         {
             base.OnModelCreating(builder);
 
+            builder.Entity<Product>()
+                .Property(x => x.StockQuantity)
+                .HasPrecision(18, 2);
+
+            builder.Entity<ProductTransaction>(entity =>
+            {
+                entity.Property(x => x.QuantityBefore).HasPrecision(18, 2);
+                entity.Property(x => x.QuantityChanged).HasPrecision(18, 2);
+                entity.Property(x => x.WeightChanged).HasPrecision(18, 2);
+                entity.Property(x => x.QuantityAfter).HasPrecision(18, 2);
+                entity.Property(x => x.UnitPrice).HasPrecision(18, 2);
+                entity.Property(x => x.TotalAmount).HasPrecision(18, 2);
+            });
+
+            builder.Entity<CustomerTransaction>(entity =>
+            {
+                entity.Property(x => x.BalanceBefore).HasPrecision(18, 2);
+                entity.Property(x => x.AmountChanged).HasPrecision(18, 2);
+                entity.Property(x => x.BalanceAfter).HasPrecision(18, 2);
+            });
+
+            builder.Entity<SupplierTransaction>(entity =>
+            {
+                entity.Property(x => x.BalanceBefore).HasPrecision(18, 2);
+                entity.Property(x => x.AmountChanged).HasPrecision(18, 2);
+                entity.Property(x => x.BalanceAfter).HasPrecision(18, 2);
+            });
+
             // Seed roles
             builder.Entity<IdentityRole>().HasData(
                 new IdentityRole { Id = "1", Name = "SuperAdmin", NormalizedName = "SUPERADMIN" },

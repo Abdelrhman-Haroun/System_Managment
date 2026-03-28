@@ -92,14 +92,10 @@
                             <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
                                 @foreach (var user in paginatedUsers)
                                 {
-                                    string viewdType;
+                                    var viewdType = ProductTypeExtensions.FormatStock(user.ProductType, user.StockQuantity.GetValueOrDefault());
                                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                         <td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white">@user.Name</td>
                                         <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">@user.Description</td>
-                                        @if (user.ProductType == 1)
-                                            viewdType = string.Format("{0:#,##0}", user.StockQuantity.GetValueOrDefault());
-                                        else
-                                            viewdType = ($"{string.Format("{0:#,##0.##}", user.StockQuantity.GetValueOrDefault())} كجم");
                                         <td class="px-6 py-4 text-sm font-mono">
                                             <span class="@(user.StockQuantity < 10 ? "text-red-600 font-bold" : "text-slate-600 dark:text-slate-400")">
                                                 @viewdType
@@ -238,43 +234,5 @@
             });
         });
 
-        function openDialog(url) {
-            $.get(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                .done(function (data) {
-                    const modal = $(`
-                        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-                            <div class="w-full max-w-2xl my-8">
-                                ${data}
-                            </div>
-                        </div>
-                    `);
-                    $('body').append(modal);
-
-                    // إغلاق
-                    modal.on('click', '.closeDialog', () => modal.remove());
-                    modal.on('click', function (e) {
-                        if (e.target === modal[0]) modal.remove();
-                    });
-                });
-        }
-
-        $(document).on('click', '.openEditDialog', function (e) {
-            e.preventDefault();
-            openDialog(this.dataset.url || this.href);
-        });
-
-        $(document).on('click', '.openDetailsDialog', function (e) {
-            e.preventDefault();
-            openDialog($(this).data('url') || this.href);
-        });
-
-        $(document).on('click', '.openCreateDialog', function (e) {
-            e.preventDefault();
-            openDialog($(this).data('url') || this.href);
-        });
-
-        $(document).on('keydown', e => {
-            if (e.key === 'Escape') $('.fixed.inset-0.z-50').remove();
-        });
     </script>
 }

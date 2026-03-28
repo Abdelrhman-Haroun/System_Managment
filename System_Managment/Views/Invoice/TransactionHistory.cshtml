@@ -1,4 +1,5 @@
 ﻿@using BLL.ViewModels.Transactions
+@using DAL.Models
 
 @{
     ViewData["Title"] = "سجل المعاملات";
@@ -32,7 +33,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
                 <label class="text-xs font-semibold text-text-secondary uppercase">نوع الفاتورة</label>
-                @if (invoice.InvoiceType == "Purchases")
+                @if (invoice.InvoiceType == InvoiceTypes.Purchase)
                 {
                     <p class="text-sm font-bold text-blue-600 mt-1">فاتورة مشتريات</p>
                 }
@@ -83,7 +84,7 @@
                             <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">التغيير</th>
                             <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">الوزن</th>
                             <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">الكمية بعد</th>
-                            <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">سعر الوحدة</th>
+                            <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">سعر الكيلو</th>
                             <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">الإجمالي</th>
                         </tr>
                     </thead>
@@ -93,7 +94,7 @@
                             <tr class="hover:bg-gray-50/50 transition-colors">
                                 <td class="py-4 px-4 text-sm font-medium text-text-main">@transaction.ProductName</td>
                                 <td class="py-4 px-4 text-sm">
-                                    @if (transaction.ProductType == 1)
+                                    @if (ProductTypeExtensions.IsCountType(transaction.ProductType))
                                     {
                                         <span class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">
                                             <span class="material-symbols-outlined text-[14px]">counter_1</span>
@@ -109,7 +110,7 @@
                                     }
                                 </td>
                                 <td class="py-4 px-4 text-sm">
-                                    @if (transaction.TransactionType == "Purchases")
+                                    @if (TransactionTypes.IsPurchase(transaction.TransactionType))
                                     {
                                         <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">
                                             <span class="material-symbols-outlined text-[14px]">add</span>
@@ -125,8 +126,8 @@
                                     }
                                 </td>
                                 <td class="py-4 px-4 text-sm text-text-secondary">@transaction.QuantityBefore.ToString("N2")</td>
-                                <td class="py-4 px-4 text-sm font-bold @(transaction.TransactionType == "Purchases" ? "text-green-600" : "text-red-600")">
-                                    @(transaction.TransactionType == "Purchases" ? "+" : "-")@Math.Abs(transaction.QuantityChanged).ToString("N2")
+                                <td class="py-4 px-4 text-sm font-bold @(TransactionTypes.IsPurchase(transaction.TransactionType) ? "text-green-600" : "text-red-600")">
+                                    @(TransactionTypes.IsPurchase(transaction.TransactionType) ? "+" : "-")@Math.Abs(transaction.QuantityChanged).ToString("N2")
                                 </td>
                                 <td class="py-4 px-4 text-sm text-text-secondary">@transaction.WeightChanged.ToString("N2") كجم</td>
                                 <td class="py-4 px-4 text-sm font-medium text-text-main">@transaction.QuantityAfter.ToString("N2")</td>
@@ -175,12 +176,23 @@
                             <tr class="hover:bg-gray-50/50 transition-colors">
                                 <td class="py-4 px-4 text-sm font-medium text-text-main">@transaction.CustomerName</td>
                                 <td class="py-4 px-4 text-sm">
-                                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">
-                                        مبيعات
-                                    </span>
+                                    @if (TransactionTypes.IsSales(transaction.TransactionType))
+                                    {
+                                        <span class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">
+                                            مبيعات
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 text-slate-800 text-xs font-bold rounded-full">
+                                            دفعة
+                                        </span>
+                                    }
                                 </td>
                                 <td class="py-4 px-4 text-sm text-text-secondary">@transaction.BalanceBefore.ToString("N2") جنيه</td>
-                                <td class="py-4 px-4 text-sm font-bold text-green-600">+@transaction.AmountChanged.ToString("N2") جنيه</td>
+                                <td class="py-4 px-4 text-sm font-bold @(TransactionTypes.IsSales(transaction.TransactionType) ? "text-green-600" : "text-red-600")">
+                                    @(TransactionTypes.IsSales(transaction.TransactionType) ? "+" : "-")@Math.Abs(transaction.AmountChanged).ToString("N2") جنيه
+                                </td>
                                 <td class="py-4 px-4 text-sm font-medium text-text-main">@transaction.BalanceAfter.ToString("N2") جنيه</td>
                                 <td class="py-4 px-4 text-sm text-text-secondary">@transaction.Description</td>
                                 <td class="py-4 px-4 text-sm text-text-secondary">@transaction.TransactionDate.ToString("dd/MM/yyyy HH:mm")</td>
@@ -227,12 +239,23 @@
                             <tr class="hover:bg-gray-50/50 transition-colors">
                                 <td class="py-4 px-4 text-sm font-medium text-text-main">@transaction.SupplierName</td>
                                 <td class="py-4 px-4 text-sm">
-                                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs font-bold rounded-full">
-                                       مشتريات
-                                    </span>
+                                    @if (TransactionTypes.IsPurchase(transaction.TransactionType))
+                                    {
+                                        <span class="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs font-bold rounded-full">
+                                            مشتريات
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 text-slate-800 text-xs font-bold rounded-full">
+                                            دفعة
+                                        </span>
+                                    }
                                 </td>
                                 <td class="py-4 px-4 text-sm text-text-secondary">@transaction.BalanceBefore.ToString("N2") جنيه</td>
-                                <td class="py-4 px-4 text-sm font-bold text-green-600">+@transaction.AmountChanged.ToString("N2") جنيه</td>
+                                <td class="py-4 px-4 text-sm font-bold @(TransactionTypes.IsPurchase(transaction.TransactionType) ? "text-green-600" : "text-red-600")">
+                                    @(TransactionTypes.IsPurchase(transaction.TransactionType) ? "+" : "-")@Math.Abs(transaction.AmountChanged).ToString("N2") جنيه
+                                </td>
                                 <td class="py-4 px-4 text-sm font-medium text-text-main">@transaction.BalanceAfter.ToString("N2") جنيه</td>
                                 <td class="py-4 px-4 text-sm text-text-secondary">@transaction.Description</td>
                                 <td class="py-4 px-4 text-sm text-text-secondary">@transaction.TransactionDate.ToString("dd/MM/yyyy HH:mm")</td>

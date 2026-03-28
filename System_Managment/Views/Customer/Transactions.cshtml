@@ -1,5 +1,6 @@
 ﻿@model IEnumerable<CustomerTransactionVM>
 @using BLL.ViewModels.Transactions
+@using DAL.Models
 
 @{
     ViewData["Title"] = "معاملات العميل";
@@ -138,7 +139,7 @@
                                 @transaction.ReferenceNumber
                             </td>
                             <td class="py-4 px-6 text-sm">
-                                @if (transaction.TransactionType == "Invoice")
+                                @if (TransactionTypes.IsSales(transaction.TransactionType))
                                 {
                                     <span class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">
                                         <span class="material-symbols-outlined text-[14px]">receipt</span>

@@ -18,7 +18,7 @@
 
     <div class="invoice-title">
         <h1>فـاتــورة</h1>
-        @if (Model.InvoiceType == "Purchase")
+        @if (Model.InvoiceType == InvoiceTypes.Purchase)
         {
             <span class="invoice-type-badge badge-purchase">فاتورة مشتريات</span>
         }
@@ -42,7 +42,7 @@
     </div>
 
     <div class="info-group">
-        <label>@(Model.InvoiceType == "Purchase" ? "المورد" : "العميل")</label>
+        <label>@(Model.InvoiceType == InvoiceTypes.Purchase ? "المورد" : "العميل")</label>
         <div class="value">@Model.CustomerOrSupplierName</div>
     </div>
 
@@ -63,7 +63,7 @@
             <th style="width: 35%">المنتج</th>
             <th style="width: 10%" class="text-center">الكمية</th>
             <th style="width: 15%" class="text-center">الوزن (كجم)</th>
-            <th style="width: 15%" class="text-left">سعر الوحدة</th>
+            <th style="width: 15%" class="text-left">سعر الكيلو</th>
             <th style="width: 20%" class="text-left">الإجمالي</th>
         </tr>
     </thead>
@@ -79,7 +79,7 @@
                 <td class="text-center">@item.Quantity</td>
                 <td class="text-center">@item.Weight.ToString("N2")</td>
                 <td class="text-left">@item.UnitPrice.ToString("N2") جنيه</td>
-                <td class="text-left">@((item.Weight * item.UnitPrice).ToString("N2")) جنيه</td>
+                <td class="text-left">@item.TotalPrice.ToString("N2") جنيه</td>
             </tr>
             index++;
         }

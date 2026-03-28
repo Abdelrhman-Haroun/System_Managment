@@ -1,38 +1,41 @@
-
 using BLL.Mapper;
 using BLL.Services.IService;
 using BLL.Services.Service;
 using DAL.Data;
 using DAL.Models;
 using DAL.Repositories.IRepository;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Westwind.AspNetCore.LiveReload;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
+var mvcBuilder = builder.Services.AddControllersWithViews();
+if (builder.Environment.IsDevelopment())
+{
+    mvcBuilder.AddRazorRuntimeCompilation();
+    builder.Services.AddLiveReload();
+}
 
-builder.Services.AddControllersWithViews();
-
-builder.Services.AddLiveReload();
+builder.Services.AddRazorPages();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddTransient<IEmailSender, SmtpEmailSender>(sp =>
 {
     var config = sp.GetRequiredService<IConfiguration>().GetSection("EmailSettings");
+    var port = int.TryParse(config["Port"], out var parsedPort) ? parsedPort : 25;
+    var enableSsl = bool.TryParse(config["EnableSSL"], out var parsedEnableSsl) && parsedEnableSsl;
+
     return new SmtpEmailSender(
-        host: config["Host"],
-        port: int.Parse(config["Port"]),
-        enableSSL: bool.Parse(config["EnableSSL"]),
-        userName: config["UserName"],
-        password: config["Password"],
-        senderName: config["SenderName"]
+        host: config["Host"] ?? string.Empty,
+        port: port,
+        enableSSL: enableSsl,
+        userName: config["UserName"] ?? string.Empty,
+        password: config["Password"] ?? string.Empty,
+        senderName: config["SenderName"] ?? "System"
     );
 });
+
 builder.Services.AddScoped<IInternalProductUsageService, InternalProductUsageService>();
 builder.Services.AddScoped<ITransactionReportService, TransactionReportService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
@@ -46,72 +49,73 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IStoreService, StoreService>();
 builder.Services.AddScoped<IProductCategoryService, ProductCategoryService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IInvoiceService, InvoiceService>();
-
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddAutoMapper(typeof(DomainProfile));
 
-
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromHours(4))
- .AddDefaultTokenProviders()
- .AddDefaultUI()
- .AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+    {
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromHours(4);
+    })
+    .AddDefaultTokenProviders()
+    .AddDefaultUI()
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
-    options.SignIn.RequireConfirmedAccount = false; // Adjust as needed
+    options.SignIn.RequireConfirmedAccount = false;
     options.Password.RequireDigit = false;
     options.Password.RequireLowercase = false;
     options.Password.RequireUppercase = false;
     options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequiredLength = 0; 
+    options.Password.RequiredLength = 6;
     options.Password.RequiredUniqueChars = 0;
 });
 
-// Configure authentication
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/Account/Login"; // Redirect to login page
-    options.LogoutPath = "/Account/Logout"; // Redirect after logout
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
     options.AccessDeniedPath = "/Account/AccessDenied";
     options.ReturnUrlParameter = "returnUrl";
-    options.ExpireTimeSpan = TimeSpan.FromHours(24); // Session duration
+    options.ExpireTimeSpan = TimeSpan.FromHours(24);
     options.SlidingExpiration = true;
 });
 
 builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(4);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+else
+{
+    app.UseLiveReload();
+}
 
-// Configure middleware
-app.UseLiveReload();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
-
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
-//Redirect root to login or home page
-app.MapGet("/", async context =>
+app.MapGet("/", context =>
 {
-    if (!context.User.Identity.IsAuthenticated)
-    {
-        context.Response.Redirect("/Account/Login");
-return;
-    }
-    context.Response.Redirect("/Home/Index");
+    context.Response.Redirect(
+        context.User.Identity?.IsAuthenticated == true ? "/Home/Index" : "/Account/Login");
+    return Task.CompletedTask;
 });
 
 app.MapControllerRoute(

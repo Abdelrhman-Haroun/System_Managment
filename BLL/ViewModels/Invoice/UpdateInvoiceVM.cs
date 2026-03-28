@@ -18,6 +18,9 @@ namespace BLL.ViewModels.Invoice
         public int? CustomerId { get; set; }
         public int? SupplierId { get; set; }
 
+        [Required(ErrorMessage = "تاريخ الفاتورة مطلوب")]
+        public DateTime InvoiceDate { get; set; }
+
         [StringLength(100)]
         public string? ReferenceNumber { get; set; }
 

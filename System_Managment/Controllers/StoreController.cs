@@ -234,14 +234,15 @@ public class StoreController : Controller
                 );
             }
 
+            var allTransactions = (await _transactionReportService.GetAllProductTransactionsAsync()).ToList();
+            var productIds = products.Select(p => p.Id).ToHashSet();
+
             // Calculate stock value for each product
             var inventoryItems = new List<StoreInventoryItemVM>();
 
             foreach (var product in products)
             {
-                // Get transactions for this product within date range
-                var transactions = await _transactionReportService
-                    .GetProductTransactionsByProductIdAsync(product.Id);
+                var transactions = allTransactions.Where(t => productIds.Contains(t.ProductId) && t.ProductId == product.Id);
 
                 if (fromDate.HasValue)
                     transactions = transactions.Where(t => t.TransactionDate >= fromDate.Value);
@@ -252,15 +253,15 @@ public class StoreController : Controller
                 var transactionsList = transactions.ToList();
 
                 var totalIn = transactionsList
-                    .Where(t => t.TransactionType == "Purchase")
+                    .Where(t => TransactionTypes.IsPurchase(t.TransactionType))
                     .Sum(t => t.QuantityChanged);
 
                 var totalOut = transactionsList
-                    .Where(t => t.TransactionType == "Sales")
+                    .Where(t => TransactionTypes.IsSales(t.TransactionType) || TransactionTypes.IsInternalUsage(t.TransactionType))
                     .Sum(t => Math.Abs(t.QuantityChanged));
 
                 var avgPurchasePrice = transactionsList
-                    .Where(t => t.TransactionType == "Purchase" && t.UnitPrice > 0)
+                    .Where(t => TransactionTypes.IsPurchase(t.TransactionType) && t.UnitPrice > 0)
                     .Average(t => (decimal?)t.UnitPrice) ?? 0;
 
                 var lastTransaction = transactionsList.FirstOrDefault();
@@ -287,7 +288,8 @@ public class StoreController : Controller
             ViewBag.SearchTerm = searchTerm;
             ViewBag.TotalStockValue = inventoryItems.Sum(i => i.StockValue);
             ViewBag.TotalProducts = inventoryItems.Count;
-            ViewBag.LowStockProducts = inventoryItems.Count(i => i.CurrentStock < 10 && i.ProductType ==1 || i.CurrentStock < 1000 && i.ProductType == 2);
+            ViewBag.LowStockProducts = inventoryItems.Count(i =>
+                ProductTypeExtensions.IsLowStock(i.ProductType, i.CurrentStock));
 
             return View(inventoryItems.OrderBy(i => i.ProductName));
         }

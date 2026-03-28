@@ -84,11 +84,7 @@
                         <span class="material-symbols-outlined">inventory</span>
                     </div>
                     @{
-                    string viewdType;
-                    @if (Model.ProductType == 1)
-                        viewdType = string.Format("{0:#,##0}", Model.StockQuantity.GetValueOrDefault());
-                    else
-                            viewdType = ($"{string.Format("{0:#,##0.##}", Model.StockQuantity.GetValueOrDefault())} كجم");
+                    string viewdType = ProductTypeExtensions.FormatStock(Model.ProductType, Model.StockQuantity.GetValueOrDefault());
                     <div>
                         <p class="text-sm text-gray-500 dark:text-gray-400">رصيد المنتج بالمخزن</p>
                             <p class="font-semibold text-[#121613] dark:text-white break-words">@viewdType</p>

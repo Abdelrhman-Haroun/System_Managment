@@ -33,7 +33,7 @@ namespace DAL.Models
         public decimal UnitPrice { get; set; }
 
         [NotMapped]
-        public decimal TotalPrice => Quantity * UnitPrice;
+        public decimal TotalPrice => Weight * UnitPrice;
 
         [StringLength(200)]
         public string? ProductName { get; set; }

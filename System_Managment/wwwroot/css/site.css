@@ -19,6 +19,34 @@ html {
 
 body {
   margin-bottom: 60px;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+img,
+svg,
+video,
+canvas,
+iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+@media (max-width: 1023.98px) {
+  .sticky {
+    position: static;
+  }
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
@@ -34,4 +62,8 @@ body {
     appearance: none !important;
     direction: ltr !important;
     background-image: none !important;
+}
+
+table {
+  max-width: 100%;
 }

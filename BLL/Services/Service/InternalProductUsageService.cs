@@ -29,24 +29,24 @@ namespace BLL.Services.Service
                 if (model.ProductId <= 0)
                     return (false, "يرجى اختيار منتج صحيح", null);
 
-                if (model.Weight <= 0)
-                    return (false, "الكمية المستخدمة يجب أن تكون أكبر من صفر", null);
-
                 var product = await _unitOfWork.Product.GetFirstOrDefaultAsync(
                     p => p.Id == model.ProductId && !p.IsDeleted);
 
                 if (product == null)
                     return (false, "المنتج غير موجود", null);
 
-                decimal requiredStock = (product.ProductType == 1) ? model.Quantity : model.Weight;
-                if (product.StockQuantity < requiredStock)
+                decimal requiredStock = GetEffectiveQuantity(product.ProductType, model.Quantity, model.Weight);
+                if (requiredStock <= 0)
+                    return (false, "الكمية المستخدمة يجب أن تكون أكبر من صفر", null);
+
+                if ((product.StockQuantity ?? 0) < requiredStock)
                 {
                     return (false,
                         $"الكمية المتوفرة من {product.Name} غير كافية. المتوفر: {product.StockQuantity:N2}",
                         null);
                 }
 
-                decimal stockBefore = (decimal)product.StockQuantity;
+                decimal stockBefore = product.StockQuantity ?? 0;
                 var referenceNumber = await _unitOfWork.InternalProductUsage.GenerateReferenceNumberAsync();
 
                 var usage = new InternalProductUsage
@@ -56,7 +56,7 @@ namespace BLL.Services.Service
                     Quantity = model.Quantity,
                     Weight = model.Weight,
                     UnitPrice = model.UnitPrice,
-                    TotalCost = model.Weight * model.UnitPrice,
+                    TotalCost = requiredStock * model.UnitPrice,
                     UsageCategory = model.UsageCategory ?? "عام",
                     UsageDate = model.UsageDate,
                     ReferenceNumber = referenceNumber,
@@ -66,20 +66,11 @@ namespace BLL.Services.Service
                     UpdatedAt = DateTime.Now
                 };
 
-                decimal quantityChanged = 0;
-                // Determine quantity changed based on product type
-                if (product.ProductType == 1)
-                    quantityChanged = model.Quantity;
-                else
-                    quantityChanged = model.Weight;
+                decimal quantityChanged = requiredStock;
 
-                // Deduct from stock
-                if (product.ProductType == 1)
-                    product.StockQuantity -= model.Quantity;
-                else
-                    product.StockQuantity -= model.Weight;
+                product.StockQuantity = stockBefore - requiredStock;
 
-                usage.StockQuantityAfter = (decimal)product.StockQuantity;
+                usage.StockQuantityAfter = product.StockQuantity ?? 0;
                 product.UpdatedAt = DateTime.Now;
 
                 _unitOfWork.InternalProductUsage.Add(usage);
@@ -94,7 +85,7 @@ namespace BLL.Services.Service
                     quantityBefore: stockBefore,
                     quantityChanged: quantityChanged,
                     weightChanged: model.Weight,
-                    quantityAfter: (decimal)product.StockQuantity,
+                    quantityAfter: product.StockQuantity ?? 0,
                     unitPrice: model.UnitPrice,
                     referenceNumber: referenceNumber,
                     notes: $"{model.UsageCategory} - {referenceNumber}",
@@ -116,9 +107,6 @@ namespace BLL.Services.Service
                 if (model.ProductId <= 0)
                     return (false, "يرجى اختيار منتج صحيح");
 
-                if (model.Weight <= 0)
-                    return (false, "الكمية المستخدمة يجب أن تكون أكبر من صفر");
-
                 var usage = await _unitOfWork.InternalProductUsage.GetByIdAsync(model.Id);
                 if (usage == null || usage.IsDeleted)
                     return (false, "السجل غير موجود");
@@ -129,30 +117,22 @@ namespace BLL.Services.Service
                 if (product == null)
                     return (false, "المنتج غير موجود");
 
-                // Store old values for transaction logging
-                decimal oldQuantity = usage.Quantity;
-                decimal oldWeight = usage.Weight;
-
                 // Restore old stock first
-                if (product.ProductType == 1)
-                    product.StockQuantity += usage.Quantity;
-                else
-                    product.StockQuantity += usage.Weight;
+                var restoredQuantity = GetEffectiveQuantity(product.ProductType, usage.Quantity, usage.Weight);
+                product.StockQuantity = (product.StockQuantity ?? 0) + restoredQuantity;
 
-                // Check if new stock is available
-                decimal requiredStock = (product.ProductType == 1) ? model.Quantity : model.Weight;
-                if (product.StockQuantity < requiredStock)
+                decimal requiredStock = GetEffectiveQuantity(product.ProductType, model.Quantity, model.Weight);
+                if (requiredStock <= 0)
+                    return (false, "الكمية المستخدمة يجب أن تكون أكبر من صفر");
+
+                if ((product.StockQuantity ?? 0) < requiredStock)
                 {
                     return (false, $"الكمية المتوفرة من {product.Name} غير كافية. المتوفر: {product.StockQuantity:N2}");
                 }
 
-                decimal stockBefore = (decimal)product.StockQuantity;
+                decimal stockBefore = product.StockQuantity ?? 0;
 
-                // Deduct new stock
-                if (product.ProductType == 1)
-                    product.StockQuantity -= model.Quantity;
-                else
-                    product.StockQuantity -= model.Weight;
+                product.StockQuantity = stockBefore - requiredStock;
 
                 // Update usage record
                 usage.ProductId = model.ProductId;
@@ -160,12 +140,12 @@ namespace BLL.Services.Service
                 usage.Quantity = model.Quantity;
                 usage.Weight = model.Weight;
                 usage.UnitPrice = model.UnitPrice;
-                usage.TotalCost = model.Weight * model.UnitPrice;
+                usage.TotalCost = requiredStock * model.UnitPrice;
                 usage.UsageCategory = model.UsageCategory ?? "عام";
                 usage.UsageDate = model.UsageDate;
                 usage.Notes = model.Notes;
                 usage.StockQuantityBefore = stockBefore;
-                usage.StockQuantityAfter = (decimal)product.StockQuantity;
+                usage.StockQuantityAfter = product.StockQuantity ?? 0;
                 usage.UpdatedAt = DateTime.Now;
 
                 product.UpdatedAt = DateTime.Now;
@@ -174,12 +154,7 @@ namespace BLL.Services.Service
                 _unitOfWork.Product.Update(product);
                 await _unitOfWork.CompleteAsync();
 
-                decimal quantityChanged = 0;
-                // Determine quantity changed based on product type
-                if (product.ProductType == 1)
-                    quantityChanged = model.Quantity;
-                else
-                    quantityChanged = model.Weight;
+                decimal quantityChanged = requiredStock;
 
                 // Log updated transaction
                 await _transactionService.LogProductTransactionAsync(
@@ -189,7 +164,7 @@ namespace BLL.Services.Service
                     quantityBefore: stockBefore,
                     quantityChanged: quantityChanged,
                     weightChanged: model.Weight,
-                    quantityAfter: (decimal)product.StockQuantity,
+                    quantityAfter: product.StockQuantity ?? 0,
                     unitPrice: model.UnitPrice,
                     referenceNumber: usage.ReferenceNumber,
                     notes: $"تحديث: {model.UsageCategory} - {usage.ReferenceNumber}",
@@ -216,13 +191,11 @@ namespace BLL.Services.Service
                 if (product == null)
                     return (false, "المنتج غير موجود");
 
-                decimal stockBefore = (decimal)product.StockQuantity;
+                decimal stockBefore = product.StockQuantity ?? 0;
 
                 // Restore stock
-                if (product.ProductType == 1)
-                    product.StockQuantity += usage.Quantity;
-                else
-                    product.StockQuantity += usage.Weight;
+                var quantityRestored = GetEffectiveQuantity(product.ProductType, usage.Quantity, usage.Weight);
+                product.StockQuantity = stockBefore + quantityRestored;
 
                 product.UpdatedAt = DateTime.Now;
 
@@ -235,7 +208,6 @@ namespace BLL.Services.Service
                 await _unitOfWork.CompleteAsync();
 
                 // Log deletion transaction
-                decimal quantityRestored = (product.ProductType == 1) ? usage.Quantity : usage.Weight;
                 await _transactionService.LogProductTransactionAsync(
                     productId: product.Id,
                     invoiceId: 0,
@@ -243,7 +215,7 @@ namespace BLL.Services.Service
                     quantityBefore: stockBefore,
                     quantityChanged: quantityRestored,
                     weightChanged: usage.Weight,
-                    quantityAfter: (decimal)product.StockQuantity,
+                    quantityAfter: product.StockQuantity ?? 0,
                     unitPrice: usage.UnitPrice,
                     referenceNumber: usage.ReferenceNumber,
                     notes: $"حذف استخدام: {usage.UsageCategory} - {usage.ReferenceNumber}",
@@ -340,7 +312,7 @@ namespace BLL.Services.Service
         {
             var usages = await _unitOfWork.InternalProductUsage.GetByProductIdAsync(productId);
             var activeUsages = usages.Where(u => !u.IsDeleted).ToList();
-            return (activeUsages.Sum(u => u.TotalCost), activeUsages.Sum(u => u.Weight));
+            return (activeUsages.Sum(u => u.TotalCost), activeUsages.Sum(u => GetEffectiveQuantity(u.ProductType ?? 0, u.Quantity, u.Weight)));
         }
 
         public async Task<(decimal TotalCost, int RecordCount)> GetMonthlyUsageSummaryAsync(int month, int year)
@@ -373,6 +345,11 @@ namespace BLL.Services.Service
                 CreatedAt = u.CreatedAt,
                 UpdatedAt = u.UpdatedAt
             };
+        }
+
+        private static decimal GetEffectiveQuantity(int productType, decimal quantity, decimal weight)
+        {
+            return productType == (int)ProductType.Count ? quantity : weight;
         }
     }
 }

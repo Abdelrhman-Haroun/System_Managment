@@ -1,5 +1,6 @@
 ﻿@model IEnumerable<SupplierTransactionVM>
 @using BLL.ViewModels.Transactions
+@using DAL.Models
 
 @{
     ViewData["Title"] = "معاملات المورد";
@@ -138,7 +139,7 @@
                                 @transaction.ReferenceNumber
                             </td>
                             <td class="py-4 px-6 text-sm">
-                                @if (transaction.TransactionType == "Purchase")
+                                @if (TransactionTypes.IsPurchase(transaction.TransactionType))
                                 {
                                     <span class="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-800 text-xs font-bold rounded-full">
                                         <span class="material-symbols-outlined text-[14px]">shopping_cart</span>

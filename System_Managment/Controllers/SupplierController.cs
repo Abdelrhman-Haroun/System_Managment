@@ -236,11 +236,11 @@ public class SupplierController : Controller
 
             // Calculate summary
             var totalPurchases = transactions
-                .Where(t => t.TransactionType == "Purchase")
+                .Where(t => TransactionTypes.IsPurchase(t.TransactionType))
                 .Sum(t => t.AmountChanged);
 
             var totalPayments = transactions
-                .Where(t => t.TransactionType == "Payment")
+                .Where(t => TransactionTypes.IsPayment(t.TransactionType))
                 .Sum(t => Math.Abs(t.AmountChanged));
 
             ViewBag.Supplier = supplier;

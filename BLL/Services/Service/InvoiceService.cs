@@ -8,6 +8,13 @@ namespace BLL.Services.Service
 {
     public class InvoiceService : IInvoiceService
     {
+        private sealed class PreparedInvoiceItem
+        {
+            public required Product Product { get; init; }
+            public required InvoiceItemVM Item { get; init; }
+            public required decimal EffectiveQuantity { get; init; }
+        }
+
         private readonly IUnitOfWork _unitOfWork;
         private readonly ITransactionService _transactionService;
 
@@ -23,56 +30,48 @@ namespace BLL.Services.Service
         {
             try
             {
-                // Validation
-                if (model.InvoiceType == InvoiceTypes.Sales && !model.CustomerId.HasValue)
+                var validationMessage = ValidateInvoiceHeader(model.InvoiceType, model.CustomerId, model.SupplierId, model.Items);
+                if (validationMessage != null)
                 {
-                    return (false, "يرجى اختيار العميل", null);
+                    return (false, validationMessage, null);
                 }
 
-                if (model.InvoiceType == InvoiceTypes.Purchase && !model.SupplierId.HasValue)
+                var preparedItems = await PrepareInvoiceItemsAsync(model.Items);
+                if (preparedItems == null)
                 {
-                    return (false, "يرجى اختيار المورد", null);
+                    return (false, "أحد المنتجات المحددة غير موجود", null);
                 }
 
-                if (model.Items == null || !model.Items.Any())
+                var invalidItem = preparedItems.FirstOrDefault(i => i.EffectiveQuantity <= 0 || i.Item.Weight <= 0);
+                if (invalidItem != null)
                 {
-                    return (false, "يجب إضافة بند واحد على الأقل", null);
+                    return (false, $"بيانات المنتج {invalidItem.Product.Name} غير صحيحة. تأكد من إدخال العدد/الكمية والوزن بشكل صحيح", null);
                 }
 
-                // Calculate totals and create items
-                decimal subtotal = 0;
-                var invoiceItems = new List<InvoiceItem>();
-
-                foreach (var item in model.Items)
+                if (model.InvoiceType == InvoiceTypes.Sales)
                 {
-                    var product = await _unitOfWork.Product.GetFirstOrDefaultAsync(p => p.Id == item.ProductId && !p.IsDeleted);
-                    if (product == null)
+                    foreach (var itemGroup in preparedItems.GroupBy(i => i.Product.Id))
                     {
-                        return (false, $"المنتج غير موجود", null);
-                    }
+                        var product = itemGroup.First().Product;
+                        var requestedQuantity = itemGroup.Sum(i => i.EffectiveQuantity);
+                        var availableQuantity = product.StockQuantity ?? 0;
 
-                    // Check stock for sales
-                    if (model.InvoiceType == InvoiceTypes.Sales)
-                    {
-                        decimal requiredStock = (product.ProductType == 1) ? item.Quantity : item.Weight;
-                        if (product.StockQuantity < requiredStock)
+                        if (availableQuantity < requestedQuantity)
                         {
-                            return (false, $"الكمية المتوفرة من {product.Name} غير كافية. المتوفر: {product.StockQuantity}", null);
+                            return (false, $"الكمية المتوفرة من {product.Name} غير كافية. المتوفر: {availableQuantity}", null);
                         }
                     }
-
-                    var itemTotal = item.Weight * item.UnitPrice;
-                    subtotal += itemTotal;
-
-                    invoiceItems.Add(new InvoiceItem
-                    {
-                        ProductId = item.ProductId,
-                        ProductName = product.Name,
-                        Quantity = item.Quantity,
-                        Weight = item.Weight,
-                        UnitPrice = item.UnitPrice
-                    });
                 }
+
+                var subtotal = preparedItems.Sum(i => i.Item.Weight * i.Item.UnitPrice);
+                var invoiceItems = preparedItems.Select(i => new InvoiceItem
+                {
+                    ProductId = i.Item.ProductId,
+                    ProductName = i.Product.Name,
+                    Quantity = i.Item.Quantity,
+                    Weight = i.Item.Weight,
+                    UnitPrice = i.Item.UnitPrice
+                }).ToList();
 
                 decimal totalAmount = subtotal - model.DiscountAmount + model.TaxAmount;
 
@@ -140,56 +139,32 @@ namespace BLL.Services.Service
                 }
 
                 // Process each product item
-                foreach (var item in model.Items)
+                foreach (var preparedItem in preparedItems)
                 {
-                    var product = await _unitOfWork.Product.GetFirstOrDefaultAsync(p => p.Id == item.ProductId);
+                    var product = preparedItem.Product;
+                    decimal quantityBefore = product.StockQuantity ?? 0;
+                    decimal quantityChanged = preparedItem.EffectiveQuantity;
+                    decimal weightChanged = preparedItem.Item.Weight;
 
-                    if (product != null)
-                    {
-                        decimal quantityBefore = (decimal)product.StockQuantity;
-                        decimal quantityChanged = 0;
-                        decimal weightChanged = item.Weight;
+                    product.StockQuantity = model.InvoiceType == InvoiceTypes.Purchase
+                        ? quantityBefore + quantityChanged
+                        : quantityBefore - quantityChanged;
 
-                        // Determine quantity changed based on product type
-                        if (product.ProductType == 1)
-                            quantityChanged = item.Quantity;
-                        else
-                            quantityChanged = item.Weight;
+                    product.UpdatedAt = DateTime.Now;
+                    _unitOfWork.Product.Update(product);
 
-                        if (model.InvoiceType == InvoiceTypes.Purchase)
-                        {
-                            // Purchase: Add to stock
-                            if (product.ProductType == 1)
-                                product.StockQuantity += item.Quantity;
-                            else
-                                product.StockQuantity += item.Weight;
-                        }
-                        else // Sales
-                        {
-                            // Sales: Subtract from stock
-                            if (product.ProductType == 1)
-                                product.StockQuantity -= item.Quantity;
-                            else
-                                product.StockQuantity -= item.Weight;
-                        }
-
-                        product.UpdatedAt = DateTime.Now;
-                        _unitOfWork.Product.Update(product);
-
-                        // Log product transaction
-                        await _transactionService.LogProductTransactionAsync(
-                            product.Id,
-                            invoice.Id,
-                            model.InvoiceType == InvoiceTypes.Purchase ? "Purchases" : "Sales",
-                            quantityBefore,
-                            quantityChanged,
-                            weightChanged,
-                            (decimal)product.StockQuantity,
-                            item.UnitPrice,
-                            invoiceNumber,
-                            $"الفاتورة #{invoiceNumber}",
-                            product.ProductType);
-                    }
+                    await _transactionService.LogProductTransactionAsync(
+                        product.Id,
+                        invoice.Id,
+                        model.InvoiceType == InvoiceTypes.Purchase ? "Purchases" : "Sales",
+                        quantityBefore,
+                        quantityChanged,
+                        weightChanged,
+                        product.StockQuantity ?? 0,
+                        preparedItem.Item.UnitPrice,
+                        invoiceNumber,
+                        $"الفاتورة #{invoiceNumber}",
+                        product.ProductType);
                 }
 
                 await _unitOfWork.CompleteAsync();
@@ -213,183 +188,170 @@ namespace BLL.Services.Service
                     return (false, "الفاتورة غير موجودة");
                 }
 
-                // Revert old transactions
+                var oldInvoiceType = invoice.InvoiceType;
+                var oldSupplierId = invoice.SupplierId;
+                var oldCustomerId = invoice.CustomerId;
+                var oldTotalAmount = invoice.TotalAmount;
+
+                var validationMessage = ValidateInvoiceHeader(model.InvoiceType, model.CustomerId, model.SupplierId, model.Items);
+                if (validationMessage != null)
+                {
+                    return (false, validationMessage);
+                }
+
+                var preparedItems = await PrepareInvoiceItemsAsync(model.Items);
+                if (preparedItems == null)
+                {
+                    return (false, "أحد المنتجات المحددة غير موجود");
+                }
+
+                var invalidItem = preparedItems.FirstOrDefault(i => i.EffectiveQuantity <= 0 || i.Item.Weight <= 0);
+                if (invalidItem != null)
+                {
+                    return (false, $"بيانات المنتج {invalidItem.Product.Name} غير صحيحة. تأكد من إدخال العدد/الكمية والوزن بشكل صحيح");
+                }
+
+                var oldActiveItems = invoice.InvoiceItems.Where(i => !i.IsDeleted).ToList();
+                var stockTargets = new Dictionary<int, decimal>();
+                var productCache = new Dictionary<int, Product>();
+
+                foreach (var oldItem in oldActiveItems)
+                {
+                    var product = await _unitOfWork.Product.GetFirstOrDefaultAsync(p => p.Id == oldItem.ProductId && !p.IsDeleted);
+                    if (product == null)
+                    {
+                        return (false, "أحد منتجات الفاتورة القديمة غير موجود");
+                    }
+
+                    productCache[product.Id] = product;
+
+                    if (!stockTargets.ContainsKey(product.Id))
+                    {
+                        stockTargets[product.Id] = product.StockQuantity ?? 0;
+                    }
+
+                    stockTargets[product.Id] -= GetStockImpact(invoice.InvoiceType, GetEffectiveQuantity(product.ProductType, oldItem.Quantity, oldItem.Weight));
+                }
+
+                foreach (var itemGroup in preparedItems.GroupBy(i => i.Product.Id))
+                {
+                    var product = itemGroup.First().Product;
+                    productCache[product.Id] = product;
+
+                    if (!stockTargets.ContainsKey(product.Id))
+                    {
+                        stockTargets[product.Id] = product.StockQuantity ?? 0;
+                    }
+
+                    stockTargets[product.Id] += itemGroup.Sum(i => GetStockImpact(model.InvoiceType, i.EffectiveQuantity));
+                }
+
+                var invalidStock = stockTargets.FirstOrDefault(kvp => kvp.Value < 0);
+                if (!invalidStock.Equals(default(KeyValuePair<int, decimal>)))
+                {
+                    var productName = productCache.TryGetValue(invalidStock.Key, out var product)
+                        ? product.Name
+                        : "المنتج";
+                    return (false, $"الكمية المتوفرة من {productName} غير كافية للتعديل");
+                }
+
+                var subtotal = preparedItems.Sum(i => i.Item.Weight * i.Item.UnitPrice);
+                var totalAmount = subtotal - model.DiscountAmount + model.TaxAmount;
+
                 await _transactionService.RevertInvoiceTransactionsAsync(invoice.Id);
-
-                // Revert old balance change
-                if (invoice.InvoiceType == InvoiceTypes.Purchase)
-                {
-                    var supplier = await _unitOfWork.Supplier.GetFirstOrDefaultAsync(s => s.Id == invoice.SupplierId);
-                    if (supplier != null)
-                    {
-                        supplier.Balance -= invoice.TotalAmount;
-                        _unitOfWork.Supplier.Update(supplier);
-                    }
-                }
-                else // Sales
-                {
-                    var customer = await _unitOfWork.Customer.GetFirstOrDefaultAsync(c => c.Id == invoice.CustomerId);
-                    if (customer != null)
-                    {
-                        customer.Balance -= invoice.TotalAmount;
-                        _unitOfWork.Customer.Update(customer);
-                    }
-                }
-
-                // Revert old stock changes for each item
-                foreach (var oldItem in invoice.InvoiceItems.Where(i => !i.IsDeleted))
-                {
-                    var product = await _unitOfWork.Product.GetFirstOrDefaultAsync(p => p.Id == oldItem.ProductId);
-                    if (product != null)
-                    {
-                        if (invoice.InvoiceType == InvoiceTypes.Purchase)
-                        {
-                            if (product.ProductType == 1)
-                                product.StockQuantity -= oldItem.Quantity;
-                            else
-                                product.StockQuantity -= oldItem.Weight;
-                        }
-                        else // Sales
-                        {
-                            if (product.ProductType == 1)
-                                product.StockQuantity += oldItem.Quantity;
-                            else
-                                product.StockQuantity += oldItem.Weight;
-                        }
-
-                        product.UpdatedAt = DateTime.Now;
-                        _unitOfWork.Product.Update(product);
-                    }
-                }
-
-                await _unitOfWork.CompleteAsync();
-
-                // Update invoice basic info
-                decimal subtotal = model.Items.Sum(i => i.Weight * i.UnitPrice);
 
                 invoice.InvoiceType = model.InvoiceType;
                 invoice.CustomerId = model.CustomerId;
                 invoice.SupplierId = model.SupplierId;
+                invoice.InvoiceDate = model.InvoiceDate;
                 invoice.ReferenceNumber = model.ReferenceNumber;
                 invoice.SubTotal = subtotal;
                 invoice.DiscountAmount = model.DiscountAmount;
                 invoice.TaxAmount = model.TaxAmount;
-                invoice.TotalAmount = subtotal - model.DiscountAmount + model.TaxAmount;
+                invoice.TotalAmount = totalAmount;
                 invoice.Notes = model.Notes;
                 invoice.UpdatedAt = DateTime.Now;
 
-                // Clear old items (soft delete)
                 foreach (var oldItem in invoice.InvoiceItems)
                 {
                     oldItem.IsDeleted = true;
                     oldItem.UpdatedAt = DateTime.Now;
                 }
 
-                // Add new items
-                foreach (var item in model.Items)
+                foreach (var preparedItem in preparedItems)
                 {
-                    var product = await _unitOfWork.Product.GetFirstOrDefaultAsync(p => p.Id == item.ProductId && !p.IsDeleted);
-                    if (product == null) continue;
-
                     var newItem = new InvoiceItem
                     {
                         InvoiceId = invoice.Id,
-                        ProductId = item.ProductId,
-                        ProductName = product.Name,
-                        Quantity = item.Quantity,
-                        Weight = item.Weight,
-                        UnitPrice = item.UnitPrice
+                        ProductId = preparedItem.Item.ProductId,
+                        ProductName = preparedItem.Product.Name,
+                        Quantity = preparedItem.Item.Quantity,
+                        Weight = preparedItem.Item.Weight,
+                        UnitPrice = preparedItem.Item.UnitPrice
                     };
                     invoice.InvoiceItems.Add(newItem);
+                }
+
+                await AdjustInvoicePartyBalanceAsync(oldInvoiceType, oldSupplierId, oldCustomerId, -oldTotalAmount);
+                await AdjustInvoicePartyBalanceAsync(model.InvoiceType, model.SupplierId, model.CustomerId, totalAmount);
+
+                foreach (var stockTarget in stockTargets)
+                {
+                    var product = productCache[stockTarget.Key];
+                    product.StockQuantity = stockTarget.Value;
+                    product.UpdatedAt = DateTime.Now;
+                    _unitOfWork.Product.Update(product);
                 }
 
                 _unitOfWork.Invoice.Update(invoice);
                 await _unitOfWork.CompleteAsync();
 
-                // Apply new supplier/customer balance ONCE
+                var referenceNumber = invoice.ReferenceNumber ?? invoice.InvoiceNumber ?? string.Empty;
+
                 if (invoice.InvoiceType == InvoiceTypes.Purchase)
                 {
                     var supplier = await _unitOfWork.Supplier.GetFirstOrDefaultAsync(s => s.Id == invoice.SupplierId);
                     if (supplier != null)
                     {
-                        decimal supplierBalanceBefore = (decimal)supplier.Balance;
-                        supplier.Balance += invoice.TotalAmount;
-                        _unitOfWork.Supplier.Update(supplier);
-
+                        var balanceBefore = (supplier.Balance ?? 0) - invoice.TotalAmount;
                         await _transactionService.LogSupplierTransactionAsync(
                             supplier.Id,
                             invoice.Id,
                             "Purchases",
-                            supplierBalanceBefore,
+                            balanceBefore,
                             invoice.TotalAmount,
-                            (decimal)supplier.Balance,
+                            supplier.Balance ?? 0,
                             $"تحديث فاتورة مشتريات #{invoice.InvoiceNumber}",
-                            invoice.ReferenceNumber ?? invoice.InvoiceNumber);
+                            referenceNumber);
                     }
                 }
-                else // Sales
+                else
                 {
                     var customer = await _unitOfWork.Customer.GetFirstOrDefaultAsync(c => c.Id == invoice.CustomerId);
                     if (customer != null)
                     {
-                        decimal customerBalanceBefore = (decimal)customer.Balance;
-                        customer.Balance += invoice.TotalAmount;
-                        _unitOfWork.Customer.Update(customer);
-
+                        var balanceBefore = (customer.Balance ?? 0) - invoice.TotalAmount;
                         await _transactionService.LogCustomerTransactionAsync(
                             customer.Id,
                             invoice.Id,
                             "Sales",
-                            customerBalanceBefore,
+                            balanceBefore,
                             invoice.TotalAmount,
-                            (decimal)customer.Balance,
+                            customer.Balance ?? 0,
                             $"تحديث فاتورة مبيعات #{invoice.InvoiceNumber}",
-                            invoice.ReferenceNumber ?? invoice.InvoiceNumber);
+                            referenceNumber);
                     }
                 }
 
-                // Apply new stock changes for each item
-                foreach (var item in model.Items)
+                foreach (var itemGroup in preparedItems.GroupBy(i => i.Product.Id))
                 {
-                    var product = await _unitOfWork.Product.GetFirstOrDefaultAsync(p => p.Id == item.ProductId && !p.IsDeleted);
-                    if (product == null) continue;
+                    var product = productCache[itemGroup.Key];
+                    var quantityChanged = itemGroup.Sum(i => i.EffectiveQuantity);
+                    var weightChanged = itemGroup.Sum(i => i.Item.Weight);
+                    var quantityAfter = product.StockQuantity ?? 0;
+                    var quantityBefore = quantityAfter - GetStockImpact(invoice.InvoiceType, quantityChanged);
+                    var unitPrice = itemGroup.Last().Item.UnitPrice;
 
-                    decimal quantityBefore = (decimal)product.StockQuantity;
-                    decimal quantityChanged = 0;
-                    decimal weightChanged = item.Weight;
-
-                    // Determine quantity changed based on product type
-                    if (product.ProductType == 1)
-                        quantityChanged = item.Quantity;
-                    else
-                        quantityChanged = item.Weight;
-
-                    if (invoice.InvoiceType == InvoiceTypes.Purchase)
-                    {
-                        if (product.ProductType == 1)
-                            product.StockQuantity += item.Quantity;
-                        else
-                            product.StockQuantity += item.Weight;
-                    }
-                    else // Sales
-                    {
-                        // Check stock availability
-                        decimal requiredStock = (product.ProductType == 1) ? item.Quantity : item.Weight;
-                        if (product.StockQuantity < requiredStock)
-                        {
-                            return (false, $"الكمية المتوفرة من {product.Name} غير كافية. المتوفر: {product.StockQuantity}");
-                        }
-
-                        if (product.ProductType == 1)
-                            product.StockQuantity -= item.Quantity;
-                        else
-                            product.StockQuantity -= item.Weight;
-                    }
-
-                    product.UpdatedAt = DateTime.Now;
-                    _unitOfWork.Product.Update(product);
-
-                    // Log product transaction
                     await _transactionService.LogProductTransactionAsync(
                         product.Id,
                         invoice.Id,
@@ -397,14 +359,12 @@ namespace BLL.Services.Service
                         quantityBefore,
                         quantityChanged,
                         weightChanged,
-                        (decimal)product.StockQuantity,
-                        item.UnitPrice,
-                        invoice.ReferenceNumber ?? invoice.InvoiceNumber,
+                        quantityAfter,
+                        unitPrice,
+                        referenceNumber,
                         $"تحديث الفاتورة #{invoice.InvoiceNumber}",
                         product.ProductType);
                 }
-
-                await _unitOfWork.CompleteAsync();
 
                 var typeName = invoice.InvoiceType == InvoiceTypes.Purchase ? "المشتريات" : "المبيعات";
                 return (true, $"تم تحديث فاتورة {typeName} بنجاح");
@@ -425,54 +385,29 @@ namespace BLL.Services.Service
                     return (false, "الفاتورة غير موجودة");
                 }
 
-                // Revert all transactions
+                var activeItems = invoice.InvoiceItems.Where(i => !i.IsDeleted).ToList();
+                foreach (var item in activeItems)
+                {
+                    var product = await _unitOfWork.Product.GetFirstOrDefaultAsync(p => p.Id == item.ProductId && !p.IsDeleted);
+                    if (product == null)
+                    {
+                        return (false, "أحد منتجات الفاتورة غير موجود");
+                    }
+
+                    var effectiveQuantity = GetEffectiveQuantity(product.ProductType, item.Quantity, item.Weight);
+                    var finalQuantity = (product.StockQuantity ?? 0) - GetStockImpact(invoice.InvoiceType, effectiveQuantity);
+                    if (finalQuantity < 0)
+                    {
+                        return (false, $"لا يمكن حذف الفاتورة لأن مخزون المنتج {product.Name} لم يعد يسمح بالتراجع عن هذه العملية");
+                    }
+
+                    product.StockQuantity = finalQuantity;
+                    product.UpdatedAt = DateTime.Now;
+                    _unitOfWork.Product.Update(product);
+                }
+
                 await _transactionService.RevertInvoiceTransactionsAsync(invoice.Id);
-
-                // Revert stock changes
-                foreach (var item in invoice.InvoiceItems.Where(i => !i.IsDeleted))
-                {
-                    var product = await _unitOfWork.Product.GetFirstOrDefaultAsync(p => p.Id == item.ProductId);
-                    if (product != null)
-                    {
-                        if (invoice.InvoiceType == InvoiceTypes.Purchase)
-                        {
-                            if (product.ProductType == 1)
-                                product.StockQuantity -= item.Quantity;
-                            else
-                                product.StockQuantity -= item.Weight;
-                        }
-                        else // Sales
-                        {
-                            if (product.ProductType == 1)
-                                product.StockQuantity += item.Quantity;
-                            else
-                                product.StockQuantity += item.Weight;
-                        }
-
-                        product.UpdatedAt = DateTime.Now;
-                        _unitOfWork.Product.Update(product);
-                    }
-                }
-
-                // Revert balance changes (MOVED OUTSIDE LOOP - FIX)
-                if (invoice.InvoiceType == InvoiceTypes.Purchase)
-                {
-                    var supplier = await _unitOfWork.Supplier.GetFirstOrDefaultAsync(s => s.Id == invoice.SupplierId);
-                    if (supplier != null)
-                    {
-                        supplier.Balance -= invoice.TotalAmount;
-                        _unitOfWork.Supplier.Update(supplier);
-                    }
-                }
-                else // Sales
-                {
-                    var customer = await _unitOfWork.Customer.GetFirstOrDefaultAsync(c => c.Id == invoice.CustomerId);
-                    if (customer != null)
-                    {
-                        customer.Balance -= invoice.TotalAmount;
-                        _unitOfWork.Customer.Update(customer);
-                    }
-                }
+                await AdjustInvoicePartyBalanceAsync(invoice.InvoiceType, invoice.SupplierId, invoice.CustomerId, -invoice.TotalAmount);
 
                 // Soft delete invoice and items
                 invoice.IsDeleted = true;
@@ -521,6 +456,7 @@ namespace BLL.Services.Service
                     Id = i.Id,
                     ProductId = i.ProductId,
                     ProductName = i.ProductName ?? i.Product?.Name ?? "",
+                    ProductType = i.Product?.ProductType ?? (int)ProductType.Count,
                     Quantity = i.Quantity,
                     Weight = i.Weight,
                     UnitPrice = i.UnitPrice
@@ -543,6 +479,81 @@ namespace BLL.Services.Service
                 ItemsCount = i.InvoiceItems?.Count(item => !item.IsDeleted) ?? 0,
                 CreatedAt = i.CreatedAt
             }).OrderByDescending(i => i.CreatedAt);
+        }
+
+        private static decimal GetEffectiveQuantity(int productType, decimal quantity, decimal weight)
+        {
+            return productType == (int)ProductType.Count ? quantity : weight;
+        }
+
+        private static decimal GetStockImpact(string invoiceType, decimal effectiveQuantity)
+        {
+            return invoiceType == InvoiceTypes.Purchase ? effectiveQuantity : -effectiveQuantity;
+        }
+
+        private static string? ValidateInvoiceHeader(string invoiceType, int? customerId, int? supplierId, List<InvoiceItemVM>? items)
+        {
+            if (invoiceType == InvoiceTypes.Sales && !customerId.HasValue)
+            {
+                return "يرجى اختيار العميل";
+            }
+
+            if (invoiceType == InvoiceTypes.Purchase && !supplierId.HasValue)
+            {
+                return "يرجى اختيار المورد";
+            }
+
+            if (items == null || !items.Any())
+            {
+                return "يجب إضافة بند واحد على الأقل";
+            }
+
+            return null;
+        }
+
+        private async Task<List<PreparedInvoiceItem>?> PrepareInvoiceItemsAsync(IEnumerable<InvoiceItemVM> items)
+        {
+            var preparedItems = new List<PreparedInvoiceItem>();
+
+            foreach (var item in items)
+            {
+                var product = await _unitOfWork.Product.GetFirstOrDefaultAsync(p => p.Id == item.ProductId && !p.IsDeleted);
+                if (product == null)
+                {
+                    return null;
+                }
+
+                preparedItems.Add(new PreparedInvoiceItem
+                {
+                    Product = product,
+                    Item = item,
+                    EffectiveQuantity = GetEffectiveQuantity(product.ProductType, item.Quantity, item.Weight)
+                });
+            }
+
+            return preparedItems;
+        }
+
+        private async Task AdjustInvoicePartyBalanceAsync(string invoiceType, int? supplierId, int? customerId, decimal delta)
+        {
+            if (invoiceType == InvoiceTypes.Purchase && supplierId.HasValue)
+            {
+                var supplier = await _unitOfWork.Supplier.GetFirstOrDefaultAsync(s => s.Id == supplierId.Value);
+                if (supplier != null)
+                {
+                    supplier.Balance = (supplier.Balance ?? 0) + delta;
+                    _unitOfWork.Supplier.Update(supplier);
+                }
+            }
+            else if (invoiceType == InvoiceTypes.Sales && customerId.HasValue)
+            {
+                var customer = await _unitOfWork.Customer.GetFirstOrDefaultAsync(c => c.Id == customerId.Value);
+                if (customer != null)
+                {
+                    customer.Balance = (customer.Balance ?? 0) + delta;
+                    _unitOfWork.Customer.Update(customer);
+                }
+            }
         }
     }
 }

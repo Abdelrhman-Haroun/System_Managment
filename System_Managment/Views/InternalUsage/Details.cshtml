@@ -183,7 +183,7 @@
 
                 <div class="flex items-center justify-between text-sm">
                     <span class="text-text-secondary font-medium">نوع المنتج</span>
-                    <span class="font-bold text-text-main">@(Model.ProductType == 1 ? "وحدات" : "وزن")</span>
+                    <span class="font-bold text-text-main">@ProductTypeExtensions.GetUsageArabicLabel(Model.ProductType)</span>
                 </div>
 
                 <div class="flex items-center justify-between text-sm">

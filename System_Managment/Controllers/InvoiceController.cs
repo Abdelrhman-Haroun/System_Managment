@@ -178,6 +178,7 @@ namespace System_Managment.Controllers
                     InvoiceType = invoice.InvoiceType,
                     CustomerId = invoice.CustomerId,
                     SupplierId = invoice.SupplierId,
+                    InvoiceDate = invoice.InvoiceDate,
                     ReferenceNumber = invoice.ReferenceNumber,
                     DiscountAmount = invoice.DiscountAmount,
                     TaxAmount = invoice.TaxAmount,

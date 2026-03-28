@@ -225,41 +225,5 @@
             });
         });
 
-        function openDialog(url) {
-            $.get(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                .done(function (data) {
-                    const modal = $(`
-                        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-                            <div class="w-full max-w-2xl my-8">
-                                ${data}
-                            </div>
-                        </div>
-                    `);
-                    $('body').append(modal);
-                    modal.on('click', '.closeDialog', () => modal.remove());
-                    modal.on('click', function (e) {
-                        if (e.target === modal[0]) modal.remove();
-                    });
-                });
-        }
-
-        $(document).on('click', '.openEditDialog', function (e) {
-            e.preventDefault();
-            openDialog(this.dataset.url || this.href);
-        });
-
-        $(document).on('click', '.openDetailsDialog', function (e) {
-            e.preventDefault();
-            openDialog($(this).data('url') || this.href);
-        });
-
-        $(document).on('click', '.openCreateDialog', function (e) {
-            e.preventDefault();
-            openDialog(this.dataset.url || this.href);
-        });
-
-        $(document).on('keydown', e => {
-            if (e.key === 'Escape') $('.fixed.inset-0.z-50').remove();
-        });
     </script>
 }

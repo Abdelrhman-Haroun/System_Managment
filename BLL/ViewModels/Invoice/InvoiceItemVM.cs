@@ -16,7 +16,7 @@ namespace BLL.ViewModels.Invoice
         [Range(1, int.MaxValue, ErrorMessage = "الكمية يجب أن تكون أكبر من صفر")]
         public int Quantity { get; set; } = 1;
 
-        [Range(0, double.MaxValue, ErrorMessage = "الوزن غير صحيح")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "الوزن يجب أن يكون أكبر من صفر")]
         public decimal Weight { get; set; } = 1;
 
         [Required(ErrorMessage = "سعر الوحدة مطلوب")]

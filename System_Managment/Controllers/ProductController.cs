@@ -268,29 +268,29 @@ namespace System_Managment.Controllers
 
                 // Calculate summary including internal usage
                 var totalPurchases = transactions
-                    .Where(t => t.TransactionType == "Purchase")
+                    .Where(t => TransactionTypes.IsPurchase(t.TransactionType))
                     .Sum(t => t.QuantityChanged);
 
                 var totalSales = transactions
-                    .Where(t => t.TransactionType == "Sales")
+                    .Where(t => TransactionTypes.IsSales(t.TransactionType))
                     .Sum(t => Math.Abs(t.QuantityChanged));
 
                 // NEW: Calculate internal usage separately
                 var totalInternalUsage = transactions
-                    .Where(t => t.TransactionType == "استخدام داخلي")
+                    .Where(t => TransactionTypes.IsInternalUsage(t.TransactionType))
                     .Sum(t => Math.Abs(t.QuantityChanged));
 
                 var totalPurchaseValue = transactions
-                    .Where(t => t.TransactionType == "Purchase")
+                    .Where(t => TransactionTypes.IsPurchase(t.TransactionType))
                     .Sum(t => t.TotalAmount);
 
                 var totalSalesValue = transactions
-                    .Where(t => t.TransactionType == "Sales")
+                    .Where(t => TransactionTypes.IsSales(t.TransactionType))
                     .Sum(t => t.TotalAmount);
 
                 // NEW: Calculate internal usage value
                 var totalInternalUsageValue = transactions
-                    .Where(t => t.TransactionType == "استخدام داخلي")
+                    .Where(t => TransactionTypes.IsInternalUsage(t.TransactionType))
                     .Sum(t => t.TotalAmount);
 
                 ViewBag.Product = product;
