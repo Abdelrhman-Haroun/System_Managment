@@ -4,7 +4,6 @@ using BLL.ViewModels.Account;
 using DAL.Models;
 using DAL.Repositories.IRepository;
 using Microsoft.Extensions.Logging;
-using System.Linq.Expressions;
 
 namespace BLL.Services.Service
 {
@@ -14,14 +13,13 @@ namespace BLL.Services.Service
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFileUploader _fileUploader;
         private readonly IEmailSender _emailSender;
-
         private readonly ILogger<UserService> _logger;
 
         public UserService(
-            IUnitOfWork unitOfWork,
-            IFileUploader fileUploader,
-            IEmailSender emailSender,
-            ILogger<UserService> logger)
+          IUnitOfWork unitOfWork,
+          IFileUploader fileUploader,
+          IEmailSender emailSender,
+          ILogger<UserService> logger)
         {
             _unitOfWork = unitOfWork;
             _fileUploader = fileUploader;
@@ -333,7 +331,8 @@ namespace BLL.Services.Service
         {
             try
             {
-                var user = await _unitOfWork.User.GetByEmailAsync(model.Email);
+                var user = await _unitOfWork.User.GetActiveUserByEmailAsync(model.Email);
+
                 if (user == null)
                     return (false, $"هذا المستخدم {model.Email} غير موجود", null);
 

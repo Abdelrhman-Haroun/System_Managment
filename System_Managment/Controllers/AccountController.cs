@@ -74,11 +74,13 @@ namespace System_Managment.Controllers
                 return View(model);
             }
 
+            await _signInManager.SignOutAsync();
+
             var result = await _signInManager.PasswordSignInAsync(
-                validation.User.UserName,
+                model.Email,
                 model.Password,
                 model.RememberMe,
-                lockoutOnFailure: false);
+                false);
 
             if (result.Succeeded)
                 return RedirectToLocal(returnUrl ?? "/Home/Index");

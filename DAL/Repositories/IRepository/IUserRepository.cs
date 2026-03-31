@@ -21,5 +21,6 @@ namespace DAL.Repositories.IRepository
         Task<bool> IsLockedOutAsync(ApplicationUser user);
         Task<bool> ToggleLockoutAsync(string id);
         Task UpdateSecurityStampAsync(ApplicationUser user);
+        Task<ApplicationUser> GetActiveUserByEmailAsync(string email);
     }
 }

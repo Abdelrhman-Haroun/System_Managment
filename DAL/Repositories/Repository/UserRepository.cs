@@ -113,6 +113,15 @@ public class UserRepository(UserManager<ApplicationUser> _userManager) : IUserRe
         {
             await _userManager.UpdateSecurityStampAsync(user);
         }
+        public async Task<ApplicationUser> GetActiveUserByEmailAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null || user.IsDeleted)
+                return null;
+
+            return user;
+        }
     }
 }
 
