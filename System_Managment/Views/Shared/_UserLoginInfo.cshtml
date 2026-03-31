@@ -5,7 +5,21 @@
 @{
     string userName = "زائر";
     string userRole = "غير محدد";
-    string profilePictureUrl = "/files/images/alter.png"; // مسار افتراضي (بدون ~)
+    string profilePictureUrl = "/Files/images/alter.png";
+
+    string ResolveProfilePicture(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return "/Files/images/alter.png";
+
+        if (path.StartsWith("/Files/", StringComparison.OrdinalIgnoreCase))
+            return path;
+
+        if (path.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase))
+            return "/Files" + path;
+
+        return path.StartsWith("/") ? path : "/" + path;
+    }
 
     if (User.Identity?.IsAuthenticated == true)
     {
@@ -15,9 +29,7 @@
             userName = user.FullName ?? User.Identity?.Name ?? "مستخدم";
 
             // إذا كان لدى المستخدم صورة شخصية → نستخدمها، وإلا الصورة الافتراضية
-            profilePictureUrl = !string.IsNullOrEmpty(user.ProfilePicture)
-                ? "/files"+user.ProfilePicture
-                : "/files/images/alter.png";
+            profilePictureUrl = ResolveProfilePicture(user.ProfilePicture);
 
             // جلب أول دور للمستخدم
             var roles = await UserManager.GetRolesAsync(user);
@@ -34,8 +46,7 @@
 
     // تحويل المسارات إلى مسارات صحيحة يفهمها المتصفح (حتى في onerror)
     var resolvedProfilePic = Url.Content(profilePictureUrl);
-    var defaultImage = Url.Content("~/files/images/alter.png");
-    var fallbackUploadImage = Url.Content("~/files/uploads/alter.png"); // إذا تريد fallback ثاني
+    var defaultImage = Url.Content("~/Files/images/alter.png");
 }
 
 <div class="flex items-center gap-3">

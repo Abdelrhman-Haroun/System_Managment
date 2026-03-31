@@ -15,6 +15,7 @@ namespace System_Managment.Controllers
         private readonly ICustomerService _customerService;
         private readonly ISupplierService _supplierService;
         private readonly ITransactionReportService _transactionReportService;
+        private readonly IConfiguration _configuration;
         private readonly ILogger<InvoiceController> _logger;
 
         public InvoiceController(
@@ -23,6 +24,7 @@ namespace System_Managment.Controllers
             ICustomerService customerService,
             ISupplierService supplierService,
             ITransactionReportService transactionReportService,
+            IConfiguration configuration,
             ILogger<InvoiceController> logger)
         {
             _invoiceService = invoiceService;
@@ -30,6 +32,7 @@ namespace System_Managment.Controllers
             _customerService = customerService;
             _supplierService = supplierService;
             _transactionReportService = transactionReportService;
+            _configuration = configuration;
             _logger = logger;
         }
 
@@ -483,15 +486,16 @@ namespace System_Managment.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                // Get company information (you might want to store this in a settings table)
-                ViewBag.CompanyName = "مزرعة أل سالم";
-                ViewBag.CompanyAddress = "الخطاطبة، الطريق الاقليمى";
-                ViewBag.CompanyPhone = "+20 123 456 7890";
-                ViewBag.CompanyEmail = "info@company.com";
-                ViewBag.CompanyTaxNumber = "123-456-789";
-
-                // Optional: Logo path (store in wwwroot/images/logo.png)
-                ViewBag.LogoPath = "/Files/images/logo.jpg";
+                var companySection = _configuration.GetSection("CompanyProfile");
+                ViewBag.CompanyName = companySection["Name"] ?? "مزرعة آل سالم";
+                ViewBag.CompanyAddress = companySection["Address"] ?? "الخطاطبة، الطريق الإقليمي";
+                ViewBag.CompanyPhone = companySection["Phone"] ?? "+20 123 456 7890";
+                ViewBag.CompanyEmail = companySection["Email"] ?? "info@company.com";
+                ViewBag.CompanyTaxNumber = companySection["TaxNumber"] ?? "123-456-789";
+                ViewBag.CompanyRegistration = companySection["RegistrationNumber"] ?? "غير متوفر";
+                ViewBag.CompanyLogoPath = companySection["LogoPath"] ?? "/Files/images/logo.jpg";
+                ViewBag.CompanyTagline = companySection["Tagline"] ?? "إدارة الفواتير والمخزون";
+                ViewBag.PrintedAt = DateTime.Now;
 
                 return View(invoice);
             }

@@ -17,15 +17,17 @@
             }
 
             const defaults = {
-                confirmButtonText: "OK",
+                confirmButtonText: "حسناً",
                 confirmButtonColor: "#2a7f40",
                 cancelButtonColor: "#64748b",
                 reverseButtons: true,
                 heightAuto: false,
                 customClass: {
-                    popup: "rounded-3xl",
-                    confirmButton: "px-5 py-3 rounded-2xl font-bold",
-                    cancelButton: "px-5 py-3 rounded-2xl font-bold"
+                    popup: "app-swal-popup rounded-[2rem]",
+                    title: "app-swal-title",
+                    htmlContainer: "app-swal-body",
+                    confirmButton: "app-swal-confirm px-5 py-3 rounded-2xl font-bold",
+                    cancelButton: "app-swal-cancel px-5 py-3 rounded-2xl font-bold"
                 },
                 buttonsStyling: false
             };
@@ -63,6 +65,24 @@
         document.body.classList.add("overflow-hidden");
         activeDialog = wrapper;
         executeEmbeddedScripts(wrapper);
+        initializeDateInputs(wrapper);
+    }
+
+    function getTodayDateString() {
+        const now = new Date();
+        const timezoneOffset = now.getTimezoneOffset() * 60000;
+        return new Date(now.getTime() - timezoneOffset).toISOString().split("T")[0];
+    }
+
+    function initializeDateInputs(root) {
+        const scope = root || document;
+        const today = getTodayDateString();
+
+        scope.querySelectorAll('input[type="date"]').forEach(function (input) {
+            if (!input.value) {
+                input.value = today;
+            }
+        });
     }
 
     function executeEmbeddedScripts(container) {
@@ -97,8 +117,8 @@
             if (window.Swal) {
                 window.Swal.fire({
                     icon: "error",
-                    title: "Load Error",
-                    text: "Unable to load the requested content."
+                    title: "تعذر التحميل",
+                    text: "تعذر تحميل المحتوى المطلوب."
                 });
             }
         });
@@ -116,13 +136,13 @@
         if (success) {
             window.Swal.fire({
                 icon: "success",
-                title: "Success",
+                title: "تمت العملية بنجاح",
                 text: success
             });
         } else if (error) {
             window.Swal.fire({
                 icon: "error",
-                title: "Error",
+                title: "حدث خطأ",
                 text: error
             });
         }
@@ -133,7 +153,7 @@
             return;
         }
 
-        window.jQuery(document).on("click", ".openCreateDialog, .openEditDialog, .openDetailsDialog, [data-ajax-dialog]", function (event) {
+        window.jQuery(document).on("click", ".openCreateDialog, .openEditDialog, .openDetailsDialog, .openRegisterDialog, [data-ajax-dialog]", function (event) {
             event.preventDefault();
             openAjaxDialog(this.dataset.url || this.getAttribute("href"));
         });
@@ -159,8 +179,12 @@
     wireGlobalEvents();
 
     if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", showTempDataAlerts);
+        document.addEventListener("DOMContentLoaded", function () {
+            initializeDateInputs(document);
+            showTempDataAlerts();
+        });
     } else {
+        initializeDateInputs(document);
         showTempDataAlerts();
     }
 })(window, document);

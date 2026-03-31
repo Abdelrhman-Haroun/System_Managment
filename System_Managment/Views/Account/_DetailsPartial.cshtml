@@ -14,11 +14,13 @@
         ? ((DateTime)ViewBag.CreatedAt).ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("ar-EG"))
         : "غير معروف";
 
-    var fileName = string.IsNullOrEmpty(Model.ProfilePicture)
-                         ? "~/files/images/alter.png"
-                         : Model.ProfilePicture.TrimStart('/');
-
-    var profileImage = Url.Content("~/files/" + fileName);
+    var profileImage = string.IsNullOrWhiteSpace(Model.ProfilePicture)
+        ? Url.Content("~/Files/images/alter.png")
+        : Model.ProfilePicture.StartsWith("/Files/", StringComparison.OrdinalIgnoreCase)
+            ? Url.Content(Model.ProfilePicture)
+            : Model.ProfilePicture.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase)
+                ? Url.Content("/Files" + Model.ProfilePicture)
+                : Url.Content(Model.ProfilePicture.StartsWith("/") ? Model.ProfilePicture : "/" + Model.ProfilePicture);
 }
 
 <div class="w-full max-w-2xl mx-auto bg-white dark:bg-[#1c2c21] rounded-2xl shadow-2xl overflow-hidden">

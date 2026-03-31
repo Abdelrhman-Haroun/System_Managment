@@ -293,9 +293,25 @@ namespace System_Managment.Controllers
                     .Where(t => TransactionTypes.IsInternalUsage(t.TransactionType))
                     .Sum(t => t.TotalAmount);
 
+                var filteredTransactions = transactions
+                    .OrderBy(t => t.TransactionDate)
+                    .ThenBy(t => t.CreatedAt)
+                    .ToList();
+
+                var hasDateFilter = fromDate.HasValue || toDate.HasValue;
+                var openingBalance = filteredTransactions.Any()
+                    ? filteredTransactions.First().QuantityBefore
+                    : product.StockQuantity ?? 0;
+                var closingBalance = filteredTransactions.Any()
+                    ? filteredTransactions.Last().QuantityAfter
+                    : product.StockQuantity ?? 0;
+
                 ViewBag.Product = product;
                 ViewBag.FromDate = fromDate;
                 ViewBag.ToDate = toDate;
+                ViewBag.HasDateFilter = hasDateFilter;
+                ViewBag.OpeningBalance = openingBalance;
+                ViewBag.ClosingBalance = closingBalance;
                 ViewBag.TotalPurchases = totalPurchases;
                 ViewBag.TotalSales = totalSales;
                 ViewBag.TotalInternalUsage = totalInternalUsage; // NEW

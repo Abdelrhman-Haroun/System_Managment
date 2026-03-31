@@ -13,6 +13,20 @@
     if (pageNumber < 1) pageNumber = 1;
     if (pageNumber > totalPages) pageNumber = totalPages;
     var paginatedUsers = Model.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+
+    string ResolveProfilePicture(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return Url.Content("~/Files/images/alter.png");
+
+        if (path.StartsWith("/Files/", StringComparison.OrdinalIgnoreCase))
+            return Url.Content(path);
+
+        if (path.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase))
+            return Url.Content("/Files" + path);
+
+        return Url.Content(path.StartsWith("/") ? path : "/" + path);
+    }
 }
 
 <!-- Full Screen Layout بدون أي هوامش خارجية -->
@@ -109,9 +123,7 @@
                                     };
 
                                     var isLockedOut = user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.UtcNow;
-                                    var profilePic = string.IsNullOrEmpty(user.ProfilePicture)
-                                    ? "/files/images/alter.png"
-                                    : "/files"+user.ProfilePicture;
+                                    var profilePic = ResolveProfilePicture(user.ProfilePicture);
 
                                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                         <td class="px-6 py-4 w-12">
@@ -279,46 +291,6 @@
                 if (e.key === 'Enter') { e.preventDefault(); $form.submit(); }
                 if (e.key === 'Escape') { $input.val(''); $input.blur(); }
             });
-        });
-
-        function openDialog(url) {
-            $.get(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                .done(function (data) {
-                    const modal = $(`
-                        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-                            <div class="w-full max-w-2xl my-8">
-                                ${data}
-                            </div>
-                        </div>
-                    `);
-                    $('body').append(modal);
-
-                    // إغلاق
-                    modal.on('click', '.closeDialog', () => modal.remove());
-                    modal.on('click', function (e) {
-                        if (e.target === modal[0]) modal.remove();
-                    });
-                });
-        }
-
-        $(document).on('click', '.openEditDialog', function (e) {
-            e.preventDefault();
-            openDialog(this.dataset.url || this.href);
-        });
-
-        $(document).on('click', '.openDetailsDialog', function (e) {
-            e.preventDefault();
-            openDialog($(this).data('url') || this.href);
-        });
-
-        $(document).on('click', '.openRegisterDialog', function (e) {
-               e.preventDefault();
-               openDialog(this.dataset.url || this.href);
-        });
-
-
-        $(document).on('keydown', e => {
-            if (e.key === 'Escape') $('.fixed.inset-0.z-50').remove();
         });
     </script>
 }

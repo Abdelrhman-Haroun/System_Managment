@@ -1,143 +1,625 @@
-﻿@model InvoiceDetailsVM
+@using DAL.Models
+@model InvoiceDetailsVM
 
-<!-- Header -->
-<div class="invoice-header">
-    <div class="company-info">
-        @if (!string.IsNullOrEmpty(ViewBag.LogoPath))
-        {
-            <img src="@ViewBag.LogoPath" alt="Company Logo" class="company-logo" />
+@{
+    var printedAt = (DateTime)(ViewBag.PrintedAt ?? DateTime.Now);
+    var companyName = ViewBag.CompanyName as string ?? "مزرعة آل سالم";
+    var companyAddress = ViewBag.CompanyAddress as string ?? string.Empty;
+    var companyPhone = ViewBag.CompanyPhone as string ?? string.Empty;
+    var companyEmail = ViewBag.CompanyEmail as string ?? string.Empty;
+    var companyTaxNumber = ViewBag.CompanyTaxNumber as string ?? string.Empty;
+    var companyRegistration = ViewBag.CompanyRegistration as string ?? string.Empty;
+    var companyTagline = ViewBag.CompanyTagline as string ?? string.Empty;
+    var companyLogoPath = ViewBag.CompanyLogoPath as string ?? string.Empty;
+    var invoiceLabel = Model.InvoiceType == "Purchase" ? "فاتورة مشتريات" : "فاتورة مبيعات";
+}
+
+<style>
+    .invoice-report {
+        display: grid;
+        gap: 14px;
+        color: #163020;
+    }
+
+    .invoice-hero {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #d8e3db;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #f7fbf8 0%, #eef6f1 48%, #fdfdfc 100%);
+        padding: 18px 20px;
+        page-break-inside: avoid;
+    }
+
+    .invoice-hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(circle at top left, rgba(42, 127, 64, 0.1), transparent 11rem),
+            radial-gradient(circle at bottom right, rgba(166, 124, 82, 0.08), transparent 10rem);
+        pointer-events: none;
+    }
+
+    .invoice-hero-grid {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(250px, 0.75fr);
+        gap: 16px;
+        align-items: start;
+    }
+
+    .brand-block {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+    }
+
+    .brand-logo-wrap {
+        width: 74px;
+        height: 74px;
+        flex-shrink: 0;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid #d0dbd4;
+        background: #fff;
+        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.05);
+    }
+
+    .brand-logo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .brand-name {
+        margin: 0;
+        font-size: 25px;
+        font-weight: 800;
+        color: #1d5c33;
+    }
+
+    .brand-tagline {
+        margin: 4px 0 10px;
+        font-size: 12px;
+        color: #5f7468;
+    }
+
+    .brand-lines {
+        display: grid;
+        gap: 4px;
+        font-size: 11px;
+        color: #30463a;
+    }
+
+    .invoice-summary-card {
+        border: 1px solid #dfe7e1;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.78);
+        padding: 14px 16px;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.65);
+    }
+
+    .invoice-summary-card h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 800;
+        color: #1d5c33;
+    }
+
+    .invoice-summary-card p {
+        margin: 5px 0 12px;
+        font-size: 11px;
+        color: #6b7d73;
+    }
+
+    .invoice-badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-size: 11px;
+        font-weight: 800;
+        margin-bottom: 12px;
+    }
+
+    .invoice-badge.purchase {
+        background: #eef4ff;
+        color: #2249a7;
+    }
+
+    .invoice-badge.sales {
+        background: #ebfbf2;
+        color: #0b7b4c;
+    }
+
+    .hero-meta-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .hero-meta-item {
+        border: 1px solid #e5ebe7;
+        border-radius: 12px;
+        background: #fff;
+        padding: 9px 10px;
+    }
+
+    .hero-meta-item label {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 10px;
+        font-weight: 700;
+        color: #6a7b72;
+    }
+
+    .hero-meta-item strong {
+        font-size: 12px;
+        color: #182f23;
+    }
+
+    .invoice-main-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 260px;
+        gap: 14px;
+        page-break-inside: avoid;
+    }
+
+    .invoice-panel {
+        border: 1px solid #d8e3db;
+        border-radius: 16px;
+        background: #fff;
+        overflow: hidden;
+    }
+
+    .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 14px;
+        background: #f8fbf9;
+        border-bottom: 1px solid #e5ece7;
+    }
+
+    .panel-head h2 {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 800;
+        color: #20382c;
+    }
+
+    .panel-body {
+        padding: 14px;
+    }
+
+    .customer-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 150px;
+        gap: 12px;
+        align-items: stretch;
+    }
+
+    .customer-name-box {
+        border: 1px solid #e3e9e5;
+        border-radius: 14px;
+        background: linear-gradient(180deg, #ffffff, #fbfdfb);
+        padding: 14px;
+    }
+
+    .customer-name-box label,
+    .mini-stat label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 10px;
+        font-weight: 700;
+        color: #718178;
+    }
+
+    .customer-name-box strong {
+        font-size: 18px;
+        font-weight: 800;
+        color: #173425;
+    }
+
+    .mini-stat-stack {
+        display: grid;
+        gap: 8px;
+    }
+
+    .mini-stat {
+        border: 1px solid #e3e9e5;
+        border-radius: 14px;
+        background: #fcfdfc;
+        padding: 12px;
+    }
+
+    .mini-stat strong {
+        font-size: 14px;
+        color: #173425;
+    }
+
+    .totals-grid {
+        display: grid;
+        gap: 8px;
+    }
+
+    .total-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border: 1px solid #e6ece8;
+        border-radius: 14px;
+        padding: 10px 12px;
+        background: #fcfdfc;
+        font-size: 11px;
+    }
+
+    .total-row strong {
+        font-size: 13px;
+        color: #173425;
+    }
+
+    .total-row.final {
+        background: linear-gradient(135deg, #1f6f3a, #2a7f40);
+        border-color: #1f6f3a;
+        color: #fff;
+    }
+
+    .total-row.final strong {
+        color: #fff;
+        font-size: 15px;
+    }
+
+    .invoice-table-wrap {
+        border: 1px solid #d8e3db;
+        border-radius: 16px;
+        overflow: hidden;
+        page-break-inside: avoid;
+    }
+
+    .invoice-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .invoice-table thead {
+        background: #f4f8f6;
+    }
+
+    .invoice-table th,
+    .invoice-table td {
+        padding: 10px 8px;
+        border-bottom: 1px solid #e6ece8;
+        text-align: right;
+        font-size: 11px;
+        vertical-align: middle;
+    }
+
+    .invoice-table th {
+        font-weight: 800;
+        color: #5b6d63;
+    }
+
+    .invoice-table td {
+        color: #20382c;
+    }
+
+    .invoice-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .invoice-table tbody tr:nth-child(even) {
+        background: #fbfdfc;
+    }
+
+    .product-cell strong {
+        display: block;
+        font-size: 12px;
+        color: #173425;
+    }
+
+    .product-cell span {
+        display: block;
+        margin-top: 2px;
+        font-size: 10px;
+        color: #79877f;
+    }
+
+    .type-pill {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 4px 9px;
+        font-size: 10px;
+        font-weight: 800;
+        background: #eef5f0;
+        color: #2a6242;
+    }
+
+    .notes-panel .panel-body p {
+        margin: 0;
+        font-size: 11px;
+        line-height: 1.9;
+        color: #30463a;
+        white-space: pre-line;
+    }
+
+    .invoice-bottom-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(220px, 0.8fr);
+        gap: 14px;
+        page-break-inside: avoid;
+    }
+
+    .signature-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .signature-box {
+        border: 1px dashed #cad7cf;
+        border-radius: 14px;
+        background: #fff;
+        padding: 16px 12px 12px;
+        min-height: 92px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+    .signature-line {
+        border-top: 1px solid #aabbb0;
+        margin-bottom: 8px;
+    }
+
+    .signature-box span {
+        font-size: 11px;
+        font-weight: 700;
+        color: #55675d;
+    }
+
+    .thankyou-box {
+        border: 1px solid #d8e3db;
+        border-radius: 16px;
+        background: linear-gradient(180deg, #fcfdfc, #f4f8f6);
+        padding: 16px 14px;
+    }
+
+    .thankyou-box h3 {
+        margin: 0 0 8px;
+        font-size: 14px;
+        font-weight: 800;
+        color: #1d5c33;
+    }
+
+    .thankyou-box p {
+        margin: 0;
+        font-size: 11px;
+        line-height: 1.9;
+        color: #405348;
+    }
+
+    .invoice-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border-top: 1px solid #e5ece7;
+        padding-top: 10px;
+        font-size: 10px;
+        color: #6f7f76;
+        page-break-inside: avoid;
+    }
+
+    @@media print {
+        .invoice-hero,
+        .invoice-panel,
+        .invoice-table-wrap,
+        .signature-box,
+        .thankyou-box {
+            break-inside: avoid;
+            page-break-inside: avoid;
         }
-        <div class="company-name">@ViewBag.CompanyName</div>
-        <div class="company-details">
-            <div>📍 @ViewBag.CompanyAddress</div>
-            <div>📞 @ViewBag.CompanyPhone</div>
-            <div>📧 @ViewBag.CompanyEmail</div>
-            <div>🏢 الرقم الضريبي: @ViewBag.CompanyTaxNumber</div>
-        </div>
-    </div>
+    }
+</style>
 
-    <div class="invoice-title">
-        <h1>فـاتــورة</h1>
-        @if (Model.InvoiceType == InvoiceTypes.Purchase)
+<section class="invoice-report">
+    <header class="invoice-hero">
+        <div class="invoice-hero-grid">
+            <div class="brand-block">
+                <div class="brand-logo-wrap">
+                    @if (!string.IsNullOrWhiteSpace(companyLogoPath))
+                    {
+                        <img src="@companyLogoPath" alt="@companyName" class="brand-logo" />
+                    }
+                </div>
+                <div>
+                    <h1 class="brand-name">@companyName</h1>
+                    @if (!string.IsNullOrWhiteSpace(companyTagline))
+                    {
+                        <div class="brand-tagline">@companyTagline</div>
+                    }
+                    <div class="brand-lines">
+                        @if (!string.IsNullOrWhiteSpace(companyAddress))
+                        {
+                            <div>@companyAddress</div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(companyPhone))
+                        {
+                            <div>هاتف: @companyPhone</div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(companyEmail))
+                        {
+                            <div>البريد الإلكتروني: @companyEmail</div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(companyTaxNumber))
+                        {
+                            <div>الرقم الضريبي: @companyTaxNumber</div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(companyRegistration))
+                        {
+                            <div>السجل التجاري: @companyRegistration</div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="invoice-summary-card">
+                <h1>فاتورة</h1>
+                <p>مستند بيع/شراء .</p>
+                <div class="invoice-badge @(Model.InvoiceType == "Purchase" ? "purchase" : "sales")">@invoiceLabel</div>
+                <div class="hero-meta-grid">
+                    <div class="hero-meta-item">
+                        <label>رقم الفاتورة</label>
+                        <strong>@Model.InvoiceNumber</strong>
+                    </div>
+                    <div class="hero-meta-item">
+                        <label>تاريخ الفاتورة</label>
+                        <strong>@Model.InvoiceDate.ToString("dd/MM/yyyy")</strong>
+                    </div>
+                    <div class="hero-meta-item">
+                        <label>رقم المرجع</label>
+                        <strong>@(string.IsNullOrWhiteSpace(Model.ReferenceNumber) ? "-" : Model.ReferenceNumber)</strong>
+                    </div>
+                    <div class="hero-meta-item">
+                        <label>وقت الطباعة</label>
+                        <strong>@printedAt.ToString("dd/MM/yyyy hh:mm tt")</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="invoice-main-grid">
+        <div class="invoice-panel">
+            <div class="panel-head">
+                <h2>بيانات @(Model.InvoiceType == "Purchase" ? "المورد" : "العميل")</h2>
+            </div>
+            <div class="panel-body">
+                <div class="customer-card">
+                    <div class="customer-name-box">
+                        <label>الاسم</label>
+                        <strong>@Model.CustomerOrSupplierName</strong>
+                    </div>
+                    <div class="mini-stat-stack">
+                        <div class="mini-stat">
+                            <label>عدد البنود</label>
+                            <strong>@Model.Items.Count بند</strong>
+                        </div>
+                        <div class="mini-stat">
+                            <label>نوع المستند</label>
+                            <strong>@invoiceLabel</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="invoice-panel">
+            <div class="panel-head">
+                <h2>ملخص الحساب</h2>
+            </div>
+            <div class="panel-body">
+                <div class="totals-grid">
+                    <div class="total-row">
+                        <span>الإجمالي قبل الخصم</span>
+                        <strong>@Model.SubTotal.ToString("N2") جنيه</strong>
+                    </div>
+                    <div class="total-row">
+                        <span>الخصم</span>
+                        <strong>@Model.DiscountAmount.ToString("N2") جنيه</strong>
+                    </div>
+                    <div class="total-row">
+                        <span>الضريبة</span>
+                        <strong>@Model.TaxAmount.ToString("N2") جنيه</strong>
+                    </div>
+                    <div class="total-row final">
+                        <span>الإجمالي النهائي</span>
+                        <strong>@Model.TotalAmount.ToString("N2") جنيه</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="invoice-table-wrap">
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th style="width:5%">#</th>
+                    <th style="width:33%">المنتج</th>
+                    <th style="width:11%">النوع</th>
+                    <th style="width:10%">الكمية</th>
+                    <th style="width:12%">الوزن</th>
+                    <th style="width:13%">سعر الوحدة</th>
+                    <th style="width:16%">الإجمالي</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    var index = 1;
+                }
+                @foreach (var item in Model.Items)
+                {
+                    var lineTotal = item.EffectiveQuantity * item.UnitPrice;
+                    <tr>
+                        <td>@index</td>
+                        <td class="product-cell">
+                            <strong>@item.ProductName</strong>
+                            <span>بند رقم @index</span>
+                        </td>
+                        <td>
+                            <span class="type-pill">@(item.ProductType == (int)ProductType.Count ? "عددي" : "وزني")</span>
+                        </td>
+                        <td>@item.Quantity</td>
+                        <td>@item.Weight.ToString("N2") كجم</td>
+                        <td>@item.UnitPrice.ToString("N2") جنيه</td>
+                        <td><strong>@lineTotal.ToString("N2") جنيه</strong></td>
+                    </tr>
+                    index++;
+                }
+            </tbody>
+        </table>
+    </section>
+
+    <section class="invoice-bottom-grid">
+        @if (!string.IsNullOrWhiteSpace(Model.Notes))
         {
-            <span class="invoice-type-badge badge-purchase">فاتورة مشتريات</span>
+            <section class="invoice-panel notes-panel">
+                <div class="panel-head">
+                    <h2>ملاحظات</h2>
+                </div>
+                <div class="panel-body">
+                    <p>@Model.Notes</p>
+                </div>
+            </section>
         }
         else
         {
-            <span class="invoice-type-badge badge-sales">فاتورة مبيعات</span>
-        }
-    </div>
-</div>
-
-<!-- Invoice Information -->
-<div class="invoice-info">
-    <div class="info-group">
-        <label>رقم الفاتورة</label>
-        <div class="value">@Model.InvoiceNumber</div>
-    </div>
-
-    <div class="info-group">
-        <label>التاريخ</label>
-        <div class="value">@Model.InvoiceDate.ToString("dd/MM/yyyy")</div>
-    </div>
-
-    <div class="info-group">
-        <label>@(Model.InvoiceType == InvoiceTypes.Purchase ? "المورد" : "العميل")</label>
-        <div class="value">@Model.CustomerOrSupplierName</div>
-    </div>
-
-    @if (!string.IsNullOrEmpty(Model.ReferenceNumber))
-    {
-        <div class="info-group">
-            <label>رقم المرجع</label>
-            <div class="value">@Model.ReferenceNumber</div>
-        </div>
-    }
-</div>
-
-<!-- Items Table -->
-<table class="items-table">
-    <thead>
-        <tr>
-            <th style="width: 5%">#</th>
-            <th style="width: 35%">المنتج</th>
-            <th style="width: 10%" class="text-center">الكمية</th>
-            <th style="width: 15%" class="text-center">الوزن (كجم)</th>
-            <th style="width: 15%" class="text-left">سعر الكيلو</th>
-            <th style="width: 20%" class="text-left">الإجمالي</th>
-        </tr>
-    </thead>
-    <tbody>
-        @{
-            var index = 1;
-        }
-        @foreach (var item in Model.Items)
-        {
-            <tr>
-                <td class="text-center">@index</td>
-                <td>@item.ProductName</td>
-                <td class="text-center">@item.Quantity</td>
-                <td class="text-center">@item.Weight.ToString("N2")</td>
-                <td class="text-left">@item.UnitPrice.ToString("N2") جنيه</td>
-                <td class="text-left">@item.TotalPrice.ToString("N2") جنيه</td>
-            </tr>
-            index++;
-        }
-    </tbody>
-</table>
-
-<!-- Totals -->
-<div class="totals-section">
-    <div class="totals-box">
-        <div class="total-row">
-            <span class="total-label">الإجمالي الفرعي:</span>
-            <span class="total-value">@Model.SubTotal.ToString("N2") جنيه</span>
-        </div>
-
-        @if (Model.DiscountAmount > 0)
-        {
-            <div class="total-row">
-                <span class="total-label">الخصم:</span>
-                <span class="total-value" style="color: #dc2626;">- @Model.DiscountAmount.ToString("N2") جنيه</span>
+            <div class="thankyou-box">
+                <h3>شكراً لتعاملكم معنا</h3>
+                <p>تم إعداد هذه الفاتورة بتنسيق رسمي وواضح لتكون سهلة المراجعة والحفظ لدى العميل، ويمكن تطوير نفس القالب لاحقاً لطباعة سندات الدفع والتقارير المالية.</p>
             </div>
         }
 
-        @if (Model.TaxAmount > 0)
-        {
-            <div class="total-row">
-                <span class="total-label">الضريبة:</span>
-                <span class="total-value">@Model.TaxAmount.ToString("N2") جنيه</span>
+        <div class="signature-grid">
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <span>توقيع المستلم</span>
             </div>
-        }
-
-        <div class="total-row grand-total">
-            <span class="total-label">المبلغ الإجمالي:</span>
-            <span class="total-value">@Model.TotalAmount.ToString("N2") جنيه</span>
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <span>ختم / توقيع المؤسسة</span>
+            </div>
         </div>
-    </div>
-</div>
+    </section>
 
-<!-- Footer -->
-<div class="invoice-footer">
-    <!-- Notes -->
-    @if (!string.IsNullOrEmpty(Model.Notes))
-    {
-        <div class="notes-section">
-            <h4>ملاحظات:</h4>
-            <div class="notes-content">@Model.Notes</div>
-        </div>
-    }
-
-    <!-- Signatures -->
-    <div class="signatures">
-        <div class="signature-box">
-            <div class="signature-line"></div>
-            <div class="signature-label">توقيع المحاسب</div>
-        </div>
-
-        <div class="signature-box">
-            <div class="signature-line"></div>
-            <div class="signature-label">@(Model.InvoiceType == "Purchase" ? "توقيع المورد" : "توقيع العميل")</div>
-        </div>
-    </div>
-</div>
+    <footer class="invoice-footer">
+        <span>Developed By Eng / Abdelrahman Emad Haroun</span>
+        <span>Phone :+20 01121360854 --- Mail :abdelrahmanharoon34@gmail.com</span>
+    </footer>
+</section>

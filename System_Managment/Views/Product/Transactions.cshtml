@@ -14,6 +14,9 @@
     var totalSalesValue = (decimal)ViewBag.TotalSalesValue;
     var totalInternalUsageValue = (decimal)ViewBag.TotalInternalUsageValue;
     var currentStock = (decimal)ViewBag.CurrentStock;
+    var hasDateFilter = (bool)(ViewBag.HasDateFilter ?? false);
+    var openingBalance = (decimal)(ViewBag.OpeningBalance ?? currentStock);
+    var closingBalance = (decimal)(ViewBag.ClosingBalance ?? currentStock);
     var productType = (int)ViewBag.ProductType;
 }
 
@@ -37,64 +40,6 @@
             <span class="material-symbols-outlined text-[20px]">download</span>
             تصدير
         </button>
-    </div>
-</div>
-
-<!-- Summary Cards - NOW WITH 6 CARDS -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
-    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
-        <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-semibold text-text-secondary">المخزون الحالي</span>
-            <span class="material-symbols-outlined text-blue-600 bg-blue-100 p-2 rounded-lg">inventory</span>
-        </div>
-        <div class="text-2xl font-bold text-text-main">@currentStock.ToString("N2")</div>
-        <div class="text-xs text-text-secondary mt-1">@(ProductTypeExtensions.IsCountType(productType) ? "قطعة" : "كجم")</div>
-    </div>
-
-    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
-        <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-semibold text-text-secondary">إجمالي المشتريات</span>
-            <span class="material-symbols-outlined text-green-600 bg-green-100 p-2 rounded-lg">add_circle</span>
-        </div>
-        <div class="text-2xl font-bold text-text-main">@totalPurchases.ToString("N2")</div>
-        <div class="text-xs text-text-secondary mt-1">@(ProductTypeExtensions.IsCountType(productType) ? "قطعة" : "كجم")</div>
-    </div>
-
-    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
-        <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-semibold text-text-secondary">إجمالي المبيعات</span>
-            <span class="material-symbols-outlined text-red-600 bg-red-100 p-2 rounded-lg">remove_circle</span>
-        </div>
-        <div class="text-2xl font-bold text-text-main">@totalSales.ToString("N2")</div>
-        <div class="text-xs text-text-secondary mt-1">@(ProductTypeExtensions.IsCountType(productType) ? "قطعة" : "كجم")</div>
-    </div>
-
-    <!-- NEW: Internal Usage Card -->
-    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
-        <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-semibold text-text-secondary">الاستخدام الداخلي</span>
-            <span class="material-symbols-outlined text-amber-600 bg-amber-100 p-2 rounded-lg">engineering</span>
-        </div>
-        <div class="text-2xl font-bold text-text-main">@totalInternalUsage.ToString("N2")</div>
-        <div class="text-xs text-text-secondary mt-1">@(ProductTypeExtensions.IsCountType(productType) ? "قطعة" : "كجم")</div>
-    </div>
-
-    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
-        <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-semibold text-text-secondary">قيمة المشتريات</span>
-            <span class="material-symbols-outlined text-purple-600 bg-purple-100 p-2 rounded-lg">attach_money</span>
-        </div>
-        <div class="text-2xl font-bold text-text-main">@totalPurchaseValue.ToString("N0")</div>
-        <div class="text-xs text-text-secondary mt-1">جنيه</div>
-    </div>
-
-    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
-        <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-semibold text-text-secondary">قيمة المبيعات</span>
-            <span class="material-symbols-outlined text-orange-600 bg-orange-100 p-2 rounded-lg">payments</span>
-        </div>
-        <div class="text-2xl font-bold text-text-main">@totalSalesValue.ToString("N0")</div>
-        <div class="text-xs text-text-secondary mt-1">جنيه</div>
     </div>
 </div>
 
@@ -132,6 +77,84 @@
             </a>
         </div>
     </form>
+</div>
+
+@if (hasDateFilter)
+{
+    <div class="mb-6 flex flex-wrap items-center gap-3 rounded-2xl border border-primary/15 bg-primary/5 px-5 py-4 text-sm">
+        <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 font-bold text-primary border border-primary/10">
+            <span class="material-symbols-outlined text-[18px]">filter_alt</span>
+            التصفية مطبقة على السجل والملخص
+        </span>
+        <span class="text-text-secondary">رصيد بداية الفترة: <strong class="text-text-main">@openingBalance.ToString("N2")</strong></span>
+        <span class="text-text-secondary">رصيد نهاية الفترة: <strong class="text-text-main">@closingBalance.ToString("N2")</strong></span>
+    </div>
+}
+
+<!-- Summary Cards - NOW WITH 6 CARDS -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-text-secondary">المخزون الحالي</span>
+            <span class="material-symbols-outlined text-blue-600 bg-blue-100 p-2 rounded-lg">inventory</span>
+        </div>
+        <div class="text-2xl font-bold text-text-main">@(hasDateFilter ? closingBalance.ToString("N2") : currentStock.ToString("N2"))</div>
+        <div class="text-xs text-text-secondary mt-1">@(hasDateFilter ? "رصيد نهاية الفترة" : "الرصيد الحالي") - @(ProductTypeExtensions.IsCountType(productType) ? "قطعة" : "كجم")</div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-text-secondary">إجمالي المشتريات</span>
+            <span class="material-symbols-outlined text-green-600 bg-green-100 p-2 rounded-lg">add_circle</span>
+        </div>
+        <div class="text-2xl font-bold text-text-main">@totalPurchases.ToString("N2")</div>
+        <div class="text-xs text-text-secondary mt-1">@(ProductTypeExtensions.IsCountType(productType) ? "قطعة" : "كجم")</div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-text-secondary">إجمالي المبيعات</span>
+            <span class="material-symbols-outlined text-red-600 bg-red-100 p-2 rounded-lg">remove_circle</span>
+        </div>
+        <div class="text-2xl font-bold text-text-main">@totalSales.ToString("N2")</div>
+        <div class="text-xs text-text-secondary mt-1">@(ProductTypeExtensions.IsCountType(productType) ? "قطعة" : "كجم")</div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-text-secondary">الاستخدام الداخلي</span>
+            <span class="material-symbols-outlined text-amber-600 bg-amber-100 p-2 rounded-lg">engineering</span>
+        </div>
+        <div class="text-2xl font-bold text-text-main">@totalInternalUsage.ToString("N2")</div>
+        <div class="text-xs text-text-secondary mt-1">@(ProductTypeExtensions.IsCountType(productType) ? "قطعة" : "كجم")</div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-text-secondary">قيمة المشتريات</span>
+            <span class="material-symbols-outlined text-purple-600 bg-purple-100 p-2 rounded-lg">attach_money</span>
+        </div>
+        <div class="text-2xl font-bold text-text-main">@totalPurchaseValue.ToString("N0")</div>
+        <div class="text-xs text-text-secondary mt-1">جنيه</div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-text-secondary">قيمة المبيعات</span>
+            <span class="material-symbols-outlined text-orange-600 bg-orange-100 p-2 rounded-lg">payments</span>
+        </div>
+        <div class="text-2xl font-bold text-text-main">@totalSalesValue.ToString("N0")</div>
+        <div class="text-xs text-text-secondary mt-1">جنيه</div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-text-secondary">قيمة الاستخدام الداخلي</span>
+            <span class="material-symbols-outlined text-amber-600 bg-amber-100 p-2 rounded-lg">account_balance_wallet</span>
+        </div>
+        <div class="text-2xl font-bold text-text-main">@totalInternalUsageValue.ToString("N0")</div>
+        <div class="text-xs text-text-secondary mt-1">جنيه</div>
+    </div>
 </div>
 
 <!-- Transactions Table -->
@@ -215,6 +238,17 @@
                                     <a asp-controller="Invoice" asp-action="Details" asp-route-id="@transaction.InvoiceId"
                                        class="text-primary hover:text-primary-dark p-2 hover:bg-primary/10 rounded-lg transition-all inline-flex items-center"
                                        title="عرض الفاتورة">
+                                        <span class="material-symbols-outlined text-[20px]">visibility</span>
+                                    </a>
+                                }
+                                else if (TransactionTypes.IsInternalUsage(transaction.TransactionType))
+                                {
+                                    <a asp-controller="InternalUsage"
+                                       asp-action="DetailsByReference"
+                                       asp-route-productId="@product.Id"
+                                       asp-route-referenceNumber="@transaction.ReferenceNumber"
+                                       class="text-amber-700 hover:text-amber-800 p-2 hover:bg-amber-50 rounded-lg transition-all inline-flex items-center"
+                                       title="عرض سجل الاستخدام الداخلي">
                                         <span class="material-symbols-outlined text-[20px]">visibility</span>
                                     </a>
                                 }

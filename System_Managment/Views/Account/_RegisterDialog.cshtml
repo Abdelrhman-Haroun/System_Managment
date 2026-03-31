@@ -20,6 +20,10 @@
                   novalidate>
                 @Html.AntiForgeryToken()
 
+                <div id="registerValidationSummary"
+                     class="md:col-span-2 hidden rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                </div>
+
                 <!-- Left Side: Form Fields -->
                 <div class="flex flex-col justify-center space-y-5 order-2 md:order-1">
                     <!-- Full Name -->
@@ -178,54 +182,16 @@
     </div>
 </div>
 
-<!-- Load validation scripts if not already loaded -->
 <script>
-    // Function to load script dynamically
-    function loadScript(src) {
-        return new Promise((resolve, reject) => {
-            // Check if already loaded
-            if (document.querySelector(`script[src="${src}"]`)) {
-                resolve();
-                return;
-            }
-            const script = document.createElement('script');
-            script.src = src;
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
-    }
-
-    // Load validation scripts if not already loaded
-    (async function() {
-        try {
-            // Check if jQuery Validation is loaded
-            if (typeof $.validator === 'undefined') {
-                await loadScript('https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js');
-            }
-            // Check if Unobtrusive Validation is loaded
-            if (typeof $.validator.unobtrusive === 'undefined') {
-                await loadScript('https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@4.0.0/dist/jquery.validate.unobtrusive.min.js');
-            }
-
-            // Initialize validation after scripts are loaded
-            initializeDialog();
-        } catch (error) {
-            console.error('Error loading validation scripts:', error);
-            initializeDialog(); // Try to initialize anyway
-        }
-    })();
+    initializeDialog();
 
     function initializeDialog() {
-        // Close dialog
         document.querySelectorAll('.closeDialog').forEach(btn => {
             btn.addEventListener('click', () => {
-                const container = document.getElementById('dialogContainer');
-                if (container) container.remove();
+                window.App?.ui?.closeAjaxDialog?.();
             });
         });
 
-        // Profile picture preview
         const profileInput = document.getElementById('ProfilePictureDialog');
         if (profileInput) {
             profileInput.addEventListener('change', function (e) {
@@ -248,11 +214,11 @@
             });
         }
 
-        // Parse validation attributes
         if (typeof $.validator !== 'undefined' && typeof $.validator.unobtrusive !== 'undefined') {
+            const $form = $('#registerForm');
+            $form.removeData('validator');
+            $form.removeData('unobtrusiveValidation');
             $.validator.unobtrusive.parse('#registerForm');
-
-            // Enhance validation visuals
             $.validator.setDefaults({
                 highlight: function (element) {
                     $(element).addClass('border-red-500');
@@ -263,26 +229,18 @@
             });
         }
 
-        // Form submission with full client & server validation
         $('#registerForm').on('submit', function (e) {
             e.preventDefault();
 
-            console.log('Form submitted'); // Debug log
-
-            // Clear previous errors and red borders
-            $('span[data-valmsg-for]').text('');
-            $('input, select').removeClass('border-red-500');
+            clearRegisterErrors();
 
             const form = this;
             const formData = new FormData(form);
 
-            // Client-side validation (jQuery Unobtrusive) if available
             if (typeof $.validator !== 'undefined' && !$(form).valid()) {
-                console.log('Client-side validation failed'); // Debug log
-                return; // Stop if invalid
+                showSummary('يرجى مراجعة الحقول المميزة وإكمال البيانات المطلوبة.');
+                return;
             }
-
-            console.log('Sending AJAX request...'); // Debug log
 
             $.ajax({
                 url: '@Url.Action("Register", "Account")',
@@ -291,8 +249,6 @@
                 processData: false,
                 contentType: false,
                 success: function (res) {
-                    console.log('Response received:', res); // Debug log
-
                     if (res.success) {
                         Swal.fire({
                             icon: 'success',
@@ -303,65 +259,83 @@
                             location.reload();
                         });
                     } else {
-                        let hasFieldErrors = false;
-
-                        // Display server-side validation errors under each field
                         if (res.errors) {
-                            for (const key in res.errors) {
-                                const messages = res.errors[key];
-                                const message = Array.isArray(messages) ? messages[0] : messages;
-
-                                // Skip 'General' errors - we'll show them as a SweetAlert
-                                if (key.toLowerCase() === 'general') {
-                                    Swal.fire('خطأ', message, 'error');
-                                    continue;
-                                }
-
-                                // Try multiple selectors to find the validation span
-                                let span = $(`span[data-valmsg-for="${key}"]`);
-                                if (!span.length) {
-                                    span = $(`span[asp-validation-for="${key}"]`);
-                                }
-                                if (!span.length) {
-                                    span = $(`#${key}`).siblings('span.text-red-600');
-                                }
-
-                                if (span.length) {
-                                    span.text(message);
-                                    span.closest('.relative').find('input, select').addClass('border-red-500');
-                                    hasFieldErrors = true;
-                                } else {
-                                    console.log(`Could not find validation span for: ${key}`);
-                                }
-                            }
+                            applyServerErrors(res.errors);
                         }
 
-                        // Show general error message if provided and no field errors were shown
-                        if (res.message && !hasFieldErrors) {
-                            Swal.fire('خطأ', res.message, 'error');
+                        if (res.message) {
+                            showSummary(res.message);
                         }
 
-                        // Fallback if nothing was displayed
                         if (!res.errors && !res.message) {
-                            Swal.fire('خطأ', 'حدث خطأ أثناء التسجيل', 'error');
+                            showSummary('حدث خطأ أثناء التسجيل.');
                         }
                     }
                 },
                 error: function (xhr, status, error) {
-                    console.error('AJAX Error:', status, error, xhr); // Debug log
                     let msg = 'حدث خطأ أثناء الاتصال بالخادم';
                     if (xhr.responseJSON && xhr.responseJSON.message) {
                         msg = xhr.responseJSON.message;
-                    } else if (xhr.responseText) {
-                        console.log('Response text:', xhr.responseText);
                     }
-                    Swal.fire('خطأ', msg, 'error');
+                    showSummary(msg);
                 }
             });
         });
     }
 
-    // Toggle password visibility
+    function clearRegisterErrors() {
+        $('#registerValidationSummary').addClass('hidden').empty();
+        $('#registerForm').find('span[data-valmsg-for]').each(function () {
+            $(this).text('');
+            $(this).removeClass('field-validation-error').addClass('field-validation-valid');
+        });
+        $('#registerForm').find('input, select, textarea').removeClass('border-red-500');
+    }
+
+    function showSummary(message) {
+        const summary = $('#registerValidationSummary');
+        if (!message) {
+            summary.addClass('hidden').empty();
+            return;
+        }
+
+        summary.removeClass('hidden').text(message);
+    }
+
+    function applyServerErrors(errors) {
+        let firstGeneralMessage = '';
+
+        Object.keys(errors).forEach(function (key) {
+            const fieldKey = key.split('.').pop();
+            const messageList = Array.isArray(errors[key]) ? errors[key] : [errors[key]];
+            const message = messageList.filter(Boolean)[0];
+            if (!message) {
+                return;
+            }
+
+            if (fieldKey.toLowerCase() === 'general') {
+                firstGeneralMessage = firstGeneralMessage || message;
+                return;
+            }
+
+            const span = $(`#registerForm span[data-valmsg-for="${fieldKey}"]`);
+            const input = $(`#registerForm [name="${fieldKey}"]`);
+
+            if (span.length) {
+                span.text(message);
+                span.removeClass('field-validation-valid').addClass('field-validation-error');
+            }
+
+            if (input.length) {
+                input.addClass('border-red-500');
+            }
+        });
+
+        if (firstGeneralMessage) {
+            showSummary(firstGeneralMessage);
+        }
+    }
+
     function togglePasswordVisibility(inputId, button) {
         const input = document.getElementById(inputId);
         const icon = button.querySelector('.material-symbols-outlined');

@@ -14,6 +14,7 @@ namespace BLL.Services.Service
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFileUploader _fileUploader;
         private readonly IEmailSender _emailSender;
+
         private readonly ILogger<UserService> _logger;
 
         public UserService(
@@ -184,14 +185,9 @@ namespace BLL.Services.Service
                     {
                         if (!string.IsNullOrEmpty(user.ProfilePicture))
                         {
-                            try
-                            {
-                                var oldPath = Path.Combine(webRootPath, user.ProfilePicture.TrimStart('/'));
-                                if (File.Exists(oldPath))
-                                    File.Delete(oldPath);
-                            }
-                            catch { }
+                            await DeleteUserImageIfExistsAsync(user.ProfilePicture, webRootPath);
                         }
+
                         user.ProfilePicture = newPath;
                     }
                 }
@@ -230,6 +226,20 @@ namespace BLL.Services.Service
             {
                 _logger.LogError(ex, "Delete error");
                 return (false, "حدث خطأ أثناء الحذف");
+            }
+        }
+
+        private async Task DeleteUserImageIfExistsAsync(string? relativePath, string webRootPath)
+        {
+            if (string.IsNullOrWhiteSpace(relativePath))
+                return;
+
+            try
+            {
+                await _fileUploader.DeleteImageAsync(relativePath, webRootPath);
+            }
+            catch
+            {
             }
         }
 

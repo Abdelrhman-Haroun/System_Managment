@@ -4,11 +4,16 @@ using BLL.Services.Service;
 using DAL.Data;
 using DAL.Models;
 using DAL.Repositories.IRepository;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Westwind.AspNetCore.LiveReload;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
 
 var mvcBuilder = builder.Services.AddControllersWithViews();
 if (builder.Environment.IsDevelopment())
@@ -19,6 +24,14 @@ if (builder.Environment.IsDevelopment())
 
 builder.Services.AddRazorPages();
 builder.Services.AddHttpContextAccessor();
+
+var dataProtectionPath = Path.Combine(builder.Environment.ContentRootPath, ".app-data-protection");
+Directory.CreateDirectory(dataProtectionPath);
+
+builder.Services
+    .AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionPath))
+    .SetApplicationName("System_Managment");
 
 builder.Services.AddTransient<IEmailSender, SmtpEmailSender>(sp =>
 {
@@ -70,7 +83,7 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireLowercase = false;
     options.Password.RequireUppercase = false;
     options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequiredLength = 6;
+    options.Password.RequiredLength = 0;
     options.Password.RequiredUniqueChars = 0;
 });
 

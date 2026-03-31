@@ -26,7 +26,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
         <!-- Main Content -->
-        <div class="lg:col-span-8 flex flex-col gap-6">
+        <div class="lg:col-span-9 flex flex-col gap-6">
 
             <!-- Invoice Type Toggle -->
             <input checked class="hidden" id="type_buy" name="InvoiceType" value="Purchase" type="radio" />
@@ -153,17 +153,28 @@
                     </div>
                 </div>
 
+                <div class="mb-5 grid gap-3 rounded-2xl border border-primary/10 bg-primary/5 p-4 text-sm text-text-secondary lg:grid-cols-[1fr_auto] lg:items-center">
+                    <p class="leading-7">
+                         كل صف يعرض رصيد المنتج الحالي مع إجمالي البند.
+                    </p>
+                    <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 font-bold text-primary border border-primary/10">
+                        <span class="material-symbols-outlined text-[18px]">table_rows</span>
+                        الوزن × سعر الكيلو
+                    </span>
+                </div>
+
                 <div class="overflow-hidden rounded-xl border border-border-light">
                     <div class="invoice-items-shell overflow-x-auto">
-                        <table class="invoice-items-table w-full border-collapse bg-white">
+                        <table class="invoice-items-table w-full min-w-[980px] border-collapse bg-white">
                             <thead>
                                 <tr class="bg-gray-50 border-b border-border-light">
-                                    <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider w-[35%]">المنتج</th>
-                                    <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider w-[15%]">الكمية</th>
-                                    <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider w-[15%]">الوزن (كجم)</th>
-                                    <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider w-[15%]">سعر الكيلو</th>
-                                    <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider w-[15%]">الإجمالي</th>
-                                    <th class="py-4 px-4 text-center text-xs font-bold text-text-secondary uppercase tracking-wider w-[10%]">إجراءات</th>
+                                    <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider w-[6%]">#</th>
+                                    <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider w-[28%]">المنتج</th>
+                                    <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider w-[12%]">الكمية</th>
+                                    <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider w-[14%]">الوزن (كجم)</th>
+                                    <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider w-[20%]">سعر الكيلو</th>
+                                    <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider w-[14%]">الإجمالي</th>
+                                    <th class="py-4 px-4 text-center text-xs font-bold text-text-secondary uppercase tracking-wider w-[6%]">إجراءات</th>
                                 </tr>
                             </thead>
                             <tbody id="invoiceItemsBody" class="divide-y divide-border-light">
@@ -197,7 +208,7 @@
             </section>
         </div>
 
-        <div class="lg:col-span-4 space-y-6">
+        <div class="lg:col-span-3 space-y-6">
             <!-- Summary Sidebar -->
             <div class="lg:sticky lg:top-6 lg:self-start">
                 <section class="bg-surface-light rounded-2xl border border-border-light shadow-sm p-6 mb-6">
@@ -263,6 +274,7 @@
         let totalsFrame = null;
         const products = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Products ?? new List<object>()));
         const itemBody = $('#invoiceItemsBody');
+        const productMap = new Map(products.map(product => [String(product.Id), product]));
         const currencyFormatter = new Intl.NumberFormat('ar-EG', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
@@ -284,7 +296,10 @@
             $('#addItemBtn').on('click', addInvoiceItem);
             $('#discountInput, #taxInput').on('input', scheduleTotalsCalculation);
             itemBody.on('input', '.item-quantity, .item-price, .item-weight', scheduleTotalsCalculation);
-            itemBody.on('change', '.item-product', scheduleTotalsCalculation);
+            itemBody.on('change', '.item-product', function() {
+                updateRowMetadata($(this).closest('tr'));
+                scheduleTotalsCalculation();
+            });
             itemBody.on('click', '.remove-item', function() {
                 removeInvoiceItem($(this).closest('tr'));
             });
@@ -308,7 +323,10 @@
 
             const row = `
                 <tr class="group hover:bg-gray-50/50 transition-colors item-row" data-index="${itemIndex}">
-                    <td data-label="المنتج" class="py-3 px-3 align-top">
+                    <td data-label="#" class="py-4 px-4 align-top">
+                        <div class="item-row-number inline-flex size-9 items-center justify-center rounded-xl bg-primary/10 font-bold text-primary">1</div>
+                    </td>
+                    <td data-label="المنتج" class="py-4 px-4 align-top">
                         <div class="relative">
                             <select name="Items[${itemIndex}].ProductId" class="item-product w-full rounded-lg border-border-light text-sm text-text-main focus:border-primary focus:ring-primary py-2.5 bg-white pr-8 pl-3" required>
                                 <option value="">اختر المنتج...</option>
@@ -318,26 +336,27 @@
                                 <span class="material-symbols-outlined text-[18px]">category</span>
                             </div>
                         </div>
+                        <div class="item-stock mt-2 text-xs font-medium text-text-secondary">اختر منتجاً لعرض الرصيد الحالي</div>
                     </td>
-                    <td data-label="الكمية" class="py-3 px-3 align-top">
+                    <td data-label="الكمية" class="py-4 px-4 align-top">
                         <input name="Items[${itemIndex}].Quantity" type="number" min="1" value="1" inputmode="numeric"
                                class="item-quantity w-full rounded-lg border-border-light text-sm text-text-main focus:border-primary focus:ring-primary py-2.5 px-3 text-center bg-white" required />
                     </td>
-                    <td data-label="الوزن (كجم)" class="py-3 px-3 align-top">
+                    <td data-label="الوزن (كجم)" class="py-4 px-4 align-top">
                         <input name="Items[${itemIndex}].Weight" type="number" step="0.01" min="0.01" value="1" inputmode="decimal"
                                class="item-weight w-full rounded-lg border-border-light text-sm text-text-main focus:border-primary focus:ring-primary py-2.5 px-3 text-center bg-white" />
                     </td>
-                    <td data-label="سعر الكيلو" class="py-3 px-3 align-top">
-                        <div class="relative">
+                    <td data-label="سعر الكيلو" class="py-4 px-4 align-top">
+                        <div class="relative min-w-[12rem]">
                             <input name="Items[${itemIndex}].UnitPrice" type="number" step="0.01" min="0.01" value="" inputmode="decimal"
                                    class="item-price w-full rounded-lg border-border-light text-sm text-text-main focus:border-primary focus:ring-primary py-2.5 pr-3 pl-20 bg-white" placeholder="ادخل السعر" required />
                             <span class="absolute left-2.5 top-2.5 text-xs font-medium text-text-secondary">جنيه مصرى</span>
                         </div>
                     </td>
-                    <td data-label="الإجمالي" class="py-3 px-3 align-top">
-                        <div class="item-total rounded-lg bg-gray-50 px-3 py-2.5 text-center text-sm font-bold text-primary">0.00 جنيه</div>
+                    <td data-label="الإجمالي" class="py-4 px-4 align-top">
+                        <div class="item-total rounded-xl border border-primary/10 bg-primary/5 px-3 py-3 text-center text-sm font-bold text-primary">0.00 جنيه</div>
                     </td>
-                    <td data-label="إجراءات" class="py-3 px-3 text-center align-top">
+                    <td data-label="إجراءات" class="py-4 px-4 text-center align-top">
                         <button type="button" class="remove-item text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all p-2 rounded-lg">
                             <span class="material-symbols-outlined text-[20px]">delete_outline</span>
                         </button>
@@ -349,6 +368,7 @@
 
             itemIndex++;
             updateItemCount();
+            updateRowMetadata(itemBody.find('.item-row').last());
             scheduleTotalsCalculation();
         }
 
@@ -363,8 +383,30 @@
         }
 
         function updateItemCount() {
-            const count = $('.item-row').length;
+            const rows = $('.item-row');
+            const count = rows.length;
             $('#itemCount').text(count);
+            rows.each(function(index) {
+                $(this).find('.item-row-number').text(index + 1);
+            });
+        }
+
+        function updateRowMetadata($row) {
+            const product = productMap.get(String($row.find('.item-product').val()));
+            const $stock = $row.find('.item-stock');
+
+            if (!product) {
+                $stock.text('اختر منتجاً لعرض الرصيد الحالي');
+                return;
+            }
+
+            const stockUnit = Number(product.ProductType) === 1 ? 'قطعة' : 'كجم';
+            const stockValue = Number(product.StockQuantity || 0).toLocaleString('ar-EG', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+
+            $stock.text(`الرصيد الحالي: ${stockValue} ${stockUnit}`);
         }
 
         function scheduleTotalsCalculation() {
@@ -530,7 +572,7 @@
             }
 
             .invoice-items-table tr {
-                padding: 0.75rem;
+                padding: 1rem;
                 border-bottom: 1px solid #e5e7eb;
                 background: #fff;
             }

@@ -20,11 +20,13 @@
                 <div class="relative group">
 
                     @{
-                        var fileName = string.IsNullOrEmpty(Model.ProfilePicture)
-                        ? "~/files/images/alter.png"                         // fallback file name (optional)
-                        : Model.ProfilePicture.TrimStart('/');  // remove leading slash if any
-
-                        var imagePath = Url.Content("~/files/" + fileName);
+                        var imagePath = string.IsNullOrWhiteSpace(Model.ProfilePicture)
+                            ? Url.Content("~/Files/images/alter.png")
+                            : Model.ProfilePicture.StartsWith("/Files/", StringComparison.OrdinalIgnoreCase)
+                                ? Url.Content(Model.ProfilePicture)
+                                : Model.ProfilePicture.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase)
+                                    ? Url.Content("/Files" + Model.ProfilePicture)
+                                    : Url.Content(Model.ProfilePicture.StartsWith("/") ? Model.ProfilePicture : "/" + Model.ProfilePicture);
                     }
 
                     <label for="photoInput" class="relative cursor-pointer">

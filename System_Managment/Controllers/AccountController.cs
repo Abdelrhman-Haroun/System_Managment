@@ -13,15 +13,18 @@ namespace System_Managment.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IUserService _userService;
         private readonly IWebHostEnvironment _hostingEnvironment;
+        private readonly IFileUploader _fileUploader;
 
         public AccountController(
             SignInManager<ApplicationUser> signInManager,
             IUserService userService,
-            IWebHostEnvironment hostEnvironment)
+            IWebHostEnvironment hostEnvironment,
+            IFileUploader fileUploader)
         {
             _signInManager = signInManager;
             _userService = userService;
             _hostingEnvironment = hostEnvironment;
+            _fileUploader = fileUploader;
         }
 
         #region All Users
@@ -302,6 +305,18 @@ namespace System_Managment.Controllers
         {
             if (string.IsNullOrEmpty(id))
                 return Json(new { success = false, message = "معرف المستخدم غير صحيح" });
+
+            var userDetails = await _userService.GetUserDetailsAsync(id);
+            if (userDetails.Success && !string.IsNullOrWhiteSpace(userDetails.User?.ProfilePicture))
+            {
+                try
+                {
+                    await _fileUploader.DeleteImageAsync(userDetails.User.ProfilePicture, _hostingEnvironment.WebRootPath);
+                }
+                catch
+                {
+                }
+            }
 
             var result = await _userService.DeleteUserAsync(id);
 

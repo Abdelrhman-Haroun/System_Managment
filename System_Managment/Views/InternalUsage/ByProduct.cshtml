@@ -1,126 +1,138 @@
 ﻿@using BLL.ViewModels.InternalUsage
+@using DAL.Models
 @model List<InternalUsageDetailsVM>
 
 @{
-    ViewData["Title"] = "إحصائيات استخدام المنتج";
+    ViewData["Title"] = "ط§ط³طھط®ط¯ط§ظ… ط§ظ„ظ…ظ†طھط¬ ط¯ط§ط®ظ„ظٹط§ظ‹";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var product = ViewBag.Product as DAL.Models.Product;
+
+    var product = ViewBag.Product as Product;
     var totalCost = (decimal)(ViewBag.TotalCost ?? 0);
     var totalQuantity = (decimal)(ViewBag.TotalQuantity ?? 0);
+    var isCountType = (product?.ProductType ?? 0) == (int)ProductType.Count;
+    var quantityLabel = isCountType ? "ظ‚ط·ط¹ط©" : "ظƒط¬ظ…";
+    var latestUsage = Model.OrderByDescending(x => x.UsageDate).FirstOrDefault();
+    var topCategory = Model
+        .GroupBy(x => x.UsageCategory)
+        .OrderByDescending(x => x.Sum(v => v.TotalCost))
+        .Select(x => x.Key)
+        .FirstOrDefault();
 
     string GetCategoryBadgeClass(string category) => category switch
     {
-        "تغذية الحيوانات" => "bg-blue-100 text-blue-800 border-blue-200",
-        "عمليات المزرعة" => "bg-orange-100 text-orange-800 border-orange-200",
-        "العناية بالماشية" => "bg-red-100 text-red-800 border-red-200",
-        "الصيانة" => "bg-purple-100 text-purple-800 border-purple-200",
+        "طھط؛ط°ظٹط© ط§ظ„ط­ظٹظˆط§ظ†ط§طھ" => "bg-blue-100 text-blue-800 border-blue-200",
+        "ط¹ظ…ظ„ظٹط§طھ ط§ظ„ظ…ط²ط±ط¹ط©" => "bg-orange-100 text-orange-800 border-orange-200",
+        "ط§ظ„ط¹ظ†ط§ظٹط© ط¨ط§ظ„ظ…ط§ط´ظٹط©" => "bg-red-100 text-red-800 border-red-200",
+        "ط§ظ„طµظٹط§ظ†ط©" => "bg-purple-100 text-purple-800 border-purple-200",
         _ => "bg-gray-100 text-gray-800 border-gray-200"
     };
 }
 
-<!-- Header -->
 <div class="mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
     <div class="flex items-center gap-4">
         <div class="size-12 text-primary bg-white rounded-xl shadow-sm border border-border-light p-2.5 flex items-center justify-center">
-            <span class="material-symbols-outlined text-[28px]">bar_chart</span>
+            <span class="material-symbols-outlined text-[28px]">insights</span>
         </div>
         <div>
-            <h1 class="text-2xl font-bold text-text-main tracking-tight">إحصائيات استخدام المنتج</h1>
-            <p class="text-sm text-text-secondary mt-1">@(product?.Name ?? "المنتج")</p>
+            <h1 class="text-2xl font-bold text-text-main tracking-tight">ط§ط³طھط®ط¯ط§ظ… ط§ظ„ظ…ظ†طھط¬ ط¯ط§ط®ظ„ظٹط§ظ‹</h1>
+            <p class="text-sm text-text-secondary mt-1">@(product?.Name ?? "ط§ظ„ظ…ظ†طھط¬")</p>
         </div>
     </div>
     <div class="flex gap-3 w-full md:w-auto">
+        <a asp-action="Create"
+           class="flex-1 md:flex-none px-6 py-2.5 text-sm font-bold text-white bg-primary rounded-xl hover:bg-primary-dark transition-all text-center">
+            طھط³ط¬ظٹظ„ ط§ط³طھط®ط¯ط§ظ… ط¬ط¯ظٹط¯
+        </a>
         <a asp-action="Index"
-           class="flex-1 md:flex-none px-6 py-2.5 text-sm font-medium text-text-secondary bg-white border border-border-light rounded-xl hover:bg-gray-50 hover:text-text-main focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary/20 transition-all text-center">
-            رجوع للسجلات
+           class="flex-1 md:flex-none px-6 py-2.5 text-sm font-medium text-text-secondary bg-white border border-border-light rounded-xl hover:bg-gray-50 hover:text-text-main transition-all text-center">
+            ط±ط¬ظˆط¹ ظ„ظ„ط³ط¬ظ„ط§طھ
         </a>
     </div>
 </div>
 
-<!-- Summary Cards -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
-    <!-- Product Name Card -->
-    <div class="bg-white rounded-2xl shadow-sm border border-border-light p-5 hover:shadow-md transition-shadow">
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 mb-8">
+    <div class="bg-white rounded-2xl shadow-sm border border-border-light p-5">
         <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-bold text-text-secondary uppercase tracking-wide">المنتج</span>
+            <span class="text-xs font-bold text-text-secondary uppercase tracking-wide">ط§ظ„ظ…ظ†طھط¬</span>
             <div class="bg-primary/10 p-2 rounded-lg">
-                <span class="material-symbols-outlined text-primary text-[20px]">package</span>
+                <span class="material-symbols-outlined text-primary text-[20px]">inventory</span>
             </div>
         </div>
-        <p class="text-base font-bold text-text-main truncate" title="@(product?.Name ?? "غير معروف")">
-            @(product?.Name ?? "غير معروف")
-        </p>
+        <p class="text-base font-bold text-text-main truncate">@(product?.Name ?? "ط؛ظٹط± ظ…ط¹ط±ظˆظپ")</p>
+        <p class="mt-2 text-xs text-text-secondary">ط§ظ„ظ†ظˆط¹: @(isCountType ? "ط¹ط¯ط¯ظٹ" : "ظˆط²ظ†ظٹ")</p>
     </div>
 
-    <!-- Total Cost Card -->
-    <div class="bg-white rounded-2xl shadow-sm border border-border-light p-5 hover:shadow-md transition-shadow">
+    <div class="bg-white rounded-2xl shadow-sm border border-border-light p-5">
         <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-bold text-text-secondary uppercase tracking-wide">إجمالي التكلفة</span>
-            <div class="bg-green-100 p-2 rounded-lg">
-                <span class="material-symbols-outlined text-green-600 text-[20px]">payments</span>
-            </div>
-        </div>
-        <p class="text-xl font-bold text-green-600">@totalCost.ToString("N2") <span class="text-sm">جنيه</span></p>
-    </div>
-
-    <!-- Total Weight Card -->
-    <div class="bg-white rounded-2xl shadow-sm border border-border-light p-5 hover:shadow-md transition-shadow">
-        <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-bold text-text-secondary uppercase tracking-wide">إجمالي الوزن</span>
+            <span class="text-xs font-bold text-text-secondary uppercase tracking-wide">ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ط§ط³طھظ‡ظ„ط§ظƒ</span>
             <div class="bg-blue-100 p-2 rounded-lg">
                 <span class="material-symbols-outlined text-blue-600 text-[20px]">scale</span>
             </div>
         </div>
-        <p class="text-xl font-bold text-blue-600">@totalQuantity.ToString("N2") <span class="text-sm">كجم</span></p>
+        <p class="text-xl font-bold text-blue-600">@totalQuantity.ToString("N2") <span class="text-sm">@quantityLabel</span></p>
+        <p class="mt-2 text-xs text-text-secondary">ط¹ط¯ط¯ ط§ظ„ط³ط¬ظ„ط§طھ: @(Model?.Count ?? 0)</p>
     </div>
 
-    <!-- Records Count Card -->
-    <div class="bg-white rounded-2xl shadow-sm border border-border-light p-5 hover:shadow-md transition-shadow">
+    <div class="bg-white rounded-2xl shadow-sm border border-border-light p-5">
         <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-bold text-text-secondary uppercase tracking-wide">عدد السجلات</span>
-            <div class="bg-purple-100 p-2 rounded-lg">
-                <span class="material-symbols-outlined text-purple-600 text-[20px]">format_list_numbered</span>
+            <span class="text-xs font-bold text-text-secondary uppercase tracking-wide">ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„طھظƒظ„ظپط©</span>
+            <div class="bg-green-100 p-2 rounded-lg">
+                <span class="material-symbols-outlined text-green-600 text-[20px]">payments</span>
             </div>
         </div>
-        <p class="text-xl font-bold text-purple-600">@(Model?.Count ?? 0) <span class="text-sm">سجل</span></p>
+        <p class="text-xl font-bold text-green-600">@totalCost.ToString("N2") <span class="text-sm">ط¬ظ†ظٹظ‡</span></p>
+        <p class="mt-2 text-xs text-text-secondary">ط§ظ„ظپط¦ط© ط§ظ„ط£ط¹ظ„ظ‰: @(topCategory ?? "ط؛ظٹط± ظ…ط­ط¯ط¯")</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-border-light p-5">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold text-text-secondary uppercase tracking-wide">ط¢ط®ط± ط­ط±ظƒط©</span>
+            <div class="bg-purple-100 p-2 rounded-lg">
+                <span class="material-symbols-outlined text-purple-600 text-[20px]">history</span>
+            </div>
+        </div>
+        @if (latestUsage != null)
+        {
+            <p class="text-base font-bold text-text-main">@latestUsage.ReferenceNumber</p>
+            <p class="mt-2 text-xs text-text-secondary">@latestUsage.UsageDate.ToString("dd/MM/yyyy")</p>
+        }
+        else
+        {
+            <p class="text-base font-bold text-text-main">ظ„ط§ طھظˆط¬ط¯ ط­ط±ظƒط©</p>
+        }
     </div>
 </div>
 
-<!-- Main Content Grid -->
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-
-    <!-- Left Column: Table -->
     <div class="lg:col-span-8">
-        <!-- Usage Records Table -->
         <div class="bg-white rounded-2xl shadow-sm border border-border-light overflow-hidden">
             <div class="bg-gradient-to-r from-primary to-primary-dark text-white p-6">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-bold flex items-center gap-2">
-                        <div class="bg-white/20 p-1.5 rounded-lg">
-                            <span class="material-symbols-outlined text-[20px]">list</span>
-                        </div>
-                        سجلات الاستخدام
-                    </h2>
-                    <span class="text-sm font-medium bg-white/20 px-3 py-1.5 rounded-full">
-                        @(Model?.Count ?? 0) سجل
-                    </span>
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold">ط³ط¬ظ„ ط§ظ„ط§ط³طھط®ط¯ط§ظ… ط§ظ„طھظپطµظٹظ„ظٹ</h2>
+                        <p class="mt-1 text-sm text-white/80">ظƒظ„ ط¹ظ…ظ„ظٹط© ظ…ظˆط¶ط­ط© ظ…ط¹ ط§ظ„ظ…ط±ط¬ط¹ ظˆطھط£ط«ظٹط±ظ‡ط§ ط¹ظ„ظ‰ ط±طµظٹط¯ ط§ظ„ظ…ظ†طھط¬.</p>
+                    </div>
+                    <div class="rounded-full bg-white/15 px-4 py-2 text-sm font-bold">
+                        @(Model?.Count ?? 0) ط³ط¬ظ„
+                    </div>
                 </div>
             </div>
 
-            @if (Model != null && Model.Any())
+            @if (Model.Any())
             {
                 <div class="overflow-x-auto">
-                    <table class="w-full min-w-[900px]">
+                    <table class="w-full min-w-[1100px]">
                         <thead class="bg-gray-50 border-b border-border-light">
                             <tr>
-                                <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">#</th>
-                                <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">الفئة</th>
-                                <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">الكمية</th>
-                                <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">الوزن</th>
-                                <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">سعر الوحدة</th>
-                                <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">التكلفة</th>
                                 <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">التاريخ</th>
-                                <th class="py-4 px-4 text-center text-xs font-bold text-text-secondary uppercase tracking-wider">الإجراءات</th>
+                                <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">#</th>
+                                <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">ط§ظ„ظ…ط±ط¬ط¹</th>
+                                <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">ط§ظ„ظپط¦ط©</th>
+                                <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">ط§ظ„ط§ط³طھظ‡ظ„ط§ظƒ</th>
+                                <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">ط§ظ„ط±طµظٹط¯ ظ‚ط¨ظ„</th>
+                                <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">ط§ظ„ط±طµظٹط¯ ط¨ط¹ط¯</th>
+                                <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">طھظƒظ„ظپط© ط§ظ„ط³ط¬ظ„</th>
+                                <th class="py-4 px-4 text-center text-xs font-bold text-text-secondary uppercase tracking-wider">ط§ظ„ط¥ط¬ط±ط§ط،ط§طھ</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-border-light">
@@ -130,31 +142,24 @@
                             @foreach (var usage in Model.OrderByDescending(u => u.UsageDate))
                             {
                                 <tr class="hover:bg-gray-50/50 transition-colors">
+                                    <td class="py-4 px-4 text-sm text-text-secondary">@usage.UsageDate.ToString("dd/MM/yyyy")</td>
                                     <td class="py-4 px-4 text-sm font-bold text-text-secondary">@index</td>
+                                    <td class="py-4 px-4 text-sm font-bold text-primary">@usage.ReferenceNumber</td>
                                     <td class="py-4 px-4 text-sm">
                                         <span class="inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-lg border @GetCategoryBadgeClass(usage.UsageCategory)">
                                             @usage.UsageCategory
                                         </span>
                                     </td>
                                     <td class="py-4 px-4 text-sm font-medium text-text-main">
-                                        @usage.Quantity.ToString("N2")
+                                        @(isCountType ? usage.Quantity.ToString("N2") : usage.Weight.ToString("N2")) @quantityLabel
                                     </td>
-                                    <td class="py-4 px-4 text-sm font-bold text-blue-600">
-                                        @usage.Weight.ToString("N2") كجم
-                                    </td>
-                                    <td class="py-4 px-4 text-sm text-text-secondary">
-                                        @usage.UnitPrice.ToString("N2") جنيه
-                                    </td>
-                                    <td class="py-4 px-4 text-sm font-bold text-green-600">
-                                        @usage.TotalCost.ToString("N2") جنيه
-                                    </td>
-                                    <td class="py-4 px-4 text-sm text-text-secondary">
-                                        @usage.UsageDate.ToString("dd/MM/yyyy")
-                                    </td>
+                                    <td class="py-4 px-4 text-sm text-text-secondary">@usage.StockQuantityBefore.ToString("N2") @quantityLabel</td>
+                                    <td class="py-4 px-4 text-sm font-bold text-blue-600">@usage.StockQuantityAfter.ToString("N2") @quantityLabel</td>
+                                    <td class="py-4 px-4 text-sm font-bold text-green-600">@usage.TotalCost.ToString("N2") ط¬ظ†ظٹظ‡</td>
                                     <td class="py-4 px-4 text-center">
                                         <a href="@Url.Action("Details", new { id = usage.Id })"
                                            class="text-primary hover:text-primary-dark p-2 hover:bg-primary/10 rounded-lg transition-all inline-flex"
-                                           title="عرض التفاصيل">
+                                           title="ط¹ط±ط¶ ط§ظ„طھظپط§طµظٹظ„">
                                             <span class="material-symbols-outlined text-[20px]">visibility</span>
                                         </a>
                                     </td>
@@ -169,165 +174,91 @@
             {
                 <div class="p-12 text-center">
                     <span class="material-symbols-outlined text-gray-400 text-6xl mb-4 block">inventory_2</span>
-                    <p class="text-text-secondary text-lg font-medium mb-2">لا توجد سجلات استخدام</p>
-                    <p class="text-text-secondary text-sm mb-6">لم يتم تسجيل أي استخدام داخلي لهذا المنتج</p>
-                    <a asp-action="Index" class="inline-block px-6 py-2.5 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl transition-all shadow-sm hover:shadow-md">
-                        العودة إلى السجلات
+                    <p class="text-text-secondary text-lg font-medium mb-2">ظ„ط§ طھظˆط¬ط¯ ط³ط¬ظ„ط§طھ ط§ط³طھط®ط¯ط§ظ…</p>
+                    <p class="text-text-secondary text-sm mb-6">ظ„ظ… ظٹطھظ… طھط³ط¬ظٹظ„ ط£ظٹ ط§ط³طھط®ط¯ط§ظ… ط¯ط§ط®ظ„ظٹ ظ„ظ‡ط°ط§ ط§ظ„ظ…ظ†طھط¬ ط¨ط¹ط¯.</p>
+                    <a asp-action="Create" class="inline-block px-6 py-2.5 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl transition-all">
+                        طھط³ط¬ظٹظ„ ط§ط³طھط®ط¯ط§ظ… ط¬ط¯ظٹط¯
                     </a>
                 </div>
             }
         </div>
     </div>
 
-    <!-- Right Column: Statistics -->
-    @if (Model != null && Model.Any())
-    {
-        <div class="lg:col-span-4 space-y-6">
-            <!-- Usage by Category -->
-            <div class="bg-white rounded-2xl shadow-sm border border-border-light p-6">
-                <h3 class="text-lg font-bold text-text-main mb-6 flex items-center gap-2 pb-4 border-b border-border-light">
-                    <div class="bg-primary/10 p-1.5 rounded-lg">
-                        <span class="material-symbols-outlined text-primary text-[20px]">pie_chart</span>
-                    </div>
-                    الاستخدام حسب الفئة
-                </h3>
+    <div class="lg:col-span-4 space-y-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-border-light p-6">
+            <h3 class="text-lg font-bold text-text-main mb-6 flex items-center gap-2 pb-4 border-b border-border-light">
+                <div class="bg-primary/10 p-1.5 rounded-lg">
+                    <span class="material-symbols-outlined text-primary text-[20px]">pie_chart</span>
+                </div>
+                ط§ظ„طھظˆط²ظٹط¹ ط­ط³ط¨ ط§ظ„ظپط¦ط©
+            </h3>
 
-                <div class="space-y-5">
-                    @{
-                        var grouped = Model.GroupBy(u => u.UsageCategory)
+            <div class="space-y-5">
+                @{
+                    var grouped = Model.GroupBy(u => u.UsageCategory)
                         .Select(g => new
                         {
                             Category = g.Key,
                             Count = g.Count(),
                             TotalCost = g.Sum(u => u.TotalCost),
-                            TotalQuantity = g.Sum(u => u.Weight)
+                            TotalQuantity = g.Sum(u => isCountType ? u.Quantity : u.Weight)
                         })
                         .OrderByDescending(x => x.TotalCost)
                         .ToList();
 
-                        var maxCost = grouped.Any() ? grouped.Max(x => x.TotalCost) : 1;
-                    }
+                    var maxCost = grouped.Any() ? grouped.Max(x => x.TotalCost) : 1;
+                }
 
-                    @foreach (var cat in grouped)
-                    {
-                        var percentage = maxCost > 0 ? (cat.TotalCost / maxCost * 100) : 0;
+                @foreach (var cat in grouped)
+                {
+                    var percentage = maxCost > 0 ? (cat.TotalCost / maxCost * 100) : 0;
 
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between">
-                                <span class="inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-lg border @GetCategoryBadgeClass(cat.Category)">
-                                    @cat.Category
-                                </span>
-                                <span class="text-sm font-bold text-text-main">@cat.TotalCost.ToString("N2") جنيه</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                                <div class="bg-gradient-to-r from-primary to-primary-dark h-2 rounded-full transition-all duration-500"
-                                     style="width: @(percentage)%"></div>
-                            </div>
-                            <div class="flex justify-between text-xs text-text-secondary">
-                                <span>
-                                    <span class="font-bold text-primary">@cat.Count</span> سجلات
-                                </span>
-                                <span>
-                                    <span class="font-bold text-blue-600">@cat.TotalQuantity.ToString("N2")</span> كجم
-                                </span>
-                            </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-lg border @GetCategoryBadgeClass(cat.Category)">
+                                @cat.Category
+                            </span>
+                            <span class="text-sm font-bold text-text-main">@cat.TotalCost.ToString("N2") ط¬ظ†ظٹظ‡</span>
                         </div>
-                    }
-                </div>
-            </div>
-
-            <!-- Statistics Cards -->
-            <div class="bg-white rounded-2xl shadow-sm border border-border-light p-6">
-                <h3 class="text-lg font-bold text-text-main mb-6 flex items-center gap-2 pb-4 border-b border-border-light">
-                    <div class="bg-primary/10 p-1.5 rounded-lg">
-                        <span class="material-symbols-outlined text-primary text-[20px]">trending_up</span>
-                    </div>
-                    الإحصائيات التفصيلية
-                </h3>
-
-                <div class="space-y-4">
-                    @{
-                        var avgCost = Model.Any() ? Model.Average(u => u.TotalCost) : 0;
-                        var avgQuantity = Model.Any() ? Model.Average(u => u.Weight) : 0;
-                        var maxCostRecord = Model.Any() ? Model.Max(u => u.TotalCost) : 0;
-                        var firstDate = Model.Any() ? Model.Min(u => u.UsageDate) : DateTime.MinValue;
-                        var lastDate = Model.Any() ? Model.Max(u => u.UsageDate) : DateTime.MinValue;
-                    }
-
-                    <!-- Average Cost -->
-                    <div class="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl p-4 border border-blue-200">
-                        <div class="flex items-center justify-between mb-2">
-                            <p class="text-xs font-bold text-blue-800 uppercase tracking-wide">متوسط التكلفة</p>
-                            <div class="bg-white p-1.5 rounded-lg">
-                                <span class="material-symbols-outlined text-blue-600 text-[18px]">calculate</span>
-                            </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                            <div class="bg-gradient-to-r from-primary to-primary-dark h-2 rounded-full" style="width: @(percentage)%"></div>
                         </div>
-                        <p class="text-2xl font-bold text-blue-600">@avgCost.ToString("N2")</p>
-                        <p class="text-xs text-blue-600/70 mt-1">جنيه للسجل الواحد</p>
-                    </div>
-
-                    <!-- Average Weight -->
-                    <div class="bg-gradient-to-br from-green-50 to-green-100/50 rounded-xl p-4 border border-green-200">
-                        <div class="flex items-center justify-between mb-2">
-                            <p class="text-xs font-bold text-green-800 uppercase tracking-wide">متوسط الوزن</p>
-                            <div class="bg-white p-1.5 rounded-lg">
-                                <span class="material-symbols-outlined text-green-600 text-[18px]">scale</span>
-                            </div>
+                        <div class="flex justify-between text-xs text-text-secondary">
+                            <span>@cat.Count ط³ط¬ظ„</span>
+                            <span>@cat.TotalQuantity.ToString("N2") @quantityLabel</span>
                         </div>
-                        <p class="text-2xl font-bold text-green-600">@avgQuantity.ToString("N2")</p>
-                        <p class="text-xs text-green-600/70 mt-1">كجم للسجل الواحد</p>
                     </div>
-
-                    <!-- Max Cost -->
-                    <div class="bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl p-4 border border-purple-200">
-                        <div class="flex items-center justify-between mb-2">
-                            <p class="text-xs font-bold text-purple-800 uppercase tracking-wide">أعلى تكلفة</p>
-                            <div class="bg-white p-1.5 rounded-lg">
-                                <span class="material-symbols-outlined text-purple-600 text-[18px]">trending_up</span>
-                            </div>
-                        </div>
-                        <p class="text-2xl font-bold text-purple-600">@maxCostRecord.ToString("N2")</p>
-                        <p class="text-xs text-purple-600/70 mt-1">جنيه</p>
-                    </div>
-
-                    <!-- Date Range -->
-                    @if (firstDate != DateTime.MinValue && lastDate != DateTime.MinValue)
-                    {
-                        <div class="bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-xl p-4 border border-orange-200">
-                            <div class="flex items-center justify-between mb-2">
-                                <p class="text-xs font-bold text-orange-800 uppercase tracking-wide">فترة الاستخدام</p>
-                                <div class="bg-white p-1.5 rounded-lg">
-                                    <span class="material-symbols-outlined text-orange-600 text-[18px]">date_range</span>
-                                </div>
-                            </div>
-                            <div class="space-y-1">
-                                <p class="text-sm font-bold text-orange-600">
-                                    من: @firstDate.ToString("dd/MM/yyyy")
-                                </p>
-                                <p class="text-sm font-bold text-orange-600">
-                                    إلى: @lastDate.ToString("dd/MM/yyyy")
-                                </p>
-                            </div>
-                            <p class="text-xs text-orange-600/70 mt-2">
-                                @((lastDate - firstDate).Days + 1) يوم
-                            </p>
-                        </div>
-                    }
-                </div>
-            </div>
-
-            <!-- Info Box -->
-            <div class="bg-blue-50/50 rounded-2xl border border-blue-100 p-5 shadow-sm">
-                <div class="flex items-start gap-3">
-                    <span class="material-symbols-outlined text-blue-600 mt-0.5 bg-blue-100 p-1 rounded-full text-[18px]">info</span>
-                    <div class="flex flex-col gap-1">
-                        <h4 class="text-sm font-bold text-blue-900">معلومة</h4>
-                        <p class="text-xs text-blue-700/80 leading-relaxed">
-                            هذه الإحصائيات توضح استخدام المنتج "@(product?.Name ?? "المنتج")" في جميع الأنشطة الداخلية للمزرعة.
-                        </p>
-                    </div>
-                </div>
+                }
             </div>
         </div>
-    }
+
+        <div class="bg-white rounded-2xl shadow-sm border border-border-light p-6">
+            <h3 class="text-lg font-bold text-text-main mb-6 flex items-center gap-2 pb-4 border-b border-border-light">
+                <div class="bg-primary/10 p-1.5 rounded-lg">
+                    <span class="material-symbols-outlined text-primary text-[20px]">notes</span>
+                </div>
+                ط¢ط®ط± ط§ظ„ظ…ظ„ط§ط­ط¸ط§طھ ط§ظ„طھط´ط؛ظٹظ„ظٹط©
+            </h3>
+
+            <div class="space-y-3">
+                @foreach (var usage in Model.Where(x => !string.IsNullOrWhiteSpace(x.Notes)).OrderByDescending(x => x.UsageDate).Take(3))
+                {
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                        <div class="flex items-center justify-between gap-3 text-xs text-slate-500">
+                            <span>@usage.ReferenceNumber</span>
+                            <span>@usage.UsageDate.ToString("dd/MM/yyyy")</span>
+                        </div>
+                        <p class="mt-2 text-sm leading-7 text-text-main">@usage.Notes</p>
+                    </div>
+                }
+
+                @if (!Model.Any(x => !string.IsNullOrWhiteSpace(x.Notes)))
+                {
+                    <div class="rounded-xl border border-dashed border-slate-300 px-4 py-6 text-center text-sm text-text-secondary">
+                        ظ„ط§ طھظˆط¬ط¯ ظ…ظ„ط§ط­ط¸ط§طھ ظ…ط³ط¬ظ„ط© ظ„ظ‡ط°ط§ ط§ظ„ظ…ظ†طھط¬ ط­طھظ‰ ط§ظ„ط¢ظ†.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
 </div>

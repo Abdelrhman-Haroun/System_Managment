@@ -61,10 +61,10 @@
                 <table class="w-full">
                     <thead class="bg-gray-50 border-b border-border-light">
                         <tr>
+                            <th class="py-4 px-6 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">التاريخ</th>
                             <th class="py-4 px-6 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">رقم الفاتورة</th>
                             <th class="py-4 px-6 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">النوع</th>
                             <th class="py-4 px-6 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">العميل/المورد</th>
-                            <th class="py-4 px-6 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">التاريخ</th>
                             <th class="py-4 px-6 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">عدد البنود</th>
                             <th class="py-4 px-6 text-right text-xs font-bold text-text-secondary uppercase tracking-wider">المبلغ الإجمالي</th>
                             <th class="py-4 px-6 text-center text-xs font-bold text-text-secondary uppercase tracking-wider">الإجراءات</th>
@@ -74,6 +74,9 @@
                         @foreach (var invoice in Model)
                         {
                             <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="py-4 px-6 text-sm text-text-secondary">
+                                    @invoice.InvoiceDate.ToString("dd/MM/yyyy")
+                                </td>
                                 <td class="py-4 px-6 text-sm font-bold text-primary">
                                     @invoice.InvoiceNumber
                                 </td>
@@ -95,9 +98,6 @@
                                 </td>
                                 <td class="py-4 px-6 text-sm font-medium text-text-main">
                                     @invoice.CustomerOrSupplierName
-                                </td>
-                                <td class="py-4 px-6 text-sm text-text-secondary">
-                                    @invoice.InvoiceDate.ToString("dd/MM/yyyy")
                                 </td>
                                 <td class="py-4 px-6 text-sm text-text-secondary">
                                     @invoice.ItemsCount بند

@@ -28,8 +28,7 @@ namespace BLL.Services.Service
                 await image.CopyToAsync(fileStream);
             }
 
-            // Return the relative path to the image, using forward slashes for web compatibility.
-            return ("/uploads/" + uniqueFileName).Replace('\\', '/');
+            return ("/Files/uploads/" + uniqueFileName).Replace('\\', '/');
         }
 
         public Task<bool> DeleteImageAsync(string relativePath, string basePath)
@@ -37,14 +36,21 @@ namespace BLL.Services.Service
             if (string.IsNullOrEmpty(relativePath))
                 return Task.FromResult(false);
 
-            // Sanitize the input to get just the file name from the relative path
             var fileName = Path.GetFileName(relativePath);
+            if (string.IsNullOrEmpty(fileName))
+                return Task.FromResult(false);
 
-            // Use the provided basePath instead of _hostingEnvironment.WebRootPath
-            var filePath = Path.Combine(basePath, "uploads", fileName);
-
-            if (File.Exists(filePath))
+            var candidatePaths = new[]
             {
+                Path.Combine(basePath, "Files", "uploads", fileName),
+                Path.Combine(basePath, "uploads", fileName)
+            };
+
+            foreach (var filePath in candidatePaths)
+            {
+                if (!File.Exists(filePath))
+                    continue;
+
                 File.Delete(filePath);
                 return Task.FromResult(true);
             }

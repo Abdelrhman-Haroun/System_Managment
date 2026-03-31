@@ -6,19 +6,19 @@
     <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div class="max-w-3xl">
             <p class="mb-3 text-sm font-semibold text-white/80">نظام إدارة مزرعة الماشية</p>
-            <h1 class="text-3xl font-black leading-tight lg:text-4xl">لوحة تحكم مستقرة وجاهزة لإكمال باقي الأقسام</h1>
+            <h1 class="text-3xl font-black leading-tight lg:text-4xl">لوحة تشغيل عملية لإدارة الفواتير والمخزون والحركة اليومية</h1>
             <p class="mt-4 text-sm leading-7 text-white/85 lg:text-base">
-                تم تقليل الروابط المكسورة من الواجهة الرئيسية وربط الوصول السريع بالأجزاء المنفذة فعليًا فقط حتى تصبح الحركة داخل النظام أوضح وأسرع.
+                الصفحة الرئيسية لم تعد مجرد نقطة مشاهدة. من هنا تستطيع البدء مباشرة في البيع والشراء وتسجيل الاستخدام الداخلي ومتابعة المخزون والفرق بين الحركات بسرعة.
             </p>
         </div>
         <div class="grid grid-cols-2 gap-3 text-sm">
             <div class="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur">
                 <div class="text-white/75">الوصول</div>
-                <div class="mt-1 text-lg font-bold">أسرع</div>
+                <div class="mt-1 text-lg font-bold">خطوة واحدة</div>
             </div>
             <div class="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur">
-                <div class="text-white/75">التنقل</div>
-                <div class="mt-1 text-lg font-bold">بدون روابط مكسورة</div>
+                <div class="text-white/75">الهدف</div>
+                <div class="mt-1 text-lg font-bold">تنفيذ أسرع للعمليات</div>
             </div>
         </div>
     </div>
@@ -30,7 +30,7 @@
             <span class="material-symbols-outlined">receipt_long</span>
         </div>
         <h2 class="text-lg font-bold text-slate-900">إدارة الفواتير</h2>
-        <p class="mt-2 text-sm leading-6 text-slate-600">إنشاء فواتير المبيعات والمشتريات ومراجعة تفاصيلها وحركاتها.</p>
+        <p class="mt-2 text-sm leading-6 text-slate-600">إنشاء فواتير المبيعات والمشتريات ومراجعة التفاصيل والسجل والطباعة من مكان واحد.</p>
     </a>
 
     <a asp-controller="Product" asp-action="Index" class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
@@ -38,7 +38,7 @@
             <span class="material-symbols-outlined">inventory_2</span>
         </div>
         <h2 class="text-lg font-bold text-slate-900">المنتجات والمخزون</h2>
-        <p class="mt-2 text-sm leading-6 text-slate-600">متابعة الأصناف حسب الوزن أو العدد مع عرض الحركات والمخزون الحالي.</p>
+        <p class="mt-2 text-sm leading-6 text-slate-600">متابعة الأصناف حسب الوزن أو العدد مع تفاصيل الحركة والمخزون الحالي والاستخدام الداخلي.</p>
     </a>
 
     <a asp-controller="Store" asp-action="Index" class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
@@ -46,7 +46,7 @@
             <span class="material-symbols-outlined">warehouse</span>
         </div>
         <h2 class="text-lg font-bold text-slate-900">المخازن</h2>
-        <p class="mt-2 text-sm leading-6 text-slate-600">عرض المخازن وتقارير الجرد الحالية بدون تحميل زائد أو استعلامات متكررة.</p>
+        <p class="mt-2 text-sm leading-6 text-slate-600">عرض المخازن والمخزون ونقاط النقص بسرعة مع إمكانية التنقل المباشر إلى حركة المنتجات.</p>
     </a>
 
     <a asp-controller="InternalUsage" asp-action="Index" class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
@@ -54,25 +54,53 @@
             <span class="material-symbols-outlined">agriculture</span>
         </div>
         <h2 class="text-lg font-bold text-slate-900">الاستخدام الداخلي</h2>
-        <p class="mt-2 text-sm leading-6 text-slate-600">تسجيل الاستهلاك الداخلي للمزرعة مع خصم المخزون وعرض التكلفة بشكل صحيح.</p>
+        <p class="mt-2 text-sm leading-6 text-slate-600">تسجيل استهلاك المزرعة مع خصم المخزون والرجوع إلى السجلات والتكلفة حسب المنتج أو الفئة.</p>
     </a>
 </section>
 
 <section class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
-    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-lg font-bold text-slate-900">الأقسام الجاهزة الآن</h3>
-        <ul class="mt-4 space-y-3 text-sm text-slate-600">
-            <li class="flex items-center gap-3"><span class="material-symbols-outlined text-emerald-600">check_circle</span><span>العملاء والموردون</span></li>
-            <li class="flex items-center gap-3"><span class="material-symbols-outlined text-emerald-600">check_circle</span><span>المنتجات وفئات المنتجات</span></li>
-            <li class="flex items-center gap-3"><span class="material-symbols-outlined text-emerald-600">check_circle</span><span>الفواتير وتقارير الحركات</span></li>
-            <li class="flex items-center gap-3"><span class="material-symbols-outlined text-emerald-600">check_circle</span><span>الاستخدام الداخلي وتقارير المخزون</span></li>
-        </ul>
+    <div class="rounded-3xl border border-emerald-200 bg-gradient-to-l from-emerald-50 to-white p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <h3 class="text-lg font-bold text-slate-900">إجراءات سريعة</h3>
+                <p class="mt-2 text-sm leading-7 text-slate-600">ابدأ العملية الأساسية مباشرة بدل الدخول إلى القوائم ثم البحث عن الصفحة المناسبة.</p>
+            </div>
+            <div class="flex size-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                <span class="material-symbols-outlined">bolt</span>
+            </div>
+        </div>
+
+        <div class="mt-6 grid gap-3 sm:grid-cols-2">
+            <a asp-controller="Invoice" asp-action="Create" class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm font-bold text-slate-800 transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md">
+                <span class="flex items-center gap-3"><span class="material-symbols-outlined text-emerald-600">add_card</span>إنشاء فاتورة</span>
+                <span class="material-symbols-outlined text-slate-400">arrow_forward</span>
+            </a>
+            <a asp-controller="InternalUsage" asp-action="Create" class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm font-bold text-slate-800 transition hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-md">
+                <span class="flex items-center gap-3"><span class="material-symbols-outlined text-rose-600">post_add</span>تسجيل استخدام داخلي</span>
+                <span class="material-symbols-outlined text-slate-400">arrow_forward</span>
+            </a>
+            <a asp-controller="Product" asp-action="Index" class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm font-bold text-slate-800 transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md">
+                <span class="flex items-center gap-3"><span class="material-symbols-outlined text-blue-600">inventory</span>إدارة المنتجات</span>
+                <span class="material-symbols-outlined text-slate-400">arrow_forward</span>
+            </a>
+            <a asp-controller="Account" asp-action="Index" class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm font-bold text-slate-800 transition hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-md">
+                <span class="flex items-center gap-3"><span class="material-symbols-outlined text-amber-600">group_add</span>إدارة المستخدمين</span>
+                <span class="material-symbols-outlined text-slate-400">arrow_forward</span>
+            </a>
+        </div>
     </div>
 
-    <div class="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-6 shadow-sm">
-        <h3 class="text-lg font-bold text-slate-900">ملاحظات الإكمال</h3>
-        <p class="mt-4 text-sm leading-7 text-slate-600">
-            الأقسام غير المنفذة بالكامل أُبعدت مؤقتًا من القائمة الرئيسية بدل إبقاء روابط تفتح صفحات غير موجودة. هذا يجعل النظام الحالي صالحًا للاستكمال التدريجي بدون تعطيل المستخدمين الحاليين.
-        </p>
+    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h3 class="text-lg font-bold text-slate-900">ما الذي يمكن إنجازه الآن؟</h3>
+        <ul class="mt-4 space-y-3 text-sm text-slate-600">
+            <li class="flex items-center gap-3"><span class="material-symbols-outlined text-emerald-600">check_circle</span><span>تسجيل فواتير المشتريات والمبيعات ومراجعة طباعتها</span></li>
+            <li class="flex items-center gap-3"><span class="material-symbols-outlined text-emerald-600">check_circle</span><span>إدارة المنتجات والفئات والعملاء والموردين</span></li>
+            <li class="flex items-center gap-3"><span class="material-symbols-outlined text-emerald-600">check_circle</span><span>متابعة حركة المنتج وربطها بالفاتورة أو بسجل الاستخدام الداخلي</span></li>
+            <li class="flex items-center gap-3"><span class="material-symbols-outlined text-emerald-600">check_circle</span><span>مراقبة المخزون الحالي والحدود المنخفضة داخل المخازن</span></li>
+        </ul>
+
+        <div class="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm leading-7 text-slate-600">
+            الواجهة الرئيسية أصبحت موجهة للتنفيذ: اختيار العملية، الدخول إلى شاشة الإدخال، ثم متابعة الأثر في الحركة والمخزون بدون الرجوع إلى صفحات عرض فقط.
+        </div>
     </div>
 </section>

@@ -301,6 +301,22 @@ namespace System_Managment.Controllers
             return View(usage);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> DetailsByReference(int productId, string referenceNumber)
+        {
+            if (productId <= 0 || string.IsNullOrWhiteSpace(referenceNumber))
+                return NotFound();
+
+            var usages = await _usageService.GetUsageByProductAsync(productId);
+            var usage = usages.FirstOrDefault(u =>
+                string.Equals(u.ReferenceNumber, referenceNumber, StringComparison.OrdinalIgnoreCase));
+
+            if (usage == null)
+                return NotFound();
+
+            return RedirectToAction(nameof(Details), new { id = usage.Id });
+        }
+
         // DELETE - Soft delete record
         [HttpPost]
         [ValidateAntiForgeryToken]

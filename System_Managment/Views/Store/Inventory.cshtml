@@ -34,36 +34,6 @@
     </div>
 </div>
 
-<!-- Summary Cards -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
-        <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-semibold text-text-secondary">قيمة المخزون الإجمالية</span>
-            <span class="material-symbols-outlined text-green-600 bg-green-100 p-2 rounded-lg">attach_money</span>
-        </div>
-        <div class="text-2xl font-bold text-text-main">@totalStockValue.ToString("N2")</div>
-        <div class="text-xs text-text-secondary mt-1">جنيه مصري</div>
-    </div>
-
-    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
-        <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-semibold text-text-secondary">عدد المنتجات</span>
-            <span class="material-symbols-outlined text-blue-600 bg-blue-100 p-2 rounded-lg">inventory_2</span>
-        </div>
-        <div class="text-2xl font-bold text-text-main">@totalProducts</div>
-        <div class="text-xs text-text-secondary mt-1">منتج</div>
-    </div>
-
-    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
-        <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-semibold text-text-secondary">منتجات تحت الحد الأدنى</span>
-            <span class="material-symbols-outlined text-red-600 bg-red-100 p-2 rounded-lg">warning</span>
-        </div>
-        <div class="text-2xl font-bold text-text-main">@lowStockProducts</div>
-        <div class="text-xs text-text-secondary mt-1">منتج</div>
-    </div>
-</div>
-
 <!-- Filter Section -->
 <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6 mb-6">
     <h3 class="text-lg font-bold text-text-main mb-4 flex items-center gap-2">
@@ -106,6 +76,36 @@
     </form>
 </div>
 
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-text-secondary">قيمة المخزون الإجمالية</span>
+            <span class="material-symbols-outlined text-green-600 bg-green-100 p-2 rounded-lg">attach_money</span>
+        </div>
+        <div class="text-2xl font-bold text-text-main">@totalStockValue.ToString("N2")</div>
+        <div class="text-xs text-text-secondary mt-1">جنيه مصري</div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-text-secondary">عدد المنتجات</span>
+            <span class="material-symbols-outlined text-blue-600 bg-blue-100 p-2 rounded-lg">inventory_2</span>
+        </div>
+        <div class="text-2xl font-bold text-text-main">@totalProducts</div>
+        <div class="text-xs text-text-secondary mt-1">منتج</div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-text-secondary">منتجات تحت الحد الأدنى</span>
+            <span class="material-symbols-outlined text-red-600 bg-red-100 p-2 rounded-lg">warning</span>
+        </div>
+        <div class="text-2xl font-bold text-text-main">@lowStockProducts</div>
+        <div class="text-xs text-text-secondary mt-1">منتج</div>
+    </div>
+</div>
+
 <!-- Inventory Table -->
 <div class="bg-white rounded-2xl border border-border-light shadow-sm overflow-hidden">
     @if (Model != null && Model.Any())
@@ -114,6 +114,7 @@
             <table class="w-full min-w-[1200px]">
                 <thead class="bg-gray-50 border-b border-border-light">
                     <tr>
+                        <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase">آخر حركة</th>
                         <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase">المنتج</th>
                         <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase">الفئة</th>
                         <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase">النوع</th>
@@ -122,7 +123,6 @@
                         <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase">إجمالي الصادر</th>
                         <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase">متوسط سعر الشراء</th>
                         <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase">قيمة المخزون</th>
-                        <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase">آخر حركة</th>
                         <th class="py-4 px-4 text-center text-xs font-bold text-text-secondary uppercase">الإجراءات</th>
                     </tr>
                 </thead>
@@ -134,6 +134,16 @@
                             : "text-text-main";
 
                         <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="py-4 px-4 text-sm text-text-secondary">
+                                @if (item.LastTransactionDate.HasValue)
+                                {
+                                    @item.LastTransactionDate.Value.ToString("dd/MM/yyyy")
+                                }
+                                else
+                                {
+                                    <span class="text-gray-400">-</span>
+                                }
+                            </td>
                             <td class="py-4 px-4 text-sm font-medium text-text-main">
                                 @item.ProductName
                             </td>
@@ -174,16 +184,6 @@
                             </td>
                             <td class="py-4 px-4 text-sm font-bold text-primary">
                                 @item.StockValue.ToString("N2") جنيه
-                            </td>
-                            <td class="py-4 px-4 text-sm text-text-secondary">
-                                @if (item.LastTransactionDate.HasValue)
-                                {
-                                    @item.LastTransactionDate.Value.ToString("dd/MM/yyyy")
-                                }
-                                else
-                                {
-                                    <span class="text-gray-400">-</span>
-                                }
                             </td>
                             <td class="py-4 px-4 text-center">
                                 <div class="flex items-center justify-center gap-2">
