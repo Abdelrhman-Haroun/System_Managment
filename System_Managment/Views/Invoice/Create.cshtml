@@ -282,12 +282,7 @@
 
         // Initialize
         $(document).ready(function() {
-            // Set today's date
-            const today = new Date().toISOString().split('T')[0];
-            const $dateInput = $('input[type="date"]');
-            if (!$dateInput.val()) {
-                $dateInput.val(today);
-            }
+            ensureDateInputsDefaultToToday();
 
             // Add first item automatically
             addInvoiceItem();
@@ -315,6 +310,15 @@
                 }
             });
         });
+
+        function ensureDateInputsDefaultToToday() {
+            const today = new Date().toISOString().split('T')[0];
+            $('input[type="date"]').each(function() {
+                if (!$(this).val()) {
+                    $(this).val(today);
+                }
+            });
+        }
 
         function addInvoiceItem() {
             const productOptions = products.map(p =>

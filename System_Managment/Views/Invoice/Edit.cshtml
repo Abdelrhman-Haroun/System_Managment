@@ -296,6 +296,8 @@
 
         // Initialize
         $(document).ready(function() {
+            ensureDateInputsDefaultToToday();
+
             // Load existing items
             existingItems.forEach(item => {
                 addInvoiceItem(item);
@@ -316,6 +318,15 @@
             // Initial calculation
             calculateTotals();
         });
+
+        function ensureDateInputsDefaultToToday() {
+            const today = new Date().toISOString().split('T')[0];
+            $('input[type="date"]').each(function() {
+                if (!$(this).val()) {
+                    $(this).val(today);
+                }
+            });
+        }
 
         function addInvoiceItem(existingItem = null) {
             const productOptions = products.map(p =>

@@ -28,7 +28,7 @@ namespace BLL.ViewModels.InternalUsage
         public string UsageCategory { get; set; }
 
         [Required(ErrorMessage = "يرجى اختيار تاريخ الاستخدام")]
-        public DateTime UsageDate { get; set; }
+        public DateTime UsageDate { get; set; } = DateTime.Today;
         public string? Notes { get; set; } // Additional notes
     }
 }

@@ -25,14 +25,14 @@ namespace System_Managment.Controllers
             DateTime? startDate = null,
             DateTime? endDate = null)
         {
+            (startDate, endDate) = NormalizeDateRange(startDate, endDate);
+
             IEnumerable<InternalUsageDetailsVM> usages;
 
             if (!string.IsNullOrEmpty(category))
                 usages = await _usageService.GetUsageByCategoryAsync(category);
-            else if (startDate.HasValue && endDate.HasValue)
-                usages = await _usageService.GetUsageByDateRangeAsync(startDate.Value, endDate.Value);
             else
-                usages = await _usageService.GetAllInternalUsageAsync();
+                usages = await _usageService.GetUsageByDateRangeAsync(startDate.Value, endDate.Value);
 
             ViewBag.SelectedCategory = category;
             ViewBag.StartDate = startDate;
@@ -56,7 +56,10 @@ namespace System_Managment.Controllers
                 "أخرى"
             };
 
-            return View();
+            return View(new CreateInternalUsageVM
+            {
+                UsageDate = DateTime.Today
+            });
         }
 
         // CREATE POST - Process form (AJAX Support)
@@ -349,6 +352,25 @@ namespace System_Managment.Controllers
             ViewBag.TotalQuantity = summary.TotalQuantity;
 
             return View(usages.ToList());
+        }
+
+        private static (DateTime? StartDate, DateTime? EndDate) NormalizeDateRange(DateTime? startDate, DateTime? endDate)
+        {
+            if (!startDate.HasValue && !endDate.HasValue)
+            {
+                var today = DateTime.Today;
+                return (today, today);
+            }
+
+            startDate ??= endDate;
+            endDate ??= startDate;
+
+            if (startDate > endDate)
+            {
+                (startDate, endDate) = (endDate, startDate);
+            }
+
+            return (startDate?.Date, endDate?.Date);
         }
     }
 }

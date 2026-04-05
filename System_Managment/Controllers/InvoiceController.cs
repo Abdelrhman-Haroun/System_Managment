@@ -39,12 +39,16 @@ namespace System_Managment.Controllers
         // GET: Invoices
         [HttpGet("")]
         [HttpGet("Index")]
-        public async Task<IActionResult> Index(string? type)
+        public async Task<IActionResult> Index(string? type, DateTime? fromDate, DateTime? toDate)
         {
             try
             {
-                var invoices = await _invoiceService.GetAllInvoicesAsync(type);
+                (fromDate, toDate) = NormalizeDateRange(fromDate, toDate);
+
+                var invoices = await _invoiceService.GetAllInvoicesAsync(type, fromDate, toDate);
                 ViewBag.SelectedType = type;
+                ViewBag.FromDate = fromDate;
+                ViewBag.ToDate = toDate;
                 return View(invoices);
             }
             catch (Exception ex)
@@ -62,7 +66,10 @@ namespace System_Managment.Controllers
             try
             {
                 await LoadDropdownData();
-                return View(new CreateInvoiceVM());
+                return View(new CreateInvoiceVM
+                {
+                    InvoiceDate = DateTime.Today
+                });
             }
             catch (Exception ex)
             {
@@ -505,6 +512,25 @@ namespace System_Managment.Controllers
                 TempData["Error"] = "حدث خطأ في تحميل الفاتورة للطباعة";
                 return RedirectToAction(nameof(Index));
             }
+        }
+
+        private static (DateTime? FromDate, DateTime? ToDate) NormalizeDateRange(DateTime? fromDate, DateTime? toDate)
+        {
+            if (!fromDate.HasValue && !toDate.HasValue)
+            {
+                var today = DateTime.Today;
+                return (today, today);
+            }
+
+            fromDate ??= toDate;
+            toDate ??= fromDate;
+
+            if (fromDate > toDate)
+            {
+                (fromDate, toDate) = (toDate, fromDate);
+            }
+
+            return (fromDate?.Date, toDate?.Date);
         }
     }
 }

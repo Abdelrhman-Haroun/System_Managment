@@ -464,9 +464,20 @@ namespace BLL.Services.Service
             };
         }
 
-        public async Task<IEnumerable<InvoiceListVM>> GetAllInvoicesAsync(string? invoiceType = null)
+        public async Task<IEnumerable<InvoiceListVM>> GetAllInvoicesAsync(string? invoiceType = null, DateTime? fromDate = null, DateTime? toDate = null)
         {
             var invoices = await _unitOfWork.Invoice.GetAllWithDetailsAsync(invoiceType);
+
+            if (fromDate.HasValue)
+            {
+                invoices = invoices.Where(i => i.InvoiceDate >= fromDate.Value);
+            }
+
+            if (toDate.HasValue)
+            {
+                var inclusiveEndDate = toDate.Value.AddDays(1);
+                invoices = invoices.Where(i => i.InvoiceDate < inclusiveEndDate);
+            }
 
             return invoices.Select(i => new InvoiceListVM
             {
@@ -478,7 +489,8 @@ namespace BLL.Services.Service
                 TotalAmount = i.TotalAmount,
                 ItemsCount = i.InvoiceItems?.Count(item => !item.IsDeleted) ?? 0,
                 CreatedAt = i.CreatedAt
-            }).OrderByDescending(i => i.CreatedAt);
+            }).OrderByDescending(i => i.InvoiceDate)
+              .ThenByDescending(i => i.CreatedAt);
         }
 
         private static decimal GetEffectiveQuantity(int productType, decimal quantity, decimal weight)

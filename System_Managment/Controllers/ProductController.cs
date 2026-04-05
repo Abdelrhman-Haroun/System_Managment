@@ -243,6 +243,8 @@ namespace System_Managment.Controllers
         {
             try
             {
+                (fromDate, toDate) = NormalizeDateRange(fromDate, toDate);
+
                 var product = await _service.GetByIdContainsAsync(id, "Category,Store");
                 if (product == null)
                 {
@@ -335,6 +337,8 @@ namespace System_Managment.Controllers
         {
             try
             {
+                (fromDate, toDate) = NormalizeDateRange(fromDate, toDate);
+
                 var product = await _service.GetByIdAsync(id);
                 if (product == null)
                     return NotFound();
@@ -361,6 +365,25 @@ namespace System_Managment.Controllers
             {
                 return Json(new { success = false, message = "حدث خطأ أثناء التصدير" });
             }
+        }
+
+        private static (DateTime? FromDate, DateTime? ToDate) NormalizeDateRange(DateTime? fromDate, DateTime? toDate)
+        {
+            if (!fromDate.HasValue && !toDate.HasValue)
+            {
+                var today = DateTime.Today;
+                return (today, today);
+            }
+
+            fromDate ??= toDate;
+            toDate ??= fromDate;
+
+            if (fromDate > toDate)
+            {
+                (fromDate, toDate) = (toDate, fromDate);
+            }
+
+            return (fromDate?.Date, toDate?.Date);
         }
     }
 }

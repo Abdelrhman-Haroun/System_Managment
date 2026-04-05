@@ -212,6 +212,8 @@ public class StoreController : Controller
     {
         try
         {
+            (fromDate, toDate) = NormalizeDateRange(fromDate, toDate);
+
             var store = await _service.GetByIdAsync(id);
             if (store == null)
             {
@@ -306,6 +308,8 @@ public class StoreController : Controller
     {
         try
         {
+            (fromDate, toDate) = NormalizeDateRange(fromDate, toDate);
+
             var store = await _service.GetByIdAsync(id);
             if (store == null)
                 return NotFound();
@@ -317,5 +321,24 @@ public class StoreController : Controller
         {
             return Json(new { success = false, message = "حدث خطأ أثناء التصدير" });
         }
+    }
+
+    private static (DateTime? FromDate, DateTime? ToDate) NormalizeDateRange(DateTime? fromDate, DateTime? toDate)
+    {
+        if (!fromDate.HasValue && !toDate.HasValue)
+        {
+            var today = DateTime.Today;
+            return (today, today);
+        }
+
+        fromDate ??= toDate;
+        toDate ??= fromDate;
+
+        if (fromDate > toDate)
+        {
+            (fromDate, toDate) = (toDate, fromDate);
+        }
+
+        return (fromDate?.Date, toDate?.Date);
     }
 }

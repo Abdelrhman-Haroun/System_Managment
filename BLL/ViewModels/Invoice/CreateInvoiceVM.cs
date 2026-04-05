@@ -18,7 +18,7 @@ namespace BLL.ViewModels.Invoice
 
         // For Purchase Invoice
         public int? SupplierId { get; set; }
-        public DateTime InvoiceDate { get; set; }
+        public DateTime InvoiceDate { get; set; } = DateTime.Today;
         // Optional reference number
         [StringLength(100, ErrorMessage = "رقم المرجع يجب أن لا يتجاوز 100 حرف")]
         public string? ReferenceNumber { get; set; }

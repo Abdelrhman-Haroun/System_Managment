@@ -113,7 +113,7 @@
                             تاريخ الاستخدام <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                            <input asp-for="UsageDate" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")"
+                            <input asp-for="UsageDate" type="date"
                                    class="w-full h-12 rounded-xl border-border-light bg-background-light text-text-main text-sm focus:border-primary focus:ring-primary pl-10 text-right px-3"
                                    required />
                             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center px-3 text-primary/60">
@@ -256,6 +256,8 @@
     }
     <script>
         $(document).ready(function() {
+            ensureDateInputsDefaultToToday();
+
             const weightInput = document.getElementById('weightInput');
             const priceInput = document.getElementById('priceInput');
             const totalDisplay = document.getElementById('totalCost');
@@ -334,5 +336,14 @@
                 });
             });
         });
+
+        function ensureDateInputsDefaultToToday() {
+            const today = new Date().toISOString().split('T')[0];
+            $('input[type="date"]').each(function() {
+                if (!$(this).val()) {
+                    $(this).val(today);
+                }
+            });
+        }
     </script>
 }

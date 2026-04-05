@@ -4,6 +4,8 @@
 
 @{
     ViewData["Title"] = "الفواتير";
+    var fromDate = ViewBag.FromDate as DateTime?;
+    var toDate = ViewBag.ToDate as DateTime?;
 }
 
 <div class="container">
@@ -26,15 +28,50 @@
 
     <!-- Filter Tabs -->
     <div class="bg-white rounded-xl shadow-sm border border-border-light p-2 mb-6 flex gap-2">
-        <a asp-action="Index" class="flex-1 text-center py-2.5 rounded-lg @(ViewBag.SelectedType == null ? "bg-primary text-white" : "text-text-secondary hover:bg-gray-50") font-bold text-sm transition-all">
+        <a asp-action="Index" asp-route-fromDate="@fromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@toDate?.ToString("yyyy-MM-dd")" class="flex-1 text-center py-2.5 rounded-lg @(ViewBag.SelectedType == null ? "bg-primary text-white" : "text-text-secondary hover:bg-gray-50") font-bold text-sm transition-all">
             جميع الفواتير
         </a>
-        <a asp-action="Index" asp-route-type="@InvoiceTypes.Purchase" class="flex-1 text-center py-2.5 rounded-lg @(ViewBag.SelectedType?.ToString() == InvoiceTypes.Purchase ? "bg-primary text-white" : "text-text-secondary hover:bg-gray-50") font-bold text-sm transition-all">
+        <a asp-action="Index" asp-route-type="@InvoiceTypes.Purchase" asp-route-fromDate="@fromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@toDate?.ToString("yyyy-MM-dd")" class="flex-1 text-center py-2.5 rounded-lg @(ViewBag.SelectedType?.ToString() == InvoiceTypes.Purchase ? "bg-primary text-white" : "text-text-secondary hover:bg-gray-50") font-bold text-sm transition-all">
             فواتير المشتريات
         </a>
-        <a asp-action="Index" asp-route-type="@InvoiceTypes.Sales" class="flex-1 text-center py-2.5 rounded-lg @(ViewBag.SelectedType?.ToString() == InvoiceTypes.Sales ? "bg-primary text-white" : "text-text-secondary hover:bg-gray-50") font-bold text-sm transition-all">
+        <a asp-action="Index" asp-route-type="@InvoiceTypes.Sales" asp-route-fromDate="@fromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@toDate?.ToString("yyyy-MM-dd")" class="flex-1 text-center py-2.5 rounded-lg @(ViewBag.SelectedType?.ToString() == InvoiceTypes.Sales ? "bg-primary text-white" : "text-text-secondary hover:bg-gray-50") font-bold text-sm transition-all">
             فواتير المبيعات
         </a>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6 mb-6">
+        <h3 class="text-lg font-bold text-text-main mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">filter_alt</span>
+            تصفية حسب التاريخ
+        </h3>
+
+        <form method="get" asp-action="Index" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <input type="hidden" name="type" value="@ViewBag.SelectedType" />
+
+            <div>
+                <label class="text-sm font-semibold text-text-secondary mb-2 block">من تاريخ</label>
+                <input type="date" name="fromDate" value="@fromDate?.ToString("yyyy-MM-dd")"
+                       class="w-full h-11 rounded-xl border-border-light bg-background-light text-text-main focus:border-primary focus:ring-primary px-3" />
+            </div>
+
+            <div>
+                <label class="text-sm font-semibold text-text-secondary mb-2 block">إلى تاريخ</label>
+                <input type="date" name="toDate" value="@toDate?.ToString("yyyy-MM-dd")"
+                       class="w-full h-11 rounded-xl border-border-light bg-background-light text-text-main focus:border-primary focus:ring-primary px-3" />
+            </div>
+
+            <div class="flex items-end gap-2">
+                <button type="submit"
+                        class="flex-1 h-11 px-6 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">search</span>
+                    بحث
+                </button>
+                <a asp-action="Index" asp-route-type="@ViewBag.SelectedType"
+                   class="h-11 px-4 bg-gray-200 hover:bg-gray-300 text-text-main font-bold rounded-xl transition-all flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[20px]">refresh</span>
+                </a>
+            </div>
+        </form>
     </div>
 
     @if (TempData["Success"] != null)

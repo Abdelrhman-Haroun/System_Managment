@@ -210,6 +210,8 @@ public class SupplierController : Controller
     {
         try
         {
+            (fromDate, toDate) = NormalizeDateRange(fromDate, toDate);
+
             var supplier = await _service.GetByIdAsync(id);
             if (supplier == null)
             {
@@ -267,6 +269,8 @@ public class SupplierController : Controller
     {
         try
         {
+            (fromDate, toDate) = NormalizeDateRange(fromDate, toDate);
+
             var supplier = await _service.GetByIdAsync(id);
             if (supplier == null)
                 return NotFound();
@@ -293,5 +297,24 @@ public class SupplierController : Controller
         {
             return Json(new { success = false, message = "حدث خطأ أثناء التصدير" });
         }
+    }
+
+    private static (DateTime? FromDate, DateTime? ToDate) NormalizeDateRange(DateTime? fromDate, DateTime? toDate)
+    {
+        if (!fromDate.HasValue && !toDate.HasValue)
+        {
+            var today = DateTime.Today;
+            return (today, today);
+        }
+
+        fromDate ??= toDate;
+        toDate ??= fromDate;
+
+        if (fromDate > toDate)
+        {
+            (fromDate, toDate) = (toDate, fromDate);
+        }
+
+        return (fromDate?.Date, toDate?.Date);
     }
 }

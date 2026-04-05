@@ -13,6 +13,6 @@ namespace BLL.Services.IService
         Task<(bool Success, string Message)> UpdateInvoiceAsync(UpdateInvoiceVM model);
         Task<(bool Success, string Message)> DeleteInvoiceAsync(int id);
         Task<InvoiceDetailsVM?> GetInvoiceDetailsAsync(int id);
-        Task<IEnumerable<InvoiceListVM>> GetAllInvoicesAsync(string? invoiceType = null);
+        Task<IEnumerable<InvoiceListVM>> GetAllInvoicesAsync(string? invoiceType = null, DateTime? fromDate = null, DateTime? toDate = null);
     }
 }

@@ -249,6 +249,8 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
+            ensureDateInputsDefaultToToday();
+
             const weightInput = document.getElementById('weightInput');
             const priceInput = document.getElementById('priceInput');
             const totalDisplay = document.getElementById('totalCost');
@@ -327,5 +329,14 @@
                 });
             });
         });
+
+        function ensureDateInputsDefaultToToday() {
+            const today = new Date().toISOString().split('T')[0];
+            $('input[type="date"]').each(function() {
+                if (!$(this).val()) {
+                    $(this).val(today);
+                }
+            });
+        }
     </script>
 }

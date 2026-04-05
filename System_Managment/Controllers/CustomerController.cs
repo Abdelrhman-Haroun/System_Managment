@@ -209,6 +209,8 @@ public class CustomerController : Controller
     {
         try
         {
+            (fromDate, toDate) = NormalizeDateRange(fromDate, toDate);
+
             var customer = await _service.GetByIdAsync(id);
             if (customer == null)
             {
@@ -262,6 +264,8 @@ public class CustomerController : Controller
     {
         try
         {
+            (fromDate, toDate) = NormalizeDateRange(fromDate, toDate);
+
             var customer = await _service.GetByIdAsync(id);
             if (customer == null)
                 return NotFound();
@@ -289,5 +293,24 @@ public class CustomerController : Controller
         {
             return Json(new { success = false, message = "حدث خطأ أثناء التصدير" });
         }
+    }
+
+    private static (DateTime? FromDate, DateTime? ToDate) NormalizeDateRange(DateTime? fromDate, DateTime? toDate)
+    {
+        if (!fromDate.HasValue && !toDate.HasValue)
+        {
+            var today = DateTime.Today;
+            return (today, today);
+        }
+
+        fromDate ??= toDate;
+        toDate ??= fromDate;
+
+        if (fromDate > toDate)
+        {
+            (fromDate, toDate) = (toDate, fromDate);
+        }
+
+        return (fromDate?.Date, toDate?.Date);
     }
 }
