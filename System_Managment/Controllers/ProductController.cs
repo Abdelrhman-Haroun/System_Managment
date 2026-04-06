@@ -243,7 +243,11 @@ namespace System_Managment.Controllers
         {
             try
             {
-                (fromDate, toDate) = NormalizeDateRange(fromDate, toDate);
+                var hasDateFilter = fromDate.HasValue || toDate.HasValue;
+                if (hasDateFilter)
+                {
+                    (fromDate, toDate) = NormalizeDateRange(fromDate, toDate);
+                }
 
                 var product = await _service.GetByIdContainsAsync(id, "Category,Store");
                 if (product == null)
@@ -293,14 +297,13 @@ namespace System_Managment.Controllers
                 // NEW: Calculate internal usage value
                 var totalInternalUsageValue = transactions
                     .Where(t => TransactionTypes.IsInternalUsage(t.TransactionType))
-                    .Sum(t => t.TotalAmount);
+                    .Sum(t => t.DisplayTotalAmount);
 
                 var filteredTransactions = transactions
                     .OrderBy(t => t.TransactionDate)
                     .ThenBy(t => t.CreatedAt)
                     .ToList();
 
-                var hasDateFilter = fromDate.HasValue || toDate.HasValue;
                 var openingBalance = filteredTransactions.Any()
                     ? filteredTransactions.First().QuantityBefore
                     : product.StockQuantity ?? 0;
@@ -337,7 +340,10 @@ namespace System_Managment.Controllers
         {
             try
             {
-                (fromDate, toDate) = NormalizeDateRange(fromDate, toDate);
+                if (fromDate.HasValue || toDate.HasValue)
+                {
+                    (fromDate, toDate) = NormalizeDateRange(fromDate, toDate);
+                }
 
                 var product = await _service.GetByIdAsync(id);
                 if (product == null)

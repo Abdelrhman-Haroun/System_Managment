@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using BLL.ViewModels.Customer;
+using BLL.ViewModels.Employee;
+using BLL.ViewModels.EmployeeType;
 using BLL.ViewModels.Product;
 using BLL.ViewModels.ProductCategory;
 using BLL.ViewModels.Store;
@@ -40,6 +42,14 @@ namespace BLL.Mapper
             // Edit
             CreateMap<Store, EditStoreVM>();
             CreateMap<EditStoreVM, Store>();
+
+            CreateMap<CreateEmployeeTypeVM, EmployeeType>();
+            CreateMap<EmployeeType, EditEmployeeTypeVM>();
+            CreateMap<EditEmployeeTypeVM, EmployeeType>();
+
+            CreateMap<CreateEmployeeVM, Employee>();
+            CreateMap<Employee, EditEmployeeVM>();
+            CreateMap<EditEmployeeVM, Employee>();
 
         }
     }

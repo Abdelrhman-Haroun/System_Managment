@@ -278,16 +278,6 @@ namespace BLL.Services.Service
                 .ToList();
         }
 
-        public async Task<IEnumerable<InternalUsageDetailsVM>> GetUsageByProductAsync(int productId)
-        {
-            var usages = await _unitOfWork.InternalProductUsage.GetByProductIdAsync(productId);
-            return usages
-                .Where(u => !u.IsDeleted)
-                .Select(u => MapToViewModel(u))
-                .OrderByDescending(u => u.UsageDate)
-                .ToList();
-        }
-
         public async Task<IEnumerable<InternalUsageDetailsVM>> GetUsageByDateRangeAsync(DateTime startDate, DateTime endDate)
         {
             var usages = await _unitOfWork.InternalProductUsage.GetByDateRangeAsync(startDate, endDate);
@@ -306,13 +296,6 @@ namespace BLL.Services.Service
                 .Select(u => MapToViewModel(u))
                 .OrderByDescending(u => u.UsageDate)
                 .ToList();
-        }
-
-        public async Task<(decimal TotalCost, decimal TotalQuantity)> GetProductUsageSummaryAsync(int productId)
-        {
-            var usages = await _unitOfWork.InternalProductUsage.GetByProductIdAsync(productId);
-            var activeUsages = usages.Where(u => !u.IsDeleted).ToList();
-            return (activeUsages.Sum(u => u.TotalCost), activeUsages.Sum(u => GetEffectiveQuantity(u.ProductType ?? 0, u.Quantity, u.Weight)));
         }
 
         public async Task<(decimal TotalCost, int RecordCount)> GetMonthlyUsageSummaryAsync(int month, int year)

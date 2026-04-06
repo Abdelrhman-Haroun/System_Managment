@@ -1,0 +1,92 @@
+@model IEnumerable<PaymentListVM>
+
+@{
+    ViewData["Title"] = "المدفوعات";
+    var searchTerm = ViewBag.SearchTerm as string;
+}
+
+<div class="space-y-8">
+    <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+            <h1 class="text-3xl font-black text-slate-900">المدفوعات</h1>
+            <p class="mt-2 text-slate-600">قسم جاهز لتسجيل مدفوعات العملاء والموردين ومتابعتها.</p>
+        </div>
+        <a asp-action="Create" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-3 font-bold text-white shadow-lg transition hover:bg-primary/90">
+            <span class="material-symbols-outlined">add</span>
+            إضافة دفعة
+        </a>
+    </div>
+
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <form method="get" class="flex flex-col gap-4 md:flex-row">
+            <input type="text" name="searchTerm" value="@searchTerm" placeholder="ابحث باسم الجهة أو رقم المرجع"
+                   class="h-12 flex-1 rounded-xl border border-slate-300 px-4 outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10" />
+            <div class="flex gap-3">
+                <button type="submit" class="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-5 font-bold text-white transition hover:bg-primary/90">
+                    <span class="material-symbols-outlined text-[20px]">search</span>
+                    بحث
+                </button>
+                <a asp-action="Index" class="inline-flex h-12 items-center justify-center rounded-xl bg-slate-100 px-5 font-bold text-slate-700 transition hover:bg-slate-200">
+                    إعادة ضبط
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        @if (Model.Any())
+        {
+            <div class="overflow-x-auto">
+                <table class="w-full min-w-[900px]">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-6 py-4 text-right text-xs font-bold text-slate-500">التاريخ</th>
+                            <th class="px-6 py-4 text-right text-xs font-bold text-slate-500">رقم المرجع</th>
+                            <th class="px-6 py-4 text-right text-xs font-bold text-slate-500">الجهة</th>
+                            <th class="px-6 py-4 text-right text-xs font-bold text-slate-500">النوع</th>
+                            <th class="px-6 py-4 text-right text-xs font-bold text-slate-500">طريقة الدفع</th>
+                            <th class="px-6 py-4 text-right text-xs font-bold text-slate-500">المبلغ</th>
+                            <th class="px-6 py-4 text-right text-xs font-bold text-slate-500">ملاحظات</th>
+                            <th class="px-6 py-4 text-center text-xs font-bold text-slate-500">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+                        @foreach (var payment in Model)
+                        {
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-6 py-4 text-sm text-slate-600">@payment.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td class="px-6 py-4 text-sm font-semibold text-primary">@payment.ReferenceNumber</td>
+                                <td class="px-6 py-4 text-sm font-semibold text-slate-900">@payment.PartyName</td>
+                                <td class="px-6 py-4 text-sm text-slate-600">@payment.PartyType</td>
+                                <td class="px-6 py-4 text-sm text-slate-600">@payment.PaymentMethod</td>
+                                <td class="px-6 py-4 text-sm font-bold @(payment.IsIncoming ? "text-green-600" : "text-orange-600")">@payment.Amount.ToString("N2") جنيه</td>
+                                <td class="px-6 py-4 text-sm text-slate-600">@(string.IsNullOrWhiteSpace(payment.Notes) ? "-" : payment.Notes)</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <a asp-action="Edit" asp-route-id="@payment.Id" class="rounded-lg p-2 text-primary transition hover:bg-primary/10" title="تعديل">
+                                            <span class="material-symbols-outlined text-[20px]">edit</span>
+                                        </a>
+                                        <form asp-action="Delete" asp-route-id="@payment.Id" method="post" onsubmit="return confirm('هل تريد حذف هذه الدفعة؟');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="rounded-lg p-2 text-red-600 transition hover:bg-red-50" title="حذف">
+                                                <span class="material-symbols-outlined text-[20px]">delete</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="px-6 py-16 text-center">
+                <span class="material-symbols-outlined mb-4 text-6xl text-slate-300">payments</span>
+                <p class="text-lg font-bold text-slate-700">لا توجد مدفوعات مسجلة</p>
+                <p class="mt-2 text-sm text-slate-500">ابدأ بإضافة أول دفعة من هذا القسم.</p>
+            </div>
+        }
+    </div>
+</div>

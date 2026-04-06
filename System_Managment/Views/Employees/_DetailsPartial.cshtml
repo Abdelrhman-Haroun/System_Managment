@@ -1,0 +1,45 @@
+@model Employee
+@{
+    var payroll = ViewBag.Payroll as BLL.ViewModels.Employee.EmployeeMonthlyPayrollVM;
+}
+
+<div class="w-full max-w-3xl mx-auto bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+    <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-2xl font-bold">ملف الموظف</h2>
+        <button type="button" class="closeDialog p-3 rounded-full hover:bg-gray-100 transition-colors">
+            <span class="material-symbols-outlined text-2xl">close</span>
+        </button>
+    </div>
+    <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div><span class="font-bold">الاسم:</span> @Model.Name</div>
+        <div><span class="font-bold">النوع:</span> @Model.EmployeeType?.Name</div>
+        <div><span class="font-bold">المسمى:</span> @Model.Position</div>
+        <div><span class="font-bold">الهاتف:</span> @Model.PhoneNumber</div>
+        <div><span class="font-bold">الراتب الشهري:</span> @Model.Salary.ToString("N2") جنيه</div>
+        <div><span class="font-bold">تاريخ التعيين:</span> @Model.HireDate.ToString("dd/MM/yyyy")</div>
+        <div><span class="font-bold">الحالة:</span> @(Model.IsActive ? "نشط" : "موقوف")</div>
+        <div><span class="font-bold">الملاحظات:</span> @(string.IsNullOrWhiteSpace(Model.Notes) ? "-" : Model.Notes)</div>
+    </div>
+    @if (payroll != null)
+    {
+        <div class="px-8 pb-8">
+            <div class="rounded-2xl border border-border-light bg-slate-50 p-5">
+                <div class="flex items-center justify-between gap-4 mb-4">
+                    <h3 class="text-lg font-bold">ملخص راتب الشهر</h3>
+                    <span class="text-sm text-slate-500">@ViewBag.SelectedMonth / @ViewBag.SelectedYear</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div><span class="font-bold">الحضور:</span> @payroll.PresentDays</div>
+                    <div><span class="font-bold">الغياب:</span> @payroll.AbsentDays</div>
+                    <div><span class="font-bold">اليومية:</span> @payroll.DailyRate.ToString("N2")</div>
+                    <div><span class="font-bold">الراتب الشهري:</span> @payroll.Salary.ToString("N2")</div>
+                    <div><span class="font-bold">المستحق من الحضور:</span> @payroll.EarnedSalary.ToString("N2")</div>
+                    <div><span class="font-bold">الإضافات:</span> @payroll.Additions.ToString("N2")</div>
+                    <div><span class="font-bold">الاستقطاعات:</span> @payroll.Deductions.ToString("N2")</div>
+                    <div><span class="font-bold">غياب غير مدفوع:</span> @payroll.UnpaidAbsentDays</div>
+                    <div class="md:col-span-2"><span class="font-bold">الراتب النهائي:</span> <span class="text-primary font-black">@payroll.NetSalary.ToString("N2")</span></div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

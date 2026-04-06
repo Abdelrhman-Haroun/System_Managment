@@ -1,0 +1,227 @@
+@model BLL.ViewModels.Employee.MarkEmployeeAttendanceVM
+@using DAL.Models
+@{
+    ViewData["Title"] = "الحضور والغياب";
+    var payroll = ViewBag.Payroll as IEnumerable<BLL.ViewModels.Employee.EmployeeMonthlyPayrollVM> ?? Enumerable.Empty<BLL.ViewModels.Employee.EmployeeMonthlyPayrollVM>();
+    var records = ViewBag.Records as IEnumerable<BLL.ViewModels.Employee.EmployeeAttendanceRecordVM> ?? Enumerable.Empty<BLL.ViewModels.Employee.EmployeeAttendanceRecordVM>();
+    var adjustments = ViewBag.Adjustments as IEnumerable<BLL.ViewModels.Employee.EmployeeSalaryAdjustmentVM> ?? Enumerable.Empty<BLL.ViewModels.Employee.EmployeeSalaryAdjustmentVM>();
+    var adjustmentModel = ViewBag.AdjustmentModel as BLL.ViewModels.Employee.CreateEmployeeSalaryAdjustmentVM ?? new();
+    var hasEmployees = ViewBag.HasEmployees as bool? ?? false;
+}
+
+<div class="space-y-8">
+    <div>
+        <h1 class="text-4xl font-black text-slate-900 tracking-tight">الحضور والغياب</h1>
+        <p class="text-slate-600 mt-2 text-lg">الراتب النهائي يتم احتسابه من الأيام التي حضرها الموظف فعلياً، ثم تضاف الإضافات وتخصم الاستقطاعات.</p>
+    </div>
+
+    <form method="get" class="bg-white rounded-2xl border border-border-light shadow-sm p-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+            <label class="text-sm font-semibold mb-2 block">الموظف</label>
+            <select name="employeeId" asp-items="ViewBag.Employees" class="w-full h-12 rounded-xl border-border-light">
+                <option value="">كل الموظفين</option>
+            </select>
+        </div>
+        <div>
+            <label class="text-sm font-semibold mb-2 block">السنة</label>
+            <input type="number" name="year" value="@ViewBag.SelectedYear" class="w-full h-12 rounded-xl border-border-light px-4" />
+        </div>
+        <div>
+            <label class="text-sm font-semibold mb-2 block">الشهر</label>
+            <input type="number" name="month" min="1" max="12" value="@ViewBag.SelectedMonth" class="w-full h-12 rounded-xl border-border-light px-4" />
+        </div>
+        <div class="flex items-end">
+            <button class="w-full h-12 bg-primary text-white font-bold rounded-xl">تصفية</button>
+        </div>
+    </form>
+
+    @if (!hasEmployees)
+    {
+        <div class="bg-white rounded-2xl border border-border-light shadow-sm p-8 text-center">
+            <span class="material-symbols-outlined text-gray-400 text-5xl mb-3">groups</span>
+            <p class="text-lg font-bold text-text-main mb-2">لا يوجد موظفون نشطون</p>
+            <p class="text-text-secondary">فعّل موظفاً أو أضف موظفاً جديداً قبل تسجيل الحضور أو الخصومات.</p>
+        </div>
+    }
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <form method="post" asp-action="Mark" class="bg-white rounded-2xl border border-border-light shadow-sm p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            @Html.AntiForgeryToken()
+            <h3 class="md:col-span-2 text-xl font-bold">تسجيل حضور / غياب</h3>
+            <div>
+                <label class="text-sm font-semibold mb-2 block">الموظف</label>
+                <select asp-for="EmployeeId" asp-items="ViewBag.Employees" class="w-full h-12 rounded-xl border-border-light"></select>
+            </div>
+            <div>
+                <label class="text-sm font-semibold mb-2 block">التاريخ</label>
+                <input asp-for="AttendanceDate" type="date" class="w-full h-12 rounded-xl border-border-light px-4" />
+            </div>
+            <div>
+                <label class="text-sm font-semibold mb-2 block">الحالة</label>
+                <select asp-for="Status" class="w-full h-12 rounded-xl border-border-light">
+                    <option value="@EmployeeAttendanceStatus.Present">حضور</option>
+                    <option value="@EmployeeAttendanceStatus.Absent">غياب</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-sm font-semibold mb-2 block">ملاحظات</label>
+                <input asp-for="Notes" class="w-full h-12 rounded-xl border-border-light px-4" />
+            </div>
+            <div class="md:col-span-2"><button class="w-full h-12 bg-primary text-white font-bold rounded-xl">حفظ السجل</button></div>
+        </form>
+
+        <form method="post" asp-action="AddAdjustment" class="bg-white rounded-2xl border border-border-light shadow-sm p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            @Html.AntiForgeryToken()
+            <h3 class="md:col-span-2 text-xl font-bold">إضافة / خصم على الراتب</h3>
+            <div>
+                <label class="text-sm font-semibold mb-2 block">الموظف</label>
+                <select name="EmployeeId" asp-items="ViewBag.Employees" class="w-full h-12 rounded-xl border-border-light">
+                    <option value="">اختر الموظف...</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-sm font-semibold mb-2 block">التاريخ</label>
+                <input name="AdjustmentDate" type="date" value="@adjustmentModel.AdjustmentDate.ToString("yyyy-MM-dd")" class="w-full h-12 rounded-xl border-border-light px-4" />
+            </div>
+            <div>
+                <label class="text-sm font-semibold mb-2 block">النوع</label>
+                <select name="AdjustmentType" class="w-full h-12 rounded-xl border-border-light">
+                    <option value="@SalaryAdjustmentTypes.Addition">إضافة</option>
+                    <option value="@SalaryAdjustmentTypes.Deduction">خصم</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-sm font-semibold mb-2 block">المبلغ</label>
+                <input name="Amount" type="number" step="0.01" min="0.01" class="w-full h-12 rounded-xl border-border-light px-4" />
+            </div>
+            <div>
+                <label class="text-sm font-semibold mb-2 block">السبب</label>
+                <input name="Reason" class="w-full h-12 rounded-xl border-border-light px-4" />
+            </div>
+            <div>
+                <label class="text-sm font-semibold mb-2 block">ملاحظات</label>
+                <input name="Notes" class="w-full h-12 rounded-xl border-border-light px-4" />
+            </div>
+            <div class="md:col-span-2"><button class="w-full h-12 bg-primary text-white font-bold rounded-xl">حفظ الحركة</button></div>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-border-light shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-border-light"><h3 class="text-xl font-bold">ملخص الرواتب الشهرية</h3></div>
+        <div class="overflow-x-auto">
+            <table class="w-full min-w-[1200px]">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">الموظف</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">النوع</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">الراتب الشهري</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">اليومية</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">حضور</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">غياب</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">غياب غير مدفوع</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">المستحق من الحضور</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">إضافات</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">استقطاعات</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">الراتب النهائي</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-border-light">
+                    @foreach (var item in payroll)
+                    {
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-semibold">@item.EmployeeName</td>
+                            <td class="px-4 py-3 text-sm">@item.EmployeeTypeName</td>
+                            <td class="px-4 py-3 text-sm">@item.Salary.ToString("N2")</td>
+                            <td class="px-4 py-3 text-sm">@item.DailyRate.ToString("N2")</td>
+                            <td class="px-4 py-3 text-sm">@item.PresentDays</td>
+                            <td class="px-4 py-3 text-sm">@item.AbsentDays</td>
+                            <td class="px-4 py-3 text-sm text-red-700">@item.UnpaidAbsentDays</td>
+                            <td class="px-4 py-3 text-sm text-green-700">@item.EarnedSalary.ToString("N2")</td>
+                            <td class="px-4 py-3 text-sm text-green-700">@item.Additions.ToString("N2")</td>
+                            <td class="px-4 py-3 text-sm text-red-700">@item.Deductions.ToString("N2")</td>
+                            <td class="px-4 py-3 text-sm font-bold text-primary">@item.NetSalary.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl border border-border-light shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-border-light"><h3 class="text-xl font-bold">سجلات الحضور</h3></div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">الموظف</th>
+                            <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">التاريخ</th>
+                            <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">الحالة</th>
+                            <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-border-light">
+                        @foreach (var item in records)
+                        {
+                            <tr>
+                                <td class="px-4 py-3 text-sm">@item.EmployeeName</td>
+                                <td class="px-4 py-3 text-sm">@item.AttendanceDate.ToString("dd/MM/yyyy")</td>
+                                <td class="px-4 py-3 text-sm">@((item.Status == EmployeeAttendanceStatus.Present) ? "حضور" : "غياب")</td>
+                                <td class="px-4 py-3 text-sm">
+                                    <form method="post" asp-action="DeleteRecord">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="hidden" name="employeeId" value="@ViewBag.SelectedEmployeeId" />
+                                        <input type="hidden" name="year" value="@ViewBag.SelectedYear" />
+                                        <input type="hidden" name="month" value="@ViewBag.SelectedMonth" />
+                                        <button class="text-red-600 hover:text-red-800">حذف</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-border-light shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-border-light"><h3 class="text-xl font-bold">الإضافات والخصومات</h3></div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">الموظف</th>
+                            <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">التاريخ</th>
+                            <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">النوع</th>
+                            <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">المبلغ</th>
+                            <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">السبب</th>
+                            <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-border-light">
+                        @foreach (var item in adjustments)
+                        {
+                            <tr>
+                                <td class="px-4 py-3 text-sm">@item.EmployeeName</td>
+                                <td class="px-4 py-3 text-sm">@item.AdjustmentDate.ToString("dd/MM/yyyy")</td>
+                                <td class="px-4 py-3 text-sm">@((item.AdjustmentType == SalaryAdjustmentTypes.Addition) ? "إضافة" : "خصم")</td>
+                                <td class="px-4 py-3 text-sm">@item.Amount.ToString("N2")</td>
+                                <td class="px-4 py-3 text-sm">@item.Reason</td>
+                                <td class="px-4 py-3 text-sm">
+                                    <form method="post" asp-action="DeleteAdjustment">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="hidden" name="employeeId" value="@ViewBag.SelectedEmployeeId" />
+                                        <input type="hidden" name="year" value="@ViewBag.SelectedYear" />
+                                        <input type="hidden" name="month" value="@ViewBag.SelectedMonth" />
+                                        <button class="text-red-600 hover:text-red-800">حذف</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

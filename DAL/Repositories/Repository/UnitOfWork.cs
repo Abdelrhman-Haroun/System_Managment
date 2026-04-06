@@ -14,12 +14,17 @@ namespace DAL.Repositories.IRepository
         public IProductCategoryRepository ProductCategory { get; private set; }       
         public ISupplierRepository Supplier { get; private set; }
         public ICustomerRepository Customer { get; private set; }
+        public IPaymentRepository Payment { get; private set; }
         public IUserRepository User { get; private set; }
         public IInvoiceRepository Invoice { get; private set; }
         public IProductTransactionRepository ProductTransaction { get; private set; }
         public ICustomerTransactionRepository CustomerTransaction { get; private set; }
         public ISupplierTransactionRepository SupplierTransaction { get; private set; }
         public IInternalProductUsageRepository InternalProductUsage { get; private set; }
+        public IEmployeeRepository Employee { get; private set; }
+        public IEmployeeTypeRepository EmployeeType { get; private set; }
+        public IEmployeeAttendanceRepository EmployeeAttendance { get; private set; }
+        public IEmployeeSalaryAdjustmentRepository EmployeeSalaryAdjustment { get; private set; }
 
         public UnitOfWork(ApplicationDbContext context,UserManager<ApplicationUser> userManager)
         {
@@ -30,11 +35,16 @@ namespace DAL.Repositories.IRepository
             ProductCategory = new ProductCategoryRepository(context);
             Supplier = new SupplierRepository(context);
             Customer = new CustomerRepository(context);
+            Payment = new PaymentRepository(context);
             Invoice = new InvoiceRepository(context);
             ProductTransaction = new ProductTransactionRepository(context);
             CustomerTransaction = new CustomerTransactionRepository(context);
             SupplierTransaction = new SupplierTransactionRepository(context);
             InternalProductUsage = new InternalProductUsageRepository(context);
+            Employee = new EmployeeRepository(context);
+            EmployeeType = new EmployeeTypeRepository(context);
+            EmployeeAttendance = new EmployeeAttendanceRepository(context);
+            EmployeeSalaryAdjustment = new EmployeeSalaryAdjustmentRepository(context);
         }
 
         public async Task<int> CompleteAsync()

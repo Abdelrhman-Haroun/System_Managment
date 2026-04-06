@@ -310,8 +310,9 @@ namespace System_Managment.Controllers
             if (productId <= 0 || string.IsNullOrWhiteSpace(referenceNumber))
                 return NotFound();
 
-            var usages = await _usageService.GetUsageByProductAsync(productId);
+            var usages = await _usageService.GetAllInternalUsageAsync();
             var usage = usages.FirstOrDefault(u =>
+                u.ProductId == productId &&
                 string.Equals(u.ReferenceNumber, referenceNumber, StringComparison.OrdinalIgnoreCase));
 
             if (usage == null)
@@ -335,23 +336,6 @@ namespace System_Managment.Controllers
 
             TempData["SuccessMessage"] = result.Message;
             return RedirectToAction(nameof(Index));
-        }
-
-        // BY PRODUCT - Show usage for specific product
-        public async Task<IActionResult> ByProduct(int productId)
-        {
-            var usages = await _usageService.GetUsageByProductAsync(productId);
-            var summary = await _usageService.GetProductUsageSummaryAsync(productId);
-            var product = await _productService.GetByIdAsync(productId);
-
-            if (product == null)
-                return NotFound();
-
-            ViewBag.Product = product;
-            ViewBag.TotalCost = summary.TotalCost;
-            ViewBag.TotalQuantity = summary.TotalQuantity;
-
-            return View(usages.ToList());
         }
 
         private static (DateTime? StartDate, DateTime? EndDate) NormalizeDateRange(DateTime? startDate, DateTime? endDate)

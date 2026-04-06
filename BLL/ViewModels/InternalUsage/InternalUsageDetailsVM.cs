@@ -16,6 +16,7 @@ namespace BLL.ViewModels.InternalUsage
         public decimal Weight { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal TotalCost { get; set; }
+        public decimal CalculatedTotalCost => Weight * UnitPrice;
         public string UsageCategory { get; set; }
         public DateTime UsageDate { get; set; }
         public string ReferenceNumber { get; set; } // Auto-generated reference number

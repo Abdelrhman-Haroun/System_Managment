@@ -108,8 +108,8 @@ namespace DAL.Migrations
                         {
                             Id = "admin-user-id-12345",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "98a13c7d-d625-4ac5-925d-aac0180bc95d",
-                            CreatedAt = new DateTime(2026, 1, 20, 22, 37, 19, 515, DateTimeKind.Utc).AddTicks(1992),
+                            ConcurrencyStamp = "7c883928-b095-454f-900d-eb54c616665d",
+                            CreatedAt = new DateTime(2026, 4, 5, 10, 45, 14, 387, DateTimeKind.Utc).AddTicks(3209),
                             Email = "admin@example.com",
                             EmailConfirmed = true,
                             FullName = "System Administrator",
@@ -117,11 +117,11 @@ namespace DAL.Migrations
                             LockoutEnabled = true,
                             NormalizedEmail = "ADMIN@EXAMPLE.COM",
                             NormalizedUserName = "ADMIN@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAECzyyIuejIht8Xp5Es/eX5RiymEVNCZoY+JBoOkGmPg4BUnFvs5AXFh0RwEZPIW64g==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEAi6+9v9ZvlBUJ1U6GYHVTptEIXxW1fD8FLRGyMD/c8pTmKIKahDX0YVU8jjlaBZkg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "b01d6b47-7a90-4db4-8a98-861e5e8c9ed6",
+                            SecurityStamp = "738e99e3-1a2e-4108-9438-aa0fe0082b60",
                             TwoFactorEnabled = false,
-                            UpdateAt = new DateTime(2026, 1, 20, 22, 37, 19, 515, DateTimeKind.Utc).AddTicks(1994),
+                            UpdateAt = new DateTime(2026, 4, 5, 10, 45, 14, 387, DateTimeKind.Utc).AddTicks(3212),
                             UserName = "admin@example.com"
                         });
                 });
@@ -243,12 +243,15 @@ namespace DAL.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("AmountChanged")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("BalanceAfter")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("BalanceBefore")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -301,6 +304,15 @@ namespace DAL.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("EmployeeTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("HireDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -308,6 +320,10 @@ namespace DAL.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(20)
@@ -318,6 +334,7 @@ namespace DAL.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<decimal>("Salary")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -325,7 +342,131 @@ namespace DAL.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EmployeeTypeId");
+
                     b.ToTable("Employees");
+                });
+
+            modelBuilder.Entity("DAL.Models.EmployeeAttendance", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AttendanceDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId", "AttendanceDate")
+                        .IsUnique();
+
+                    b.ToTable("EmployeeAttendances");
+                });
+
+            modelBuilder.Entity("DAL.Models.EmployeeSalaryAdjustment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AdjustmentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AdjustmentType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("EmployeeSalaryAdjustments");
+                });
+
+            modelBuilder.Entity("DAL.Models.EmployeeType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("EmployeeTypes");
                 });
 
             modelBuilder.Entity("DAL.Models.InternalProductUsage", b =>
@@ -634,6 +775,7 @@ namespace DAL.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal?>("StockQuantity")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("StoreId")
@@ -711,12 +853,15 @@ namespace DAL.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("QuantityAfter")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("QuantityBefore")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("QuantityChanged")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("ReferenceNumber")
@@ -725,6 +870,7 @@ namespace DAL.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("TransactionType")
@@ -733,12 +879,14 @@ namespace DAL.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("WeightChanged")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -828,12 +976,15 @@ namespace DAL.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("AmountChanged")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("BalanceAfter")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("BalanceBefore")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1054,6 +1205,38 @@ namespace DAL.Migrations
                     b.Navigation("Invoice");
                 });
 
+            modelBuilder.Entity("DAL.Models.Employee", b =>
+                {
+                    b.HasOne("DAL.Models.EmployeeType", "EmployeeType")
+                        .WithMany("Employees")
+                        .HasForeignKey("EmployeeTypeId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("EmployeeType");
+                });
+
+            modelBuilder.Entity("DAL.Models.EmployeeAttendance", b =>
+                {
+                    b.HasOne("DAL.Models.Employee", "Employee")
+                        .WithMany("Attendances")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("DAL.Models.EmployeeSalaryAdjustment", b =>
+                {
+                    b.HasOne("DAL.Models.Employee", "Employee")
+                        .WithMany("SalaryAdjustments")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
             modelBuilder.Entity("DAL.Models.InternalProductUsage", b =>
                 {
                     b.HasOne("DAL.Models.Product", "Product")
@@ -1255,6 +1438,18 @@ namespace DAL.Migrations
                     b.Navigation("Invoices");
 
                     b.Navigation("Payments");
+                });
+
+            modelBuilder.Entity("DAL.Models.Employee", b =>
+                {
+                    b.Navigation("Attendances");
+
+                    b.Navigation("SalaryAdjustments");
+                });
+
+            modelBuilder.Entity("DAL.Models.EmployeeType", b =>
+                {
+                    b.Navigation("Employees");
                 });
 
             modelBuilder.Entity("DAL.Models.Invoice", b =>

@@ -212,7 +212,11 @@ public class StoreController : Controller
     {
         try
         {
-            (fromDate, toDate) = NormalizeDateRange(fromDate, toDate);
+            var hasDateFilter = fromDate.HasValue || toDate.HasValue;
+            if (hasDateFilter)
+            {
+                (fromDate, toDate) = NormalizeDateRange(fromDate, toDate);
+            }
 
             var store = await _service.GetByIdAsync(id);
             if (store == null)
@@ -238,7 +242,6 @@ public class StoreController : Controller
 
             var allTransactions = (await _transactionReportService.GetAllProductTransactionsAsync()).ToList();
             var productIds = products.Select(p => p.Id).ToHashSet();
-
             // Calculate stock value for each product
             var inventoryItems = new List<StoreInventoryItemVM>();
 
@@ -253,6 +256,9 @@ public class StoreController : Controller
                     transactions = transactions.Where(t => t.TransactionDate < toDate.Value.AddDays(1));
 
                 var transactionsList = transactions.ToList();
+                var purchaseTransactions = transactionsList
+                    .Where(t => TransactionTypes.IsPurchase(t.TransactionType) && t.UnitPrice > 0)
+                    .ToList();
 
                 var totalIn = transactionsList
                     .Where(t => TransactionTypes.IsPurchase(t.TransactionType))
@@ -262,11 +268,22 @@ public class StoreController : Controller
                     .Where(t => TransactionTypes.IsSales(t.TransactionType) || TransactionTypes.IsInternalUsage(t.TransactionType))
                     .Sum(t => Math.Abs(t.QuantityChanged));
 
-                var avgPurchasePrice = transactionsList
-                    .Where(t => TransactionTypes.IsPurchase(t.TransactionType) && t.UnitPrice > 0)
-                    .Average(t => (decimal?)t.UnitPrice) ?? 0;
+                var productPurchaseAmount = purchaseTransactions.Sum(t =>
+                    GetPurchaseTransactionAmount(product.ProductType, t.QuantityChanged, t.WeightChanged, t.UnitPrice));
+                var totalPurchaseQuantity = purchaseTransactions.Sum(t =>
+                    GetEffectiveStockAmount(product.ProductType, t.QuantityChanged, t.WeightChanged));
+                var weightedPurchasePrice = totalPurchaseQuantity > 0
+                    ? productPurchaseAmount / totalPurchaseQuantity
+                    : 0;
 
-                var lastTransaction = transactionsList.FirstOrDefault();
+                var lastTransaction = transactionsList
+                    .OrderByDescending(t => t.TransactionDate)
+                    .ThenByDescending(t => t.CreatedAt)
+                    .FirstOrDefault();
+
+                var valuationPrice = weightedPurchasePrice > 0
+                    ? weightedPurchasePrice
+                    : lastTransaction?.UnitPrice ?? 0;
 
                 inventoryItems.Add(new StoreInventoryItemVM
                 {
@@ -277,8 +294,8 @@ public class StoreController : Controller
                     CurrentStock = product.StockQuantity ?? 0,
                     TotalIn = totalIn,
                     TotalOut = totalOut,
-                    AveragePurchasePrice = avgPurchasePrice,
-                    StockValue = (product.StockQuantity ?? 0) * avgPurchasePrice,
+                    AveragePurchasePrice = valuationPrice,
+                    StockValue = Math.Max(product.StockQuantity ?? 0, 0) * valuationPrice,
                     LastTransactionDate = lastTransaction?.TransactionDate,
                     LastUnitPrice = lastTransaction?.UnitPrice ?? 0
                 });
@@ -308,7 +325,10 @@ public class StoreController : Controller
     {
         try
         {
-            (fromDate, toDate) = NormalizeDateRange(fromDate, toDate);
+            if (fromDate.HasValue || toDate.HasValue)
+            {
+                (fromDate, toDate) = NormalizeDateRange(fromDate, toDate);
+            }
 
             var store = await _service.GetByIdAsync(id);
             if (store == null)
@@ -340,5 +360,17 @@ public class StoreController : Controller
         }
 
         return (fromDate?.Date, toDate?.Date);
+    }
+
+    private static decimal GetEffectiveStockAmount(int productType, decimal quantityChanged, decimal weightChanged)
+    {
+        return productType == (int)ProductType.Count
+            ? quantityChanged
+            : weightChanged;
+    }
+
+    private static decimal GetPurchaseTransactionAmount(int productType, decimal quantityChanged, decimal weightChanged, decimal unitPrice)
+    {
+        return GetEffectiveStockAmount(productType, quantityChanged, weightChanged) * unitPrice;
     }
 }

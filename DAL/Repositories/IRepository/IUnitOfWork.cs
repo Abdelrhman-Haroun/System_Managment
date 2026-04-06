@@ -11,11 +11,16 @@ namespace DAL.Repositories.IRepository
         IProductCategoryRepository ProductCategory { get; }
         ISupplierRepository Supplier { get; }
         ICustomerRepository Customer { get; }
+        IPaymentRepository Payment { get; }
         IInvoiceRepository Invoice { get; }
         IProductTransactionRepository ProductTransaction { get; }
         ICustomerTransactionRepository CustomerTransaction { get; }
         ISupplierTransactionRepository SupplierTransaction { get; }
         IInternalProductUsageRepository InternalProductUsage { get; }
+        IEmployeeRepository Employee { get; }
+        IEmployeeTypeRepository EmployeeType { get; }
+        IEmployeeAttendanceRepository EmployeeAttendance { get; }
+        IEmployeeSalaryAdjustmentRepository EmployeeSalaryAdjustment { get; }
         Task<int> CompleteAsync();
     }
 }

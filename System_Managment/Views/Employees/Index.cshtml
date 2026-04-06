@@ -1,0 +1,109 @@
+@model IEnumerable<Employee>
+
+@{
+    ViewData["Title"] = "الموظفون";
+    var searchTerm = Context.Request.Query["searchTerm"].ToString();
+}
+
+<div class="space-y-8">
+    <div class="flex flex-col gap-6">
+        <div>
+            <h1 class="text-4xl font-black text-slate-900 dark:text-white tracking-tight">إدارة الموظفين</h1>
+            <p class="text-slate-600 dark:text-slate-400 mt-2 text-lg">إجمالي الموظفين: <strong class="font-bold">@Model.Count()</strong></p>
+        </div>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            <form id="searchForm" asp-action="Index" method="get" class="relative flex-1">
+                <button type="button" id="searchBtn" class="absolute end-5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-primary z-10">
+                    <span class="material-symbols-outlined text-2xl">search</span>
+                </button>
+                <input type="text" name="searchTerm" value="@searchTerm" id="searchInput"
+                       placeholder="ابحث بالاسم أو الهاتف أو المسمى..."
+                       class="w-full h-14 ps-14 pe-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/70 text-slate-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary transition-all text-lg font-medium shadow-sm" />
+            </form>
+            <a href="@Url.Action("Create")" class="openCreateDialog hidden sm:flex items-center justify-center gap-2 h-14 px-7 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg transition-all whitespace-nowrap">
+                <span class="material-symbols-outlined text-xl">add</span>
+                إضافة موظف
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <a asp-controller="EmployeeType" asp-action="Index" class="bg-white rounded-2xl border border-border-light shadow-sm p-5 hover:border-primary/30 transition-all">
+            <div class="text-sm text-text-secondary">أنواع الموظفين</div>
+            <div class="mt-2 text-xl font-bold text-text-main">إدارة الأنواع</div>
+        </a>
+        <a asp-controller="Attendance" asp-action="Index" class="bg-white rounded-2xl border border-border-light shadow-sm p-5 hover:border-primary/30 transition-all">
+            <div class="text-sm text-text-secondary">الحضور والغياب</div>
+            <div class="mt-2 text-xl font-bold text-text-main">تسجيل يومي</div>
+        </a>
+        <a asp-controller="Salaries" asp-action="Index" class="bg-white rounded-2xl border border-border-light shadow-sm p-5 hover:border-primary/30 transition-all">
+            <div class="text-sm text-text-secondary">الرواتب</div>
+            <div class="mt-2 text-xl font-bold text-text-main">ملخص شهري</div>
+        </a>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-slate-50 dark:bg-slate-900/50">
+                    <tr>
+                        <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400">الاسم</th>
+                        <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400">النوع</th>
+                        <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400">المسمى</th>
+                        <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400">الهاتف</th>
+                        <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400">الراتب الأساسي</th>
+                        <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 dark:text-slate-400">الحالة</th>
+                        <th class="px-6 py-4 text-center text-xs font-bold text-slate-600 dark:text-slate-400">إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                    @foreach (var item in Model)
+                    {
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                            <td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white">@item.Name</td>
+                            <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">@item.EmployeeType?.Name</td>
+                            <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">@item.Position</td>
+                            <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">@item.PhoneNumber</td>
+                            <td class="px-6 py-4 text-sm font-bold text-text-main">@item.Salary.ToString("N2") جنيه</td>
+                            <td class="px-6 py-4 text-sm">
+                                <span class="inline-flex px-3 py-1 rounded-full text-xs font-bold @(item.IsActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800")">
+                                    @(item.IsActive ? "نشط" : "موقوف")
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center justify-center gap-3">
+                                    <a href="@Url.Action("Details", new { id = item.Id })" class="openDetailsDialog text-slate-600 hover:text-slate-800" title="تفاصيل">
+                                        <span class="material-symbols-outlined text-xl">visibility</span>
+                                    </a>
+                                    <a href="@Url.Action("Edit", new { id = item.Id })" class="openEditDialog text-primary hover:text-primary/80" title="تعديل">
+                                        <span class="material-symbols-outlined text-xl">edit</span>
+                                    </a>
+                                    <a asp-controller="Attendance" asp-action="Index" asp-route-employeeId="@item.Id" class="text-blue-600 hover:text-blue-800" title="الحضور">
+                                        <span class="material-symbols-outlined text-xl">calendar_month</span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="fixed bottom-6 end-6 z-50 sm:hidden">
+    <a href="@Url.Action("Create")" class="openCreateDialog flex size-16 items-center justify-center rounded-full bg-primary text-white shadow-2xl hover:scale-110 transition-all">
+        <span class="material-symbols-outlined text-3xl">add</span>
+    </a>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('#searchBtn').on('click', function () { $('#searchForm').submit(); });
+            $('#searchInput').on('keydown', function (e) {
+                if (e.key === 'Enter') { e.preventDefault(); $('#searchForm').submit(); }
+            });
+        });
+    </script>
+}

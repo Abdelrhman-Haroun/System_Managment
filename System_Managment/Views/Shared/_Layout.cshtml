@@ -93,6 +93,7 @@
     @{
         var path = HttpContextAccessor.HttpContext?.Request.Path.ToString().ToLowerInvariant() ?? string.Empty;
         bool IsActive(string fragment) => path.StartsWith(fragment, StringComparison.OrdinalIgnoreCase);
+        var isHomeActive = path == "/" || IsActive("/home");
     }
 
     <div class="app-shell relative flex min-h-screen w-full max-w-full overflow-x-clip">
@@ -107,7 +108,7 @@
                 </div>
 
                 <nav class="flex flex-col gap-1.5 text-sm">
-                    <a asp-controller="Home" asp-action="Index" class="nav-link @(IsActive("/home") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
+                    <a asp-controller="Home" asp-action="Index" class="nav-link @(isHomeActive ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
                         <span class="material-symbols-outlined">dashboard</span>
                         <span>لوحة التحكم</span>
                     </a>
@@ -139,6 +140,10 @@
                         <span class="material-symbols-outlined">agriculture</span>
                         <span>الاستخدام الداخلي</span>
                     </a>
+                    <a asp-controller="Employees" asp-action="Index" class="nav-link @(IsActive("/employees") || IsActive("/employeetype") || IsActive("/attendance") || IsActive("/salaries") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
+                        <span class="material-symbols-outlined">badge</span>
+                        <span>الموظفين</span>
+                    </a>
                     <a asp-controller="Account" asp-action="Index" class="nav-link @(IsActive("/account") && !IsActive("/account/login") && !IsActive("/account/forgotpassword") && !IsActive("/account/resetpassword") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
                         <span class="material-symbols-outlined">manage_accounts</span>
                         <span>المستخدمون</span>
@@ -147,10 +152,10 @@
 
                 <div class="mt-8 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
                     <div class="mb-2 flex items-center gap-2 font-bold text-slate-700">
-                        <span class="material-symbols-outlined text-base">construction</span>
-                        <span>الأقسام المؤجلة</span>
+                        <span class="material-symbols-outlined text-base">tips_and_updates</span>
+                        <span>تنقل أسرع</span>
                     </div>
-                    <p>المدفوعات والموظفون والتقارير والإعدادات العامة أُزيلت من التنقل مؤقتًا حتى لا تظهر روابط مكسورة قبل تنفيذها.</p>
+                    <p>صفحة الموظفين أصبحت نقطة الدخول للقسم بالكامل، ومنها ستجد روابط الإدارة والحضور والرواتب وأنواع الموظفين.</p>
                 </div>
             </div>
 
@@ -209,7 +214,7 @@
                 </div>
 
                 <nav class="flex flex-col gap-1 text-sm">
-                    <a asp-controller="Home" asp-action="Index" class="nav-link @(IsActive("/home") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">لوحة التحكم</a>
+                    <a asp-controller="Home" asp-action="Index" class="nav-link @(isHomeActive ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">لوحة التحكم</a>
                     <a asp-controller="Customer" asp-action="Index" class="nav-link @(IsActive("/customer") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">العملاء</a>
                     <a asp-controller="Supplier" asp-action="Index" class="nav-link @(IsActive("/supplier") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">الموردون</a>
                     <a asp-controller="Product" asp-action="Index" class="nav-link @(IsActive("/product") && !IsActive("/productcategory") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">المنتجات</a>
@@ -217,6 +222,7 @@
                     <a asp-controller="Store" asp-action="Index" class="nav-link @(IsActive("/store") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">المخازن</a>
                     <a asp-controller="Invoice" asp-action="Index" class="nav-link @(IsActive("/invoice") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">الفواتير</a>
                     <a asp-controller="InternalUsage" asp-action="Index" class="nav-link @(IsActive("/internalusage") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">الاستخدام الداخلي</a>
+                    <a asp-controller="Employees" asp-action="Index" class="nav-link @(IsActive("/employees") || IsActive("/employeetype") || IsActive("/attendance") || IsActive("/salaries") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">الموظفين</a>
                     <a asp-controller="Account" asp-action="Index" class="nav-link @(IsActive("/account") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">المستخدمون</a>
                 </nav>
             </aside>

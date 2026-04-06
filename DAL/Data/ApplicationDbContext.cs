@@ -15,11 +15,17 @@ namespace DAL.Data
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<BankAccount> BankAccounts { get; set; }
         public DbSet<CashBox> CashBoxes { get; set; }
+        public DbSet<MobileWallet> MobileWallets { get; set; }
+        public DbSet<Payment> Payments { get; set; }
         public DbSet<Store> Stores { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<InvoiceItem> InvoiceItems { get; set; }
         public DbSet<Employee> Employees { get; set; }
+        public DbSet<EmployeeType> EmployeeTypes { get; set; }
+        public DbSet<EmployeeAttendance> EmployeeAttendances { get; set; }
+        public DbSet<EmployeeSalaryAdjustment> EmployeeSalaryAdjustments { get; set; }
 
         public DbSet<ProductTransaction> ProductTransactions { get; set; }
         public DbSet<CustomerTransaction> CustomerTransactions { get; set; }
@@ -63,6 +69,41 @@ namespace DAL.Data
                 entity.Property(x => x.BalanceBefore).HasPrecision(18, 2);
                 entity.Property(x => x.AmountChanged).HasPrecision(18, 2);
                 entity.Property(x => x.BalanceAfter).HasPrecision(18, 2);
+            });
+
+            builder.Entity<Employee>(entity =>
+            {
+                entity.Property(x => x.Salary).HasPrecision(18, 2);
+
+                entity.HasOne(x => x.EmployeeType)
+                    .WithMany(x => x.Employees)
+                    .HasForeignKey(x => x.EmployeeTypeId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            builder.Entity<EmployeeType>(entity =>
+            {
+                entity.HasIndex(x => x.Name).IsUnique();
+            });
+
+            builder.Entity<EmployeeAttendance>(entity =>
+            {
+                entity.HasOne(x => x.Employee)
+                    .WithMany(x => x.Attendances)
+                    .HasForeignKey(x => x.EmployeeId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(x => new { x.EmployeeId, x.AttendanceDate }).IsUnique();
+            });
+
+            builder.Entity<EmployeeSalaryAdjustment>(entity =>
+            {
+                entity.Property(x => x.Amount).HasPrecision(18, 2);
+
+                entity.HasOne(x => x.Employee)
+                    .WithMany(x => x.SalaryAdjustments)
+                    .HasForeignKey(x => x.EmployeeId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             // Seed roles

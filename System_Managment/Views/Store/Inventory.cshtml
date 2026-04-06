@@ -121,7 +121,7 @@
                         <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase">المخزون الحالي</th>
                         <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase">إجمالي الوارد</th>
                         <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase">إجمالي الصادر</th>
-                        <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase">متوسط سعر الشراء</th>
+                        <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase">سعر التقييم</th>
                         <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary uppercase">قيمة المخزون</th>
                         <th class="py-4 px-4 text-center text-xs font-bold text-text-secondary uppercase">الإجراءات</th>
                     </tr>
@@ -132,6 +132,9 @@
                         var stockClass = ProductTypeExtensions.IsLowStock(item.ProductType, item.CurrentStock)
                             ? "text-red-600"
                             : "text-text-main";
+                        var formattedCurrentStock = ProductTypeExtensions.FormatStock(item.ProductType, item.CurrentStock);
+                        var formattedTotalIn = ProductTypeExtensions.FormatStock(item.ProductType, item.TotalIn);
+                        var formattedTotalOut = ProductTypeExtensions.FormatStock(item.ProductType, item.TotalOut);
 
                         <tr class="hover:bg-gray-50/50 transition-colors">
                             <td class="py-4 px-4 text-sm text-text-secondary">
@@ -151,33 +154,23 @@
                                 @item.CategoryName
                             </td>
                             <td class="py-4 px-4 text-sm">
-                                @if (ProductTypeExtensions.IsCountType(item.ProductType))
-                                {
-                                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">
-                                        <span class="material-symbols-outlined text-[14px]">counter_1</span>
-                                        عددي
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs font-bold rounded-full">
-                                        <span class="material-symbols-outlined text-[14px]">scale</span>
-                                        وزني
-                                    </span>
-                                }
+                                <span class="inline-flex items-center gap-1 px-2 py-1 @(ProductTypeExtensions.IsCountType(item.ProductType) ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-800") text-xs font-bold rounded-full">
+                                    <span class="material-symbols-outlined text-[14px]">@(ProductTypeExtensions.IsCountType(item.ProductType) ? "counter_1" : "scale")</span>
+                                    @ProductTypeExtensions.GetArabicLabel(item.ProductType)
+                                </span>
                             </td>
                             <td class="py-4 px-4 text-sm font-bold @stockClass">
-                                @item.CurrentStock.ToString("N2")
+                                @formattedCurrentStock
                                 @if (ProductTypeExtensions.IsLowStock(item.ProductType, item.CurrentStock))
                                 {
                                     <span class="material-symbols-outlined text-red-600 text-[16px] ml-1">warning</span>
                                 }
                             </td>
                             <td class="py-4 px-4 text-sm text-green-600 font-medium">
-                                +@item.TotalIn.ToString("N2")
+                                +@formattedTotalIn
                             </td>
                             <td class="py-4 px-4 text-sm text-red-600 font-medium">
-                                -@item.TotalOut.ToString("N2")
+                                -@formattedTotalOut
                             </td>
                             <td class="py-4 px-4 text-sm text-text-secondary">
                                 @item.AveragePurchasePrice.ToString("N2") جنيه
@@ -188,7 +181,8 @@
                             <td class="py-4 px-4 text-center">
                                 <div class="flex items-center justify-center gap-2">
                                     <a asp-controller="Product" asp-action="Details" asp-route-id="@item.ProductId"
-                                       class="text-slate-600 hover:text-slate-800 p-2 hover:bg-slate-100 rounded-lg transition-all"
+                                       class="openDetailsDialog text-slate-600 hover:text-slate-800 p-2 hover:bg-slate-100 rounded-lg transition-all"
+                                       data-url="@Url.Action("Details", "Product", new { id = item.ProductId })"
                                        title="عرض التفاصيل">
                                         <span class="material-symbols-outlined text-[20px]">visibility</span>
                                     </a>

@@ -53,6 +53,7 @@ builder.Services.AddScoped<IInternalProductUsageService, InternalProductUsageSer
 builder.Services.AddScoped<ITransactionReportService, TransactionReportService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddSingleton<IFileUploader, FileUploader>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
@@ -61,6 +62,9 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IStoreService, StoreService>();
 builder.Services.AddScoped<IProductCategoryService, ProductCategoryService>();
+builder.Services.AddScoped<IEmployeeTypeService, EmployeeTypeService>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<IEmployeeAttendanceService, EmployeeAttendanceService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
 //builder.Services.AddDbContext<ApplicationDbContext>(options =>

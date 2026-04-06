@@ -40,7 +40,7 @@ namespace BLL.Services.Service
                     WeightChanged = weightChanged,
                     QuantityAfter = quantityAfter,
                     UnitPrice = unitPrice,
-                    TotalAmount = weightChanged * unitPrice,
+                    TotalAmount = CalculateProductTransactionAmount(productType, quantityChanged, weightChanged, unitPrice),
                     ReferenceNumber = referenceNumber ?? "",
                     Notes = notes ?? "",
                     CreatedAt = DateTime.Now,
@@ -165,6 +165,19 @@ namespace BLL.Services.Service
                 Console.WriteLine($"خطأ في استرجاع معاملات الفاتورة: {ex.Message}");
                 return false;
             }
+        }
+
+        private static decimal CalculateProductTransactionAmount(
+            int? productType,
+            decimal quantityChanged,
+            decimal weightChanged,
+            decimal unitPrice)
+        {
+            var effectiveQuantity = productType == (int)ProductType.Count
+                ? quantityChanged
+                : weightChanged;
+
+            return effectiveQuantity * unitPrice;
         }
     }
 }

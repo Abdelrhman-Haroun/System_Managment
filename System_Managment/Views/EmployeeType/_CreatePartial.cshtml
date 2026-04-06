@@ -1,0 +1,42 @@
+@model BLL.ViewModels.EmployeeType.CreateEmployeeTypeVM
+
+<div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-2xl mx-auto overflow-y-auto">
+    <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">إضافة نوع موظف</h2>
+        <button type="button" class="closeDialog text-slate-700 hover:text-red-600"><span class="material-symbols-outlined text-3xl">close</span></button>
+    </div>
+    <div class="p-8 pt-6">
+        <form id="createEmployeeTypeForm" class="space-y-6">
+            @Html.AntiForgeryToken()
+            <div>
+                <label class="block text-sm font-semibold mb-2">الاسم</label>
+                <input asp-for="Name" class="w-full h-14 px-5 rounded-xl border dark:border-slate-600 bg-white dark:bg-slate-700" />
+                <span asp-validation-for="Name" class="text-red-600 text-sm"></span>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-2">الوصف</label>
+                <input asp-for="Description" class="w-full h-14 px-5 rounded-xl border dark:border-slate-600 bg-white dark:bg-slate-700" />
+            </div>
+            <button type="submit" class="w-full h-14 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl">حفظ النوع</button>
+        </form>
+    </div>
+</div>
+<script>
+    $('#createEmployeeTypeForm').on('submit', function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: '@Url.Action("Create", "EmployeeType")',
+            type: 'POST',
+            data: new FormData(this),
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.success) {
+                    Swal.fire({ icon: 'success', title: 'تم بنجاح', text: res.message }).then(() => location.reload());
+                } else {
+                    Swal.fire({ icon: 'error', title: 'خطأ', text: res.message });
+                }
+            }
+        });
+    });
+</script>

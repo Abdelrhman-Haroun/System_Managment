@@ -1,0 +1,70 @@
+@model IEnumerable<BLL.ViewModels.Employee.EmployeeMonthlyPayrollVM>
+
+@{
+    ViewData["Title"] = "الرواتب";
+}
+
+<div class="space-y-8">
+    <div>
+        <h1 class="text-4xl font-black text-slate-900 tracking-tight">الرواتب الشهرية</h1>
+        <p class="text-slate-600 mt-2 text-lg">الراتب النهائي يعتمد على قيمة الأيام التي حضرها الموظف فعلياً مع الإضافات والاستقطاعات.</p>
+    </div>
+
+    <form method="get" class="bg-white rounded-2xl border border-border-light shadow-sm p-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+            <label class="text-sm font-semibold mb-2 block">الموظف</label>
+            <select name="employeeId" asp-items="ViewBag.Employees" class="w-full h-12 rounded-xl border-border-light">
+                <option value="">كل الموظفين</option>
+            </select>
+        </div>
+        <div>
+            <label class="text-sm font-semibold mb-2 block">السنة</label>
+            <input type="number" name="year" value="@ViewBag.SelectedYear" class="w-full h-12 rounded-xl border-border-light px-4" />
+        </div>
+        <div>
+            <label class="text-sm font-semibold mb-2 block">الشهر</label>
+            <input type="number" name="month" min="1" max="12" value="@ViewBag.SelectedMonth" class="w-full h-12 rounded-xl border-border-light px-4" />
+        </div>
+        <div class="flex items-end">
+            <button class="w-full h-12 bg-primary text-white font-bold rounded-xl">عرض</button>
+        </div>
+    </form>
+
+    <div class="bg-white rounded-2xl border border-border-light shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full min-w-[1200px]">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">الموظف</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">النوع</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">الراتب الشهري</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">اليومية</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">حضور</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">غياب</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">المستحق من الحضور</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">إضافات</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">استقطاعات</th>
+                        <th class="px-4 py-3 text-right text-xs font-bold text-text-secondary">الراتب النهائي</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-border-light">
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-semibold">@item.EmployeeName</td>
+                            <td class="px-4 py-3 text-sm">@item.EmployeeTypeName</td>
+                            <td class="px-4 py-3 text-sm">@item.Salary.ToString("N2")</td>
+                            <td class="px-4 py-3 text-sm">@item.DailyRate.ToString("N2")</td>
+                            <td class="px-4 py-3 text-sm">@item.PresentDays</td>
+                            <td class="px-4 py-3 text-sm">@item.AbsentDays</td>
+                            <td class="px-4 py-3 text-sm text-green-700">@item.EarnedSalary.ToString("N2")</td>
+                            <td class="px-4 py-3 text-sm text-green-700">@item.Additions.ToString("N2")</td>
+                            <td class="px-4 py-3 text-sm text-red-700">@item.Deductions.ToString("N2")</td>
+                            <td class="px-4 py-3 text-sm font-bold text-primary">@item.NetSalary.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

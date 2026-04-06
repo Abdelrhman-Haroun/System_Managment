@@ -108,7 +108,7 @@
                                     @usage.Weight كغ
                                 </td>
                                 <td class="py-4 px-6 text-sm font-bold text-text-main">
-                                    @usage.TotalCost.ToString("N2") جنيه
+                                    @usage.CalculatedTotalCost.ToString("N2") جنيه
                                 </td>
                                 <td class="py-4 px-6 text-sm">
                                     <span class="inline-flex items-center px-3 py-1 text-xs font-bold rounded-full @GetCategoryBadgeClass(usage.UsageCategory)">
@@ -123,11 +123,6 @@
                                             <span class="material-symbols-outlined text-xl">visibility</span>
                                         </a>
 
-                                        <a asp-action="ByProduct" asp-route-productId="@usage.ProductId"
-                                           class="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-100 rounded-lg transition-all"
-                                           title="إحصائيات المنتج">
-                                            <span class="material-symbols-outlined text-xl">bar_chart</span>
-                                        </a>
                                         <a href="@Url.Action("Edit", new { id = usage.Id })"
                                            class="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all"
                                            title="تعديل">

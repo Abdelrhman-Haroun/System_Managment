@@ -29,10 +29,6 @@
         <a href="@Url.Action("Index")" class="flex-1 md:flex-none px-6 py-2.5 text-sm font-medium text-text-secondary bg-white border border-border-light rounded-xl hover:bg-gray-50 hover:text-text-main focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary/20 transition-all text-center">
             رجوع
         </a>
-        <a href="@Url.Action("ByProduct", new { productId = Model.ProductId })" class="flex-1 md:flex-none px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all flex items-center justify-center gap-2">
-            <span class="material-symbols-outlined text-[20px]">bar_chart</span>
-            إحصائيات
-        </a>
         <a href="@Url.Action("Edit", new { id = Model.Id })" class="flex-1 md:flex-none px-6 py-2.5 text-sm font-medium text-white bg-primary rounded-xl hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary shadow-sm transition-all flex items-center justify-center gap-2">
             <span class="material-symbols-outlined text-[20px]">edit</span>
             تعديل
@@ -123,7 +119,7 @@
                 <div class="bg-primary/5 rounded-xl p-6 border border-primary/10 text-center">
                     <span class="block text-sm font-semibold text-text-secondary mb-2">التكلفة الإجمالية</span>
                     <div class="flex items-center justify-center gap-1 text-primary">
-                        <span class="text-4xl font-bold tracking-tight">@Model.TotalCost.ToString("N2")</span>
+                        <span class="text-4xl font-bold tracking-tight">@Model.CalculatedTotalCost.ToString("N2")</span>
                         <span class="text-sm font-bold mt-2">جنيه</span>
                     </div>
                 </div>
@@ -195,7 +191,7 @@
 
                 <div class="flex items-center justify-between text-sm">
                     <span class="text-text-secondary font-medium">التكلفة الإجمالية</span>
-                    <span class="font-bold text-primary text-base">@Model.TotalCost.ToString("N2") جنيه</span>
+                    <span class="font-bold text-primary text-base">@Model.CalculatedTotalCost.ToString("N2") جنيه</span>
                 </div>
 
                 <div class="border-t-2 border-dashed border-border-light my-2"></div>

@@ -1,51 +1,41 @@
-﻿@{
-    var IsActive = (Func<string, bool>)ViewData["IsActive"]!;
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var path = HttpContextAccessor.HttpContext?.Request.Path.ToString().ToLowerInvariant() ?? string.Empty;
+    bool IsActive(string fragment) => path.StartsWith(fragment, StringComparison.OrdinalIgnoreCase);
+    var isHomeActive = path == "/" || IsActive("/home");
 }
 
-<div id="mobile-sidebar" class="mobile-menu fixed inset-0 z-40 hidden lg:hidden">
-    <aside class="w-64 bg-neutral-card border-l border-neutral-border flex flex-col shadow-lg">
-        <div class="flex flex-1 flex-col overflow-y-auto py-4 px-4">
-
-            <div class="flex items-center gap-3 px-2 mb-8">
-                <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 ring-4 ring-primary/20"
-                     style="background-image: url('@Url.Content("~/Files/images/logo.jpg")');"></div>
-                <h1 class="text-lg font-black text-primary">مزرعة آل سالم</h1>
+<div id="mobile-sidebar" class="mobile-menu fixed inset-0 z-50 hidden lg:hidden">
+    <div class="flex h-full">
+        <aside class="w-[min(17rem,84vw)] overflow-y-auto border-l border-neutral-border bg-neutral-card px-4 py-4 shadow-lg">
+            <div class="mb-6 flex items-center gap-3 px-2">
+                <div class="size-12 rounded-full bg-cover bg-center ring-4 ring-primary/20" style="background-image: url('@Url.Content("~/Files/images/logo.jpg")');"></div>
+                <div>
+                    <h2 class="text-lg font-black text-primary">مزرعة آل سالم</h2>
+                    <p class="text-xs text-slate-500">الوصول السريع للأقسام</p>
+                </div>
             </div>
 
-            <nav class="flex flex-col gap-1">
-
-                <a asp-controller="Home" asp-action="Index"
-                   class="nav-link flex items-center gap-4 px-4 py-3 rounded-lg active"
-                   onclick="closeMobileMenu()">
-                    <span class="material-symbols-outlined">dashboard</span>
-                    <span class="font-medium">لوحة التحكم</span>
-                </a>
-
-                <!-- SAME STRUCTURE AS DESKTOP -->
-                <!-- Customers -->
-                <details class="group nav-section" @(IsActive("/customer") ? "open" : "")>
-                    <summary class="nav-link flex items-center justify-between gap-4 px-4 py-3 rounded-lg cursor-pointer list-none">
-                        <div class="flex items-center gap-4">
-                            <span class="material-symbols-outlined">people</span>
-                            <span class="font-medium">إدارة العملاء</span>
-                        </div>
-                        <span class="material-symbols-outlined dropdown-icon">expand_more</span>
-                    </summary>
-                    <div class="dropdown-menu">
-                        <a asp-controller="Customer" asp-action="Index"
-                           class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/customer") ? "active" : "")"
-                           onclick="closeMobileMenu()">قائمة العملاء</a>
-                        <a asp-controller="Customer" asp-action="Rating"
-                           class="dropdown-link block px-6 py-2.5 text-sm @(IsActive("/customer/rating") ? "active" : "")"
-                           onclick="closeMobileMenu()">تقييم العملاء</a>
-                    </div>
-                </details>
-
-                <!-- (All remaining sections identical to desktop, each link includes onclick="closeMobileMenu()") -->
-
+            <nav class="flex flex-col gap-1 text-sm">
+                <a asp-controller="Home" asp-action="Index" class="nav-link @(isHomeActive ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">لوحة التحكم</a>
+                <a asp-controller="Customer" asp-action="Index" class="nav-link @(IsActive("/customer") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">العملاء</a>
+                <a asp-controller="Supplier" asp-action="Index" class="nav-link @(IsActive("/supplier") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">الموردون</a>
+                <a asp-controller="Product" asp-action="Index" class="nav-link @(IsActive("/product") && !IsActive("/productcategory") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">المنتجات</a>
+                <a asp-controller="ProductCategory" asp-action="Index" class="nav-link @(IsActive("/productcategory") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">فئات المنتجات</a>
+                <a asp-controller="Store" asp-action="Index" class="nav-link @(IsActive("/store") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">المخازن</a>
+                <a asp-controller="Invoice" asp-action="Index" class="nav-link @(IsActive("/invoice") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">الفواتير</a>
+                <a asp-controller="Payment" asp-action="Index" class="nav-link @(IsActive("/payment") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">المدفوعات</a>
+                <a asp-controller="InternalUsage" asp-action="Index" class="nav-link @(IsActive("/internalusage") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">الاستخدام الداخلي</a>
+                <div class="my-2 rounded-2xl border border-slate-200 bg-slate-50 p-2">
+                    <div class="px-2 py-2 text-xs font-black tracking-wide text-slate-500">إدارة الموظفين</div>
+                    <a asp-controller="Employees" asp-action="Index" class="nav-link @(IsActive("/employees") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">قائمة الموظفين</a>
+                    <a asp-controller="EmployeeType" asp-action="Index" class="nav-link @(IsActive("/employeetype") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">أنواع الموظفين</a>
+                    <a asp-controller="Attendance" asp-action="Index" class="nav-link @(IsActive("/attendance") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">الحضور والغياب</a>
+                    <a asp-controller="Salaries" asp-action="Index" class="nav-link @(IsActive("/salaries") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">الرواتب</a>
+                </div>
+                <a asp-controller="Account" asp-action="Index" class="nav-link @(IsActive("/account") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">المستخدمون</a>
             </nav>
-        </div>
-    </aside>
-
-    <div class="flex-1 bg-black/50" onclick="closeMobileMenu()"></div>
+        </aside>
+        <button type="button" class="flex-1 bg-black/40" onclick="closeMobileMenu()"></button>
+    </div>
 </div>

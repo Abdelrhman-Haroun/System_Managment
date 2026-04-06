@@ -1,0 +1,15 @@
+@model EmployeeType
+
+<div class="w-full max-w-2xl mx-auto bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+    <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-2xl font-bold">تفاصيل نوع الموظف</h2>
+        <button type="button" class="closeDialog p-3 rounded-full hover:bg-gray-100 transition-colors">
+            <span class="material-symbols-outlined text-2xl">close</span>
+        </button>
+    </div>
+    <div class="p-8 space-y-4">
+        <div><span class="font-bold">الاسم:</span> @Model.Name</div>
+        <div><span class="font-bold">الوصف:</span> @Model.Description</div>
+        <div><span class="font-bold">تاريخ الإنشاء:</span> @Model.CreatedAt.ToString("dd/MM/yyyy")</div>
+    </div>
+</div>

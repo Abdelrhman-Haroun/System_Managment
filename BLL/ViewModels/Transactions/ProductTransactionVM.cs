@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System;
+using DAL.Models;
 
 namespace BLL.ViewModels.Transactions
 {
@@ -20,6 +17,7 @@ namespace BLL.ViewModels.Transactions
         public decimal QuantityAfter { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal TotalAmount { get; set; }
+        public decimal DisplayTotalAmount => TransactionTypes.IsInternalUsage(TransactionType) ? WeightChanged * UnitPrice : TotalAmount;
         public string ReferenceNumber { get; set; } = string.Empty;
         public string Notes { get; set; } = string.Empty;
         public DateTime TransactionDate { get; set; }
