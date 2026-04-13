@@ -136,6 +136,10 @@
                         <span class="material-symbols-outlined">receipt</span>
                         <span>الفواتير</span>
                     </a>
+                    <a asp-controller="Payment" asp-action="Index" class="nav-link @(IsActive("/payment") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
+                        <span class="material-symbols-outlined">payments</span>
+                        <span>المدفوعات</span>
+                    </a>
                     <a asp-controller="InternalUsage" asp-action="Index" class="nav-link @(IsActive("/internalusage") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
                         <span class="material-symbols-outlined">agriculture</span>
                         <span>الاستخدام الداخلي</span>
@@ -221,6 +225,7 @@
                     <a asp-controller="ProductCategory" asp-action="Index" class="nav-link @(IsActive("/productcategory") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">فئات المنتجات</a>
                     <a asp-controller="Store" asp-action="Index" class="nav-link @(IsActive("/store") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">المخازن</a>
                     <a asp-controller="Invoice" asp-action="Index" class="nav-link @(IsActive("/invoice") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">الفواتير</a>
+                    <a asp-controller="Payment" asp-action="Index" class="nav-link @(IsActive("/payment") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">المدفوعات</a>
                     <a asp-controller="InternalUsage" asp-action="Index" class="nav-link @(IsActive("/internalusage") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">الاستخدام الداخلي</a>
                     <a asp-controller="Employees" asp-action="Index" class="nav-link @(IsActive("/employees") || IsActive("/employeetype") || IsActive("/attendance") || IsActive("/salaries") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">الموظفين</a>
                     <a asp-controller="Account" asp-action="Index" class="nav-link @(IsActive("/account") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3" onclick="closeMobileMenu()">المستخدمون</a>

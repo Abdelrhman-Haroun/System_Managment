@@ -1,4 +1,4 @@
-﻿using BLL.Services.IService;
+using BLL.Services.IService;
 using BLL.ViewModels.Invoice;
 using DAL.Models;
 using DAL.Repositories.IRepository;
@@ -63,14 +63,15 @@ namespace BLL.Services.Service
                     }
                 }
 
-                var subtotal = preparedItems.Sum(i => i.Item.Weight * i.Item.UnitPrice);
+                var subtotal = preparedItems.Sum(i => i.EffectiveQuantity * i.Item.UnitPrice);
                 var invoiceItems = preparedItems.Select(i => new InvoiceItem
                 {
                     ProductId = i.Item.ProductId,
                     ProductName = i.Product.Name,
                     Quantity = i.Item.Quantity,
                     Weight = i.Item.Weight,
-                    UnitPrice = i.Item.UnitPrice
+                    UnitPrice = i.Item.UnitPrice,
+                    TotalPrice = i.EffectiveQuantity * i.Item.UnitPrice
                 }).ToList();
 
                 decimal totalAmount = subtotal - model.DiscountAmount + model.TaxAmount;
@@ -255,7 +256,7 @@ namespace BLL.Services.Service
                     return (false, $"الكمية المتوفرة من {productName} غير كافية للتعديل");
                 }
 
-                var subtotal = preparedItems.Sum(i => i.Item.Weight * i.Item.UnitPrice);
+                var subtotal = preparedItems.Sum(i => i.EffectiveQuantity * i.Item.UnitPrice);
                 var totalAmount = subtotal - model.DiscountAmount + model.TaxAmount;
 
                 await _transactionService.RevertInvoiceTransactionsAsync(invoice.Id);
@@ -287,7 +288,8 @@ namespace BLL.Services.Service
                         ProductName = preparedItem.Product.Name,
                         Quantity = preparedItem.Item.Quantity,
                         Weight = preparedItem.Item.Weight,
-                        UnitPrice = preparedItem.Item.UnitPrice
+                        UnitPrice = preparedItem.Item.UnitPrice,
+                        TotalPrice = preparedItem.EffectiveQuantity * preparedItem.Item.UnitPrice
                     };
                     invoice.InvoiceItems.Add(newItem);
                 }

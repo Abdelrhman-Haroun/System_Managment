@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
 namespace DAL.Models 
@@ -13,6 +13,9 @@ namespace DAL.Models
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal Salary { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? Balance { get; set; } = 0;
 
         public int? EmployeeTypeId { get; set; }
         public EmployeeType? EmployeeType { get; set; }
@@ -29,5 +32,8 @@ namespace DAL.Models
 
         public ICollection<EmployeeAttendance>? Attendances { get; set; }
         public ICollection<EmployeeSalaryAdjustment>? SalaryAdjustments { get; set; }
+        public ICollection<EmployeeSalaryHistory>? SalaryHistories { get; set; }
+        public ICollection<Payment>? Payments { get; set; }
+        public ICollection<EmployeeTransaction>? Transactions { get; set; }
     }
 }

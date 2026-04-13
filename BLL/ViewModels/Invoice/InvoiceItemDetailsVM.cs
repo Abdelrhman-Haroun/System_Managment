@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,6 +16,6 @@ namespace BLL.ViewModels.Invoice
         public decimal Weight { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal EffectiveQuantity => ProductType == (int)DAL.Models.ProductType.Count ? Quantity : Weight;
-        public decimal TotalPrice => Weight * UnitPrice;
+        public decimal TotalPrice => EffectiveQuantity * UnitPrice;
     }
 }

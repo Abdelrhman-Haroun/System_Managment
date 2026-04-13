@@ -1,4 +1,4 @@
-﻿using DAL.Models;
+using DAL.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -26,11 +26,14 @@ namespace DAL.Data
         public DbSet<EmployeeType> EmployeeTypes { get; set; }
         public DbSet<EmployeeAttendance> EmployeeAttendances { get; set; }
         public DbSet<EmployeeSalaryAdjustment> EmployeeSalaryAdjustments { get; set; }
+        public DbSet<EmployeeSalaryHistory> EmployeeSalaryHistories { get; set; }
 
         public DbSet<ProductTransaction> ProductTransactions { get; set; }
         public DbSet<CustomerTransaction> CustomerTransactions { get; set; }
         public DbSet<SupplierTransaction> SupplierTransactions { get; set; }
+        public DbSet<EmployeeTransaction> EmployeeTransactions { get; set; }
         public DbSet<InternalProductUsage> InternalProductUsages { get; set; }
+        public DbSet<PaymentMethodTransaction> PaymentMethodTransactions { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
@@ -71,6 +74,25 @@ namespace DAL.Data
                 entity.Property(x => x.BalanceAfter).HasPrecision(18, 2);
             });
 
+            builder.Entity<PaymentMethodTransaction>(entity =>
+            {
+                entity.Property(x => x.BalanceBefore).HasPrecision(18, 2);
+                entity.Property(x => x.AmountChanged).HasPrecision(18, 2);
+                entity.Property(x => x.BalanceAfter).HasPrecision(18, 2);
+
+                entity.HasOne(x => x.Payment)
+                    .WithMany()
+                    .HasForeignKey(x => x.PaymentId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            builder.Entity<EmployeeTransaction>(entity =>
+            {
+                entity.Property(x => x.BalanceBefore).HasPrecision(18, 2);
+                entity.Property(x => x.AmountChanged).HasPrecision(18, 2);
+                entity.Property(x => x.BalanceAfter).HasPrecision(18, 2);
+            });
+
             builder.Entity<Employee>(entity =>
             {
                 entity.Property(x => x.Salary).HasPrecision(18, 2);
@@ -104,6 +126,18 @@ namespace DAL.Data
                     .WithMany(x => x.SalaryAdjustments)
                     .HasForeignKey(x => x.EmployeeId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<EmployeeSalaryHistory>(entity =>
+            {
+                entity.Property(x => x.Salary).HasPrecision(18, 2);
+
+                entity.HasOne(x => x.Employee)
+                    .WithMany(x => x.SalaryHistories)
+                    .HasForeignKey(x => x.EmployeeId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(x => new { x.EmployeeId, x.EffectiveFrom });
             });
 
             // Seed roles

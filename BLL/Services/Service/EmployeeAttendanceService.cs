@@ -203,7 +203,26 @@ namespace BLL.Services.Service
                 var presentDays = employeeAttendance.Count(x => x.Status == EmployeeAttendanceStatus.Present);
                 var absentDays = employeeAttendance.Count(x => x.Status == EmployeeAttendanceStatus.Absent);
 
-                var dailyRate = daysInMonth == 0 ? 0 : Math.Round(employee.Salary / daysInMonth, 2);
+                // Determine salary applicable for the month using history snapshots (fall back to current salary)
+                var salaryToUse = employee.Salary;
+                try
+                {
+                    var historyList = await _unitOfWork.EmployeeSalaryHistory.GetAllAsync(h => !h.IsDeleted && h.EmployeeId == employee.Id && h.EffectiveFrom <= endDate);
+                    var history = historyList.OrderByDescending(h => h.EffectiveFrom).FirstOrDefault();
+                    if (history != null) salaryToUse = history.Salary;
+                }
+                catch (Microsoft.Data.SqlClient.SqlException)
+                {
+                    // Table might not exist yet (migration not applied). Fall back to current salary.
+                    salaryToUse = employee.Salary;
+                }
+                catch (Exception)
+                {
+                    // Any other error: fall back safely.
+                    salaryToUse = employee.Salary;
+                }
+
+                var dailyRate = daysInMonth == 0 ? 0 : Math.Round(salaryToUse / daysInMonth, 2);
 
                 int paidOffDays;
 
@@ -239,7 +258,7 @@ namespace BLL.Services.Service
                     EmployeeName = employee.Name,
                     EmployeeTypeName = employee.EmployeeType?.Name ?? "غير محدد",
                     Position = employee.Position,
-                    Salary = employee.Salary,
+                    Salary = salaryToUse, // use historical salary snapshot for this month
                     DailyRate = dailyRate,
                     EarnedSalary = earnedSalary,
                     DaysInMonth = daysInMonth,

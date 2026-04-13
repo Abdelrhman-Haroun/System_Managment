@@ -1,0 +1,541 @@
+@using BLL.ViewModels.Payment
+@model PaymentListVM
+
+@{
+    ViewData["Title"] = $"طباعة إيصال الدفع - {Model.ReferenceNumber}";
+    Layout = null;
+    var printedAt = DateTime.Now;
+}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <style>
+        @@page {
+            size: A4 portrait;
+            margin: 8mm;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Cairo", "Segoe UI", sans-serif;
+            background: #eef3f1;
+            color: #0f172a;
+        }
+
+        .print-toolbar {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 20;
+            display: flex;
+            gap: 10px;
+        }
+
+        .print-toolbar button {
+            border: none;
+            border-radius: 999px;
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.14);
+        }
+
+        .print-action {
+            background: #2a7f40;
+            color: #fff;
+        }
+
+        .close-action {
+            background: #fff;
+            color: #0f172a;
+        }
+
+        .report-shell {
+            width: min(100%, 194mm);
+            margin: 0 auto;
+            padding: 10mm 0 12mm;
+        }
+
+        .report-paper {
+            width: 100%;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1);
+            padding: 8mm;
+        }
+
+        @@media print {
+            body {
+                background: #fff;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .print-toolbar {
+                display: none !important;
+            }
+
+            .report-shell {
+                width: auto;
+                margin: 0;
+                padding: 0;
+            }
+
+            .report-paper {
+                border-radius: 0;
+                box-shadow: none;
+                padding: 0;
+            }
+        }
+    </style>
+
+    <style>
+        .invoice-report {
+            display: grid;
+            gap: 14px;
+            color: #163020;
+        }
+
+        .invoice-hero {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #d8e3db;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #f7fbf8 0%, #eef6f1 48%, #fdfdfc 100%);
+            padding: 18px 20px;
+            page-break-inside: avoid;
+        }
+
+        .invoice-hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top left, rgba(42, 127, 64, 0.1), transparent 11rem),
+                        radial-gradient(circle at bottom right, rgba(166, 124, 82, 0.08), transparent 10rem);
+            pointer-events: none;
+        }
+
+        .invoice-hero-grid {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 1.25fr) minmax(250px, 0.75fr);
+            gap: 16px;
+            align-items: start;
+        }
+
+        .brand-block {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .brand-logo-wrap {
+            width: 74px;
+            height: 74px;
+            flex-shrink: 0;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid #d0dbd4;
+            background: #fff;
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.05);
+        }
+
+        .brand-logo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .brand-name {
+            margin: 0;
+            font-size: 25px;
+            font-weight: 800;
+            color: #1d5c33;
+        }
+
+        .invoice-summary-card {
+            border: 1px solid #dfe7e1;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.78);
+            padding: 14px 16px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.65);
+        }
+
+        .invoice-summary-card h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            color: #1d5c33;
+        }
+
+        .invoice-summary-card p {
+            margin: 5px 0 12px;
+            font-size: 11px;
+            color: #6b7d73;
+        }
+
+        .invoice-badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+        .invoice-badge.incoming {
+            background: #eef4ff;
+            color: #2249a7;
+        }
+        .invoice-badge.outgoing {
+            background: #fdf2f2;
+            color: #c81e1e;
+        }
+
+        .hero-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .hero-meta-item {
+            border: 1px solid #e5ebe7;
+            border-radius: 12px;
+            background: #fff;
+            padding: 9px 10px;
+        }
+
+        .hero-meta-item label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #6a7b72;
+        }
+
+        .hero-meta-item strong {
+            font-size: 12px;
+            color: #182f23;
+        }
+
+        .invoice-main-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 260px;
+            gap: 14px;
+            page-break-inside: avoid;
+        }
+
+        .invoice-panel {
+            border: 1px solid #d8e3db;
+            border-radius: 16px;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 14px;
+            background: #f8fbf9;
+            border-bottom: 1px solid #e5ece7;
+        }
+
+        .panel-head h2 {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 800;
+            color: #20382c;
+        }
+
+        .panel-body {
+            padding: 14px;
+        }
+
+        .customer-card {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 150px;
+            gap: 12px;
+            align-items: stretch;
+        }
+
+        .customer-name-box {
+            border: 1px solid #e3e9e5;
+            border-radius: 14px;
+            background: linear-gradient(180deg, #ffffff, #fbfdfb);
+            padding: 14px;
+        }
+
+        .customer-name-box label,
+        .mini-stat label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #718178;
+        }
+
+        .customer-name-box strong {
+            font-size: 18px;
+            font-weight: 800;
+            color: #173425;
+        }
+
+        .mini-stat-stack {
+            display: grid;
+            gap: 8px;
+        }
+
+        .mini-stat {
+            border: 1px solid #e3e9e5;
+            border-radius: 14px;
+            background: #fcfdfc;
+            padding: 12px;
+        }
+
+        .mini-stat strong {
+            font-size: 14px;
+            color: #173425;
+        }
+
+        .totals-grid {
+            display: grid;
+            gap: 8px;
+        }
+
+        .total-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border: 1px solid #e6ece8;
+            border-radius: 14px;
+            padding: 10px 12px;
+            background: #fcfdfc;
+            font-size: 11px;
+        }
+
+        .total-row strong {
+            font-size: 13px;
+            color: #173425;
+        }
+
+        .total-row.final {
+            background: linear-gradient(135deg, #1f6f3a, #2a7f40);
+            border-color: #1f6f3a;
+            color: #fff;
+        }
+
+        .total-row.final strong {
+            color: #fff;
+            font-size: 15px;
+        }
+
+        .invoice-bottom-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(220px, 0.8fr);
+            gap: 14px;
+            page-break-inside: avoid;
+            margin-top: 14px;
+        }
+
+        .signature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .signature-box {
+            border: 1px dashed #cad7cf;
+            border-radius: 14px;
+            background: #fff;
+            padding: 16px 12px 12px;
+            min-height: 92px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .signature-line {
+            border-top: 1px solid #aabbb0;
+            margin-bottom: 8px;
+        }
+
+        .signature-box span {
+            font-size: 11px;
+            font-weight: 700;
+            color: #55675d;
+        }
+
+        .invoice-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border-top: 1px solid #e5ece7;
+            padding-top: 10px;
+            margin-top: 14px;
+            font-size: 10px;
+            color: #6f7f76;
+            page-break-inside: avoid;
+        }
+
+        @@media print {
+            .invoice-hero,
+            .invoice-panel,
+            .signature-box {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="print-toolbar">
+        <button type="button" class="print-action" onclick="window.print()">طباعة</button>
+        <button type="button" class="close-action" onclick="window.close()">إغلاق</button>
+    </div>
+
+    <main class="report-shell">
+        <section class="report-paper">
+            
+            <section class="invoice-report">
+                <header class="invoice-hero">
+                    <div class="invoice-hero-grid">
+                        <div class="brand-block">
+                            <!-- Example generic logic for brand logo if needed, removed here to match custom system style -->
+                            <div>
+                                <h1 class="brand-name">النظام</h1>
+                                <div class="brand-tagline">مستند إيصال دفع رسمي</div>
+                            </div>
+                        </div>
+
+                        <div class="invoice-summary-card">
+                            <h1>إيصال دفع</h1>
+                            <p>مستند يثبت استلام أو دفع مبالغ مالية.</p>
+                            <div class="invoice-badge @(Model.IsIncoming ? "incoming" : "outgoing")">@(Model.IsIncoming ? "سند قبض" : "سند صرف")</div>
+                            <div class="hero-meta-grid">
+                                <div class="hero-meta-item">
+                                    <label>رقم السند</label>
+                                    <strong>@Model.ReferenceNumber</strong>
+                                </div>
+                                <div class="hero-meta-item">
+                                    <label>تاريخ السند</label>
+                                    <strong>@Model.PaymentDate.ToString("dd/MM/yyyy")</strong>
+                                </div>
+                                <div class="hero-meta-item">
+                                    <label>السبب</label>
+                                    <strong>@Model.Reason</strong>
+                                </div>
+                                <div class="hero-meta-item">
+                                    <label>وقت الطباعة</label>
+                                    <strong>@printedAt.ToString("dd/MM/yyyy hh:mm tt")</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <section class="invoice-main-grid">
+                    <div class="invoice-panel">
+                        <div class="panel-head">
+                            <h2>بيانات @Model.PartyType</h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="customer-card">
+                                <div class="customer-name-box">
+                                    <label>اسم الـ @Model.PartyType</label>
+                                    <strong>@Model.PartyName</strong>
+                                </div>
+                                <div class="mini-stat-stack">
+                                    <div class="mini-stat">
+                                        <label>وسيلة الدفع</label>
+                                        <strong>@Model.PaymentSourceName</strong>
+                                    </div>
+                                    <div class="mini-stat">
+                                        <label>نوع السند</label>
+                                        <strong>@(Model.IsIncoming ? "مقبوضات" : "مدفوعات")</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="invoice-panel">
+                        <div class="panel-head">
+                            <h2>ملخص المالي</h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="totals-grid">
+                                <div class="total-row">
+                                    <span>الرصيد السابق للمتعامل</span>
+                                    <strong>@Model.BalanceBefore.ToString("N2") جنيه</strong>
+                                </div>
+                                <div class="total-row final">
+                                    <span>المبلغ المستلم/المدفوع</span>
+                                    <strong>@Model.Amount.ToString("N2") جنيه</strong>
+                                </div>
+                                <div class="total-row">
+                                    <span>الرصيد بعد السند</span>
+                                    <strong>@Model.BalanceAfter.ToString("N2") جنيه</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="invoice-bottom-grid">
+                    @if (!string.IsNullOrWhiteSpace(Model.Notes))
+                    {
+                        <section class="invoice-panel notes-panel">
+                            <div class="panel-head">
+                                <h2>ملاحظات السند</h2>
+                            </div>
+                            <div class="panel-body">
+                                <p style="margin:0; font-size:11px; white-space:pre-line;">@Model.Notes</p>
+                            </div>
+                        </section>
+                    }
+                    else
+                    {
+                        <div style="border: 1px solid #d8e3db; border-radius: 16px; background: linear-gradient(180deg, #fcfdfc, #f4f8f6); padding: 16px 14px;">
+                            <h3 style="margin: 0 0 8px; font-size: 14px; font-weight: 800; color: #1d5c33;">معلومة</h3>
+                            <p style="margin: 0; font-size: 11px; line-height: 1.9; color: #405348;">هذا إيصال مالي يثبت حركة الدفع.</p>
+                        </div>
+                    }
+
+                    <div class="signature-grid">
+                        <div class="signature-box">
+                            <div class="signature-line"></div>
+                            <span>توقيع المستلم</span>
+                        </div>
+                        <div class="signature-box">
+                            <div class="signature-line"></div>
+                            <span>ختم / توقيع المؤسسة</span>
+                        </div>
+                    </div>
+                </section>
+
+                <footer class="invoice-footer">
+                    <span>@DateTime.Now.Year</span>
+                    <span>النظام المالي</span>
+                </footer>
+            </section>
+        </section>
+    </main>
+</body>
+</html>

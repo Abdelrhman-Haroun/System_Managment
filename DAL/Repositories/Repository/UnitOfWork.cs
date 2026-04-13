@@ -1,4 +1,4 @@
-﻿using DAL.Data;
+using DAL.Data;
 using DAL.Models;
 using DAL.Repositories;
 using DAL.Repositories.Repository;
@@ -25,6 +25,9 @@ namespace DAL.Repositories.IRepository
         public IEmployeeTypeRepository EmployeeType { get; private set; }
         public IEmployeeAttendanceRepository EmployeeAttendance { get; private set; }
         public IEmployeeSalaryAdjustmentRepository EmployeeSalaryAdjustment { get; private set; }
+        public IEmployeeSalaryHistoryRepository EmployeeSalaryHistory { get; private set; }
+        public IPaymentMethodTransactionRepository PaymentMethodTransaction { get; private set; }
+        public IEmployeeTransactionRepository EmployeeTransaction { get; private set; }
 
         public UnitOfWork(ApplicationDbContext context,UserManager<ApplicationUser> userManager)
         {
@@ -45,6 +48,9 @@ namespace DAL.Repositories.IRepository
             EmployeeType = new EmployeeTypeRepository(context);
             EmployeeAttendance = new EmployeeAttendanceRepository(context);
             EmployeeSalaryAdjustment = new EmployeeSalaryAdjustmentRepository(context);
+            EmployeeSalaryHistory = new EmployeeSalaryHistoryRepository(context);
+            PaymentMethodTransaction = new PaymentMethodTransactionRepository(context);
+            EmployeeTransaction = new EmployeeTransactionRepository(context);
         }
 
         public async Task<int> CompleteAsync()

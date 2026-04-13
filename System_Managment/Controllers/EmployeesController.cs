@@ -1,6 +1,7 @@
 using AutoMapper;
 using BLL.Services.IService;
 using BLL.ViewModels.Employee;
+using DAL.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -14,17 +15,20 @@ public class EmployeesController : Controller
     private readonly IEmployeeTypeService _employeeTypeService;
     private readonly IEmployeeAttendanceService _attendanceService;
     private readonly IMapper _mapper;
+    private readonly ITransactionReportService _transactionReportService;
 
     public EmployeesController(
         IEmployeeService service,
         IEmployeeTypeService employeeTypeService,
         IEmployeeAttendanceService attendanceService,
-        IMapper mapper)
+        IMapper mapper,
+        ITransactionReportService transactionReportService)
     {
         _service = service;
         _employeeTypeService = employeeTypeService;
         _attendanceService = attendanceService;
         _mapper = mapper;
+        _transactionReportService = transactionReportService;
     }
 
     public async Task<IActionResult> Index(string? searchTerm, int page = 1)
@@ -169,5 +173,116 @@ public class EmployeesController : Controller
     {
         var employeeTypes = await _employeeTypeService.GetAllAsync();
         ViewBag.EmployeeTypes = new SelectList(employeeTypes, "Id", "Name");
+    }
+
+    private static (DateTime? FromDate, DateTime? ToDate) NormalizeDateRange(DateTime? fromDate, DateTime? toDate)
+    {
+        if (!fromDate.HasValue && !toDate.HasValue)
+        {
+            var today = DateTime.Today;
+            return (today, today);
+        }
+
+        fromDate ??= toDate;
+        toDate ??= fromDate;
+
+        if (fromDate > toDate)
+        {
+            (fromDate, toDate) = (toDate, fromDate);
+        }
+
+        return (fromDate?.Date, toDate?.Date);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Transactions(int id, DateTime? fromDate, DateTime? toDate)
+    {
+        try
+        {
+            (fromDate, toDate) = NormalizeDateRange(fromDate, toDate);
+
+            var employee = await _service.GetByIdAsync(id);
+            if (employee == null)
+            {
+                TempData["Error"] = "الموظف غير موجود";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var transactions = await _transactionReportService.GetEmployeeTransactionsByEmployeeIdAsync(id);
+
+            if (fromDate.HasValue)
+            {
+                transactions = transactions.Where(t => t.TransactionDate >= fromDate.Value);
+            }
+
+            if (toDate.HasValue)
+            {
+                transactions = transactions.Where(t => t.TransactionDate < toDate.Value.AddDays(1));
+            }
+
+            var totalCredits = transactions.Where(t => t.AmountChanged > 0).Sum(t => t.AmountChanged);
+            var totalDebits = transactions.Where(t => t.AmountChanged < 0).Sum(t => Math.Abs(t.AmountChanged));
+
+            // Calculate payroll for the selected month (use fromDate or today)
+            var selectedYear = fromDate?.Year ?? DateTime.Today.Year;
+            var selectedMonth = fromDate?.Month ?? DateTime.Today.Month;
+            var payroll = (await _attendanceService.GetMonthlyPayrollAsync(selectedYear, selectedMonth, id)).FirstOrDefault();
+            decimal monthNetSalary = payroll?.NetSalary ?? 0m;
+
+            var monthStart = new DateTime(selectedYear, selectedMonth, 1);
+            var monthEnd = monthStart.AddMonths(1);
+            var paymentsThisMonth = transactions.Where(t => TransactionTypes.IsPayment(t.TransactionType) && t.TransactionDate >= monthStart && t.TransactionDate < monthEnd).Sum(t => Math.Abs(t.AmountChanged));
+            var remainingThisMonth = monthNetSalary - paymentsThisMonth;
+
+            ViewBag.Employee = employee;
+            ViewBag.FromDate = fromDate;
+            ViewBag.ToDate = toDate;
+            ViewBag.TotalCredits = totalCredits; // positive amounts (e.g., accruals)
+            ViewBag.TotalDebits = totalDebits;   // negative amounts (payments out)
+            ViewBag.CurrentBalance = employee.Balance;
+            ViewBag.MonthNetSalary = monthNetSalary; // دائن (what is owed for the month)
+            ViewBag.PaymentsThisMonth = paymentsThisMonth; // مدين (what employee took)
+            ViewBag.RemainingThisMonth = remainingThisMonth; // positive => still owed, negative => overpaid / advance
+            ViewBag.Payroll = payroll;
+
+            return View(transactions.OrderByDescending(t => t.TransactionDate));
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = "حدث خطأ أثناء تحميل المعاملات";
+            return RedirectToAction(nameof(Index));
+        }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExportTransactions(int id, DateTime? fromDate, DateTime? toDate, string format = "excel")
+    {
+        try
+        {
+            (fromDate, toDate) = NormalizeDateRange(fromDate, toDate);
+
+            var employee = await _service.GetByIdAsync(id);
+            if (employee == null)
+                return NotFound();
+
+            var transactions = await _transactionReportService.GetEmployeeTransactionsByEmployeeIdAsync(id);
+
+            if (fromDate.HasValue)
+                transactions = transactions.Where(t => t.TransactionDate >= fromDate.Value);
+
+            if (toDate.HasValue)
+                transactions = transactions.Where(t => t.TransactionDate < toDate.Value.AddDays(1));
+
+            return Json(new
+            {
+                success = true,
+                employee = employee.Name,
+                transactions = transactions.OrderByDescending(t => t.TransactionDate)
+            });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = "حدث خطأ أثناء التصدير" });
+        }
     }
 }

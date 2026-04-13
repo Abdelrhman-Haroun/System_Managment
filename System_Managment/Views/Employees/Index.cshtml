@@ -78,6 +78,9 @@
                                     <a href="@Url.Action("Edit", new { id = item.Id })" class="openEditDialog text-primary hover:text-primary/80" title="تعديل">
                                         <span class="material-symbols-outlined text-xl">edit</span>
                                     </a>
+                                    <a href="@Url.Action("Transactions", new { id = item.Id })" class="text-amber-600 hover:text-amber-800" title="المعاملات">
+                                        <span class="material-symbols-outlined text-xl">receipt_long</span>
+                                    </a>
                                     <a asp-controller="Attendance" asp-action="Index" asp-route-employeeId="@item.Id" class="text-blue-600 hover:text-blue-800" title="الحضور">
                                         <span class="material-symbols-outlined text-xl">calendar_month</span>
                                     </a>

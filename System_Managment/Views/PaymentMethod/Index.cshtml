@@ -1,0 +1,73 @@
+﻿@using BLL.ViewModels.PaymentMethod
+@model PaymentMethodIndexVM
+@{ ViewData["Title"] = "وسائل الدفع"; }
+
+<div class="space-y-8">
+    <section class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+            <h1 class="text-3xl font-black text-slate-900">وسائل الدفع</h1>
+            <p class="mt-2 text-slate-600">إدارة الخزائن والحسابات البنكية والمحافظ الإلكترونية المستخدمة في المدفوعات.</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+            <a asp-action="Create" asp-route-type="CashBox" class="rounded-xl bg-primary px-5 py-3 font-bold text-white">إضافة خزنة</a>
+            <a asp-action="Create" asp-route-type="BankAccount"  class="rounded-xl bg-primary px-5 py-3 font-bold text-white">إضافة حساب بنكي</a>
+            <a asp-action="Create" asp-route-type="MobileWallet" class="rounded-xl bg-primary px-5 py-3 font-bold text-white">إضافة محفظة</a>
+        </div>
+    </section>
+
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 class="text-xl font-black text-slate-900">الخزائن</h2>
+            <div class="mt-4 space-y-3">
+                @foreach (var item in Model.Cashboxes)
+                {
+                    <div class="rounded-2xl border border-slate-200 p-4">
+                        <div class="flex items-center justify-between gap-3">
+                            <div><div class="font-bold text-slate-900">@item.Name</div><div class="text-sm text-slate-500">الرصيد: @((item.Balance ?? 0).ToString("N2"))</div></div>
+                            <div class="flex gap-2">
+                                <a asp-action="Edit" asp-route-type="CashBox" asp-route-id="@item.Id" class="rounded-lg p-2 text-primary hover:bg-primary/10">تعديل</a>
+                                <form asp-action="Delete" asp-route-type="CashBox" asp-route-id="@item.Id" method="post">@Html.AntiForgeryToken()<button type="submit" class="rounded-lg p-2 text-red-600 hover:bg-red-50">حذف</button></form>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 class="text-xl font-black text-slate-900">الحسابات البنكية</h2>
+            <div class="mt-4 space-y-3">
+                @foreach (var item in Model.BankAccounts)
+                {
+                    <div class="rounded-2xl border border-slate-200 p-4">
+                        <div class="font-bold text-slate-900">@item.AccountName</div>
+                        <div class="mt-1 text-sm text-slate-500">@item.BankName - @item.AccountNumber</div>
+                        <div class="mt-1 text-sm text-slate-500">الرصيد: @item.Balance.ToString("N2")</div>
+                        <div class="mt-3 flex gap-2">
+                            <a asp-action="Edit" asp-route-type="BankAccount" asp-route-id="@item.Id" class="rounded-lg p-2 text-primary hover:bg-primary/10">تعديل</a>
+                            <form asp-action="Delete" asp-route-type="BankAccount" asp-route-id="@item.Id" method="post">@Html.AntiForgeryToken()<button type="submit" class="rounded-lg p-2 text-red-600 hover:bg-red-50">حذف</button></form>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 class="text-xl font-black text-slate-900">المحافظ الإلكترونية</h2>
+            <div class="mt-4 space-y-3">
+                @foreach (var item in Model.MobileWallets)
+                {
+                    <div class="rounded-2xl border border-slate-200 p-4">
+                        <div class="font-bold text-slate-900">@item.WalletName</div>
+                        <div class="mt-1 text-sm text-slate-500">@item.PhoneNumber</div>
+                        <div class="mt-1 text-sm text-slate-500">الرصيد: @item.Balance.ToString("N2")</div>
+                        <div class="mt-3 flex gap-2">
+                            <a asp-action="Edit" asp-route-type="MobileWallet" asp-route-id="@item.Id" class="rounded-lg p-2 text-primary hover:bg-primary/10">تعديل</a>
+                            <form asp-action="Delete" asp-route-type="MobileWallet" asp-route-id="@item.Id" method="post">@Html.AntiForgeryToken()<button type="submit" class="rounded-lg p-2 text-red-600 hover:bg-red-50">حذف</button></form>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+    </div>
+</div>

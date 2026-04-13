@@ -23,6 +23,9 @@ namespace BLL.Services.IService
         Task<IEnumerable<SupplierTransactionVM>> GetSupplierTransactionsBySupplierIdAsync(int supplierId);
         Task<IEnumerable<SupplierTransactionVM>> GetSupplierTransactionsByInvoiceIdAsync(int invoiceId);
         Task<IEnumerable<SupplierTransactionVM>> GetAllSupplierTransactionsAsync();
+        
+        // Employee Transactions
+        Task<IEnumerable<DAL.Models.EmployeeTransaction>> GetEmployeeTransactionsByEmployeeIdAsync(int employeeId);
 
         // Summary Reports
         Task<(decimal TotalIn, decimal TotalOut)> GetProductStockSummaryAsync(int productId);

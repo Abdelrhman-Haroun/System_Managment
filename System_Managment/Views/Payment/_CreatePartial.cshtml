@@ -1,0 +1,187 @@
+@using System.Globalization
+@model BLL.ViewModels.Payment.PaymentFormVM
+
+@{
+    var partyTypes = ViewBag.PartyTypes as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+    var customers = ViewBag.Customers as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+    var suppliers = ViewBag.Suppliers as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+    var employees = ViewBag.Employees as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+    var bankAccounts = ViewBag.BankAccounts as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+    var cashboxes = ViewBag.Cashboxes as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+    var mobileWallets = ViewBag.MobileWallets as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+}
+
+<div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl mx-auto max-h-screen overflow-y-auto" dir="rtl">
+    <div class="flex items-center justify-between p-6 border-b border-slate-200">
+        <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-3xl">add_card</span>
+            إضافة دفعة مالية
+        </h2>
+        <button type="button" class="closeDialog text-slate-500 hover:text-red-600 transition-colors bg-slate-100 hover:bg-red-50 p-2 rounded-xl">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+    </div>
+
+    <div class="p-6">
+        <form id="createPaymentForm" class="space-y-6">
+            @Html.AntiForgeryToken()
+            <input asp-for="Id" type="hidden" />
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Row 1: Amount & Date -->
+                <div>
+                    <label asp-for="Amount" class="block text-sm font-semibold text-slate-700 mb-2">المبلغ الاجمالي</label>
+                    <div class="relative">
+                        <input asp-for="Amount" type="number" step="0.01" class="form-input w-full h-12 pl-12 pr-4 rounded-xl border border-slate-300 text-slate-900 focus:border-primary focus:ring-primary/20 transition-all" />
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-500 font-bold">ج.م</div>
+                    </div>
+                </div>
+
+                <div>
+                    <label asp-for="PaymentDate" class="block text-sm font-semibold text-slate-700 mb-2">تاريخ الدفع/الاستلام</label>
+                    <input asp-for="PaymentDate" type="date" value="@(Model.PaymentDate == default ? DateTime.Now.ToString("yyyy-MM-dd") : Model.PaymentDate.ToString("yyyy-MM-dd"))" class="form-input w-full h-12 px-4 rounded-xl border border-slate-300 text-slate-900 focus:border-primary focus:ring-primary/20 transition-all" />
+                </div>
+
+                <!-- Row 2: Party Base -->
+                <div>
+                    <label asp-for="PartyType" class="block text-sm font-semibold text-slate-700 mb-2">نوع الجهة</label>
+                    <select asp-for="PartyType" asp-items="partyTypes" id="partyType" class="form-input w-full h-12 px-4 rounded-xl border border-slate-300 text-slate-900 focus:border-primary focus:ring-primary/20 transition-all"></select>
+                </div>
+
+                <div id="customerField" style="display:none;">
+                    <label asp-for="CustomerId" class="block text-sm font-semibold text-slate-700 mb-2">العميل</label>
+                    <select asp-for="CustomerId" asp-items="customers" class="form-input w-full h-12 px-4 rounded-xl border border-slate-300 text-slate-900 focus:border-primary focus:ring-primary/20 transition-all"><option value="">-- اختر العميل --</option></select>
+                </div>
+                <div id="supplierField" style="display:none;">
+                    <label asp-for="SupplierId" class="block text-sm font-semibold text-slate-700 mb-2">المورد</label>
+                    <select asp-for="SupplierId" asp-items="suppliers" class="form-input w-full h-12 px-4 rounded-xl border border-slate-300 text-slate-900 focus:border-primary focus:ring-primary/20 transition-all"><option value="">-- اختر المورد --</option></select>
+                </div>
+                <div id="employeeField" style="display:none;">
+                    <label asp-for="EmployeeId" class="block text-sm font-semibold text-slate-700 mb-2">الموظف</label>
+                    <select asp-for="EmployeeId" asp-items="employees" class="form-input w-full h-12 px-4 rounded-xl border border-slate-300 text-slate-900 focus:border-primary focus:ring-primary/20 transition-all"><option value="">-- اختر الموظف --</option></select>
+                </div>
+                <div id="expenseNameField" style="display:none;">
+                    <label asp-for="PartyName" class="block text-sm font-semibold text-slate-700 mb-2">الاسم (الجهة او المصروف)</label>
+                    <input asp-for="PartyName" class="form-input w-full h-12 px-4 rounded-xl border border-slate-300 text-slate-900 focus:border-primary focus:ring-primary/20 transition-all" />
+                </div>
+
+                <!-- Row 3: Payment Method Base -->
+                <div>
+                    <label asp-for="PaymentMethod" class="block text-sm font-semibold text-slate-700 mb-2">طريقة الدفع</label>
+                    <select asp-for="PaymentMethod" asp-items="Html.GetEnumSelectList<PaymentMethodType>()" id="paymentMethod" class="form-input w-full h-12 px-4 rounded-xl border border-slate-300 text-slate-900 focus:border-primary focus:ring-primary/20 transition-all"></select>
+                </div>
+
+                <div id="cashboxField" style="display:none;">
+                    <label asp-for="CashboxId" class="block text-sm font-semibold text-slate-700 mb-2">الخزنة (النقدية)</label>
+                    <select asp-for="CashboxId" asp-items="cashboxes" class="form-input w-full h-12 px-4 rounded-xl border border-slate-300 text-slate-900 focus:border-primary focus:ring-primary/20 transition-all"><option value="">-- اختر الخزنة --</option></select>
+                </div>
+                <div id="bankField" style="display:none;">
+                    <label asp-for="BankAccountId" class="block text-sm font-semibold text-slate-700 mb-2">الحساب البنكي</label>
+                    <select asp-for="BankAccountId" asp-items="bankAccounts" class="form-input w-full h-12 px-4 rounded-xl border border-slate-300 text-slate-900 focus:border-primary focus:ring-primary/20 transition-all"><option value="">-- اختر الحساب البنكي --</option></select>
+                </div>
+                <div id="walletField" style="display:none;">
+                    <label asp-for="MobileWalletId" class="block text-sm font-semibold text-slate-700 mb-2">المحفظة الإلكترونية</label>
+                    <select asp-for="MobileWalletId" asp-items="mobileWallets" class="form-input w-full h-12 px-4 rounded-xl border border-slate-300 text-slate-900 focus:border-primary focus:ring-primary/20 transition-all"><option value="">-- اختر المحفظة --</option></select>
+                </div>
+
+            </div>
+
+            <!-- Full Width Rows -->
+            <div>
+                <label asp-for="Reason" class="block text-sm font-semibold text-slate-700 mb-2">سبب السند او التفاصيل</label>
+                <input asp-for="Reason" class="form-input w-full h-12 px-4 rounded-xl border border-slate-300 text-slate-900 focus:border-primary focus:ring-primary/20 transition-all" />
+            </div>
+
+            <div>
+                <label asp-for="Notes" class="block text-sm font-semibold text-slate-700 mb-2">ملاحظات أخرى (اختياري)</label>
+                <textarea asp-for="Notes" rows="3" class="form-input w-full px-4 py-3 rounded-xl border border-slate-300 text-slate-900 focus:border-primary focus:ring-primary/20 transition-all"></textarea>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-slate-200 mt-6">
+                <button type="button" class="closeDialog flex-1 sm:flex-none h-12 px-6 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all">إلغاء</button>
+                <button type="submit" class="flex-1 sm:flex-none h-12 px-8 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all focus:ring-4 focus:ring-primary/30 flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">save</span> حفظ المعاملة
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    $('#createPaymentForm').on('submit', function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        $.ajax({
+            url: '@Url.Action("Create", "Payment")',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم بنجاح!',
+                        text: res.message,
+                    }).then(() => location.reload());
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطأ',
+                        text: res.message,
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ',
+                    text: 'حدث خطأ في الاتصال بالسيرفر.',
+                });
+            }
+        });
+    });
+
+    function togglePartyFields() {
+        const partyType = document.getElementById('partyType').value;
+        const customerField = document.getElementById('customerField');
+        const supplierField = document.getElementById('supplierField');
+        const employeeField = document.getElementById('employeeField');
+        const expenseNameField = document.getElementById('expenseNameField');
+        
+        customerField.style.display = partyType === 'Customer' ? 'block' : 'none';
+        supplierField.style.display = partyType === 'Supplier' ? 'block' : 'none';
+        employeeField.style.display = partyType === 'Employee' ? 'block' : 'none';
+        expenseNameField.style.display = partyType === 'Expense' ? 'block' : 'none';
+    }
+    
+    function toggleSourceFields() {
+        // Values based on Enum definition: Cash=0, BankTransfer=1, Check=2, MobileWallet=3
+        const paymentMethod = document.getElementById('paymentMethod').value;
+        
+        document.getElementById('cashboxField').style.display = paymentMethod === '0' ? 'block' : 'none';
+        document.getElementById('bankField').style.display = (paymentMethod === '1' || paymentMethod === '2') ? 'block' : 'none';
+        document.getElementById('walletField').style.display = paymentMethod === '3' ? 'block' : 'none';
+
+        const labels = {
+            '0': 'نقدي',
+            '1': 'تحويل بنكي',
+            '2': 'شيك',
+            '3': 'محفظة إلكترونية'
+        };
+
+        Array.from(document.getElementById('paymentMethod').options).forEach(option => {
+            if (labels[option.value]) {
+                option.text = labels[option.value];
+            }
+        });
+    }
+
+    document.getElementById('partyType').addEventListener('change', togglePartyFields);
+    document.getElementById('paymentMethod').addEventListener('change', toggleSourceFields);
+    
+    togglePartyFields();
+    toggleSourceFields();
+</script>

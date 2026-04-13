@@ -1,0 +1,48 @@
+﻿@using BLL.ViewModels.PaymentMethod
+@model PaymentMethodFormVM
+@{
+    ViewData["Title"] = Model.Id > 0 ? "تعديل وسيلة دفع" : "إضافة وسيلة دفع";
+    var isBank = Model.Type == "BankAccount";
+    var isWallet = Model.Type == "MobileWallet";
+}
+<div class="mx-auto max-w-3xl space-y-6">
+    <div>
+        <h1 class="text-3xl font-black text-slate-900">@ViewData["Title"]</h1>
+        <p class="mt-2 text-slate-600">@(isBank ? "حساب بنكي" : isWallet ? "محفظة إلكترونية" : "خزنة")</p>
+    </div>
+    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <form method="post" class="space-y-5">
+            @Html.AntiForgeryToken()
+            <input asp-for="Id" type="hidden" />
+            <input asp-for="Type" type="hidden" />
+            <div asp-validation-summary="ModelOnly" class="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"></div>
+            <div>
+                <label asp-for="Name" class="mb-2 block text-sm font-bold text-slate-700">الاسم</label>
+                <input asp-for="Name" class="h-12 w-full rounded-xl border border-slate-300 px-4" />
+            </div>
+            @if (isBank)
+            {
+                <div>
+                    <label asp-for="SecondaryName" class="mb-2 block text-sm font-bold text-slate-700">اسم البنك</label>
+                    <input asp-for="SecondaryName" class="h-12 w-full rounded-xl border border-slate-300 px-4" />
+                </div>
+            }
+            @if (isBank || isWallet)
+            {
+                <div>
+                    <label asp-for="Code" class="mb-2 block text-sm font-bold text-slate-700">@(isBank ? "رقم الحساب" : "رقم الهاتف")</label>
+                    <input asp-for="Code" class="h-12 w-full rounded-xl border border-slate-300 px-4" />
+                </div>
+            }
+            <div>
+                <label asp-for="Balance" class="mb-2 block text-sm font-bold text-slate-700">الرصيد الافتتاحي</label>
+                <input asp-for="Balance" class="h-12 w-full rounded-xl border border-slate-300 px-4" />
+            </div>
+            <div class="flex justify-end gap-3">
+                <a asp-action="Index" class="rounded-xl bg-slate-100 px-5 py-3 font-bold text-slate-700">إلغاء</a>
+                <button type="submit" class="rounded-xl bg-primary px-6 py-3 font-bold text-white">حفظ</button>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

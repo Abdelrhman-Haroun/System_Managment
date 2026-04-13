@@ -1,4 +1,4 @@
-﻿
+
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace DAL.Repositories.IRepository
@@ -21,6 +21,9 @@ namespace DAL.Repositories.IRepository
         IEmployeeTypeRepository EmployeeType { get; }
         IEmployeeAttendanceRepository EmployeeAttendance { get; }
         IEmployeeSalaryAdjustmentRepository EmployeeSalaryAdjustment { get; }
+        IEmployeeSalaryHistoryRepository EmployeeSalaryHistory { get; }
+        IPaymentMethodTransactionRepository PaymentMethodTransaction { get; }
+        IEmployeeTransactionRepository EmployeeTransaction { get; }
         Task<int> CompleteAsync();
     }
 }

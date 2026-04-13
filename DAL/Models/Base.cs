@@ -23,4 +23,19 @@ namespace DAL.Models
         Check,
         MobileWallet,
     }
+
+    public static class PaymentMethodTypeExtensions
+    {
+        public static string GetArabicLabel(this PaymentMethodType paymentMethod)
+        {
+            return paymentMethod switch
+            {
+                PaymentMethodType.Cash => "نقدي",
+                PaymentMethodType.BankTransfer => "تحويل بنكي",
+                PaymentMethodType.Check => "شيك",
+                PaymentMethodType.MobileWallet => "محفظة إلكترونية",
+                _ => paymentMethod.ToString()
+            };
+        }
+    }
 }

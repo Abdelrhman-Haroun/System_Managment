@@ -61,6 +61,19 @@ namespace BLL.Services.Service
 
             _unitOfWork.Employee.Add(employee);
             await _unitOfWork.CompleteAsync();
+
+            // Create initial salary history snapshot effective from hire date or creation date
+            var effective = employee.HireDate != default ? employee.HireDate : employee.CreatedAt;
+            _unitOfWork.EmployeeSalaryHistory.Add(new DAL.Models.EmployeeSalaryHistory
+            {
+                EmployeeId = employee.Id,
+                Salary = employee.Salary,
+                EffectiveFrom = effective,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            });
+            await _unitOfWork.CompleteAsync();
+
             return employee;
         }
 
@@ -76,7 +89,22 @@ namespace BLL.Services.Service
 
             employee.Name = model.Name.Trim();
             employee.PhoneNumber = model.PhoneNumber?.Trim();
-            employee.Salary = model.Salary;
+
+            var oldSalary = employee.Salary;
+            if (oldSalary != model.Salary)
+            {
+                // update salary and create history snapshot effective now
+                employee.Salary = model.Salary;
+                _unitOfWork.EmployeeSalaryHistory.Add(new DAL.Models.EmployeeSalaryHistory
+                {
+                    EmployeeId = employee.Id,
+                    Salary = model.Salary,
+                    EffectiveFrom = DateTime.UtcNow,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                });
+            }
+            
             employee.EmployeeTypeId = model.EmployeeTypeId;
             employee.Position = model.Position?.Trim();
             employee.HireDate = model.HireDate.Date;

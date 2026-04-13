@@ -5,7 +5,7 @@
     var isHomeActive = path == "/" || IsActive("/home");
 }
 
-<aside class="sticky top-0 hidden h-screen w-64 shrink-0 flex-col justify-between border-l border-neutral-border/80 bg-white/90 shadow-[0_18px_40px_rgba(15,23,42,0.08)] backdrop-blur lg:flex xl:w-[16.5rem]">
+<aside class="sticky top-0 hidden h-screen w-56 shrink-0 flex-col justify-between border-l border-neutral-border/80 bg-white/90 shadow-[0_18px_40px_rgba(15,23,42,0.08)] backdrop-blur lg:flex xl:w-64">
     <div class="flex flex-1 flex-col overflow-y-auto px-3 py-4">
         <div class="mb-6 flex items-center gap-3 rounded-2xl border border-primary/10 bg-primary/5 px-3 py-3">
             <div class="size-12 rounded-full bg-cover bg-center ring-4 ring-primary/20" style="background-image: url('@Url.Content("~/Files/images/logo.jpg")');"></div>
@@ -14,84 +14,20 @@
                 <p class="text-xs text-slate-500">نظام الإدارة والمحاسبة</p>
             </div>
         </div>
-
         <nav class="flex flex-col gap-1.5 text-sm">
-            <a asp-controller="Home" asp-action="Index" class="nav-link @(isHomeActive ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
-                <span class="material-symbols-outlined">dashboard</span>
-                <span>لوحة التحكم</span>
-            </a>
-            <a asp-controller="Customer" asp-action="Index" class="nav-link @(IsActive("/customer") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
-                <span class="material-symbols-outlined">people</span>
-                <span>العملاء</span>
-            </a>
-            <a asp-controller="Supplier" asp-action="Index" class="nav-link @(IsActive("/supplier") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
-                <span class="material-symbols-outlined">local_shipping</span>
-                <span>الموردون</span>
-            </a>
-            <a asp-controller="Product" asp-action="Index" class="nav-link @(IsActive("/product") && !IsActive("/productcategory") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
-                <span class="material-symbols-outlined">inventory</span>
-                <span>المنتجات</span>
-            </a>
-            <a asp-controller="ProductCategory" asp-action="Index" class="nav-link @(IsActive("/productcategory") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
-                <span class="material-symbols-outlined">category</span>
-                <span>فئات المنتجات</span>
-            </a>
-            <a asp-controller="Store" asp-action="Index" class="nav-link @(IsActive("/store") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
-                <span class="material-symbols-outlined">warehouse</span>
-                <span>المخازن</span>
-            </a>
-            <a asp-controller="Invoice" asp-action="Index" class="nav-link @(IsActive("/invoice") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
-                <span class="material-symbols-outlined">receipt</span>
-                <span>الفواتير</span>
-            </a>
-            <a asp-controller="Payment" asp-action="Index" class="nav-link @(IsActive("/payment") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
-                <span class="material-symbols-outlined">payments</span>
-                <span>المدفوعات</span>
-            </a>
-            <a asp-controller="InternalUsage" asp-action="Index" class="nav-link @(IsActive("/internalusage") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
-                <span class="material-symbols-outlined">agriculture</span>
-                <span>الاستخدام الداخلي</span>
-            </a>
+            <a asp-controller="Home" asp-action="Index" class="nav-link @(isHomeActive ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3"><span class="material-symbols-outlined">dashboard</span><span>لوحة التحكم</span></a>
+            <a asp-controller="Customer" asp-action="Index" class="nav-link @(IsActive("/customer") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3"><span class="material-symbols-outlined">people</span><span>العملاء</span></a>
+            <a asp-controller="Supplier" asp-action="Index" class="nav-link @(IsActive("/supplier") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3"><span class="material-symbols-outlined">local_shipping</span><span>الموردون</span></a>
+            <a asp-controller="Product" asp-action="Index" class="nav-link @(IsActive("/product") && !IsActive("/productcategory") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3"><span class="material-symbols-outlined">inventory</span><span>المنتجات</span></a>
+            <a asp-controller="Store" asp-action="Index" class="nav-link @(IsActive("/store") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3"><span class="material-symbols-outlined">warehouse</span><span>المخازن</span></a>
             <div class="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-2">
-                <div class="mb-1 flex items-center gap-3 px-2 py-2 text-xs font-black tracking-wide text-slate-500">
-                    <span class="material-symbols-outlined text-base">badge</span>
-                    <span>إدارة الموظفين</span>
-                </div>
-                <a asp-controller="Employees" asp-action="Index" class="nav-link @(IsActive("/employees") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
-                    <span class="material-symbols-outlined">groups</span>
-                    <span>قائمة الموظفين</span>
-                </a>
-                <a asp-controller="EmployeeType" asp-action="Index" class="nav-link @(IsActive("/employeetype") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
-                    <span class="material-symbols-outlined">badge</span>
-                    <span>أنواع الموظفين</span>
-                </a>
-                <a asp-controller="Attendance" asp-action="Index" class="nav-link @(IsActive("/attendance") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
-                    <span class="material-symbols-outlined">calendar_month</span>
-                    <span>الحضور والغياب</span>
-                </a>
-                <a asp-controller="Salaries" asp-action="Index" class="nav-link @(IsActive("/salaries") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
-                    <span class="material-symbols-outlined">payments</span>
-                    <span>الرواتب</span>
-                </a>
+                <div class="mb-1 flex items-center gap-3 px-2 py-2 text-xs font-black tracking-wide text-slate-500"><span class="material-symbols-outlined text-base">account_balance</span><span>المدفوعات والتحصيل</span></div>
+                <a asp-controller="Invoice" asp-action="Index" class="nav-link @(IsActive("/invoice") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3"><span class="material-symbols-outlined">receipt</span><span>الفواتير</span></a>
+                <a asp-controller="Payment" asp-action="Index" class="nav-link @(IsActive("/payment") && !IsActive("/paymentmethod") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3"><span class="material-symbols-outlined">payments</span><span>المدفوعات</span></a>
+                <a asp-controller="PaymentMethod" asp-action="Index" class="nav-link @(IsActive("/paymentmethod") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3"><span class="material-symbols-outlined">account_balance_wallet</span><span>وسائل الدفع</span></a>
             </div>
-            <a asp-controller="Account" asp-action="Index" class="nav-link @(IsActive("/account") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
-                <span class="material-symbols-outlined">manage_accounts</span>
-                <span>المستخدمون</span>
-            </a>
+            <a asp-controller="Employees" asp-action="Index" class="nav-link @(IsActive("/employees") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3"><span class="material-symbols-outlined">groups</span><span>الموظفون</span></a>
+            <a asp-controller="Account" asp-action="Index" class="nav-link @(IsActive("/account") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3"><span class="material-symbols-outlined">manage_accounts</span><span>المستخدمون</span></a>
         </nav>
-    </div>
-
-    <div class="space-y-2 border-t border-neutral-border px-3 py-4">
-        <a asp-controller="Account" asp-action="ChangePassword" class="nav-link @(IsActive("/account/changepassword") ? "active" : string.Empty) flex items-center gap-4 rounded-lg px-4 py-3">
-            <span class="material-symbols-outlined">password</span>
-            <span>تغيير كلمة المرور</span>
-        </a>
-        <form asp-controller="Account" asp-action="Logout" method="post">
-            @Html.AntiForgeryToken()
-            <button type="submit" class="flex w-full items-center gap-4 rounded-lg px-4 py-3 text-red-600 hover:bg-red-50">
-                <span class="material-symbols-outlined">logout</span>
-                <span>تسجيل الخروج</span>
-            </button>
-        </form>
     </div>
 </aside>

@@ -1,0 +1,86 @@
+@model IEnumerable<DAL.Models.EmployeeTransaction>
+@{
+    ViewBag.Title = "سجل معاملات الموظف";
+    var employee = ViewBag.Employee as DAL.Models.Employee;
+    var payroll = ViewBag.Payroll as BLL.ViewModels.Employee.EmployeeMonthlyPayrollVM;
+    decimal monthNet = ViewBag.MonthNetSalary ?? 0m;
+    decimal paymentsThisMonth = ViewBag.PaymentsThisMonth ?? 0m;
+    decimal remaining = ViewBag.RemainingThisMonth ?? 0m;
+}
+
+<div class="space-y-6">
+    <div class="bg-white rounded-2xl border border-border-light shadow-sm p-6 flex items-center justify-between">
+        <div>
+            <h2 class="text-2xl font-bold">سجل معاملات الموظف</h2>
+            <div class="text-sm text-text-secondary mt-1">@employee?.Name</div>
+        </div>
+        <div class="flex gap-4 items-center">
+            <a class="btn btn-primary" href="@Url.Action("Index", "Employees")">عودة</a>
+            <a class="btn btn-primary" href="@Url.Action("ExportTransactions", new { id = employee?.Id })">تصدير</a>
+        </div>
+    </div>
+
+    <form method="get" class="bg-white rounded-2xl border border-border-light shadow-sm p-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+        <input type="hidden" name="id" value="@employee?.Id" />
+        <div>
+            <label class="text-sm font-semibold mb-2 block">من</label>
+            <input type="date" name="fromDate" class="w-full h-12 rounded-xl border-border-light px-4" value="@(ViewBag.FromDate is DateTime fd ? fd.ToString("yyyy-MM-dd") : string.Empty)" />
+        </div>
+        <div>
+            <label class="text-sm font-semibold mb-2 block">إلى</label>
+            <input type="date" name="toDate" class="w-full h-12 rounded-xl border-border-light px-4" value="@(ViewBag.ToDate is DateTime td ? td.ToString("yyyy-MM-dd") : string.Empty)" />
+        </div>
+        <div class="flex items-end">
+            <button class="w-full h-12 bg-primary text-white font-bold rounded-xl">تطبيق</button>
+        </div>
+    </form>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white rounded-2xl border border-border-light shadow-sm p-4">
+            <div class="text-sm text-text-secondary">الرصيد الحالي</div>
+            <div class="text-xl font-bold mt-2">@((ViewBag.CurrentBalance ?? 0m).ToString("N2")) جنيه</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-border-light shadow-sm p-4">
+            <div class="text-sm text-text-secondary">المستحق لهذا الشهر (دائن)</div>
+            <div class="text-xl font-bold text-amber-600 mt-2">@monthNet.ToString("N2") جنيه</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-border-light shadow-sm p-4">
+            <div class="text-sm text-text-secondary">المدفوع لهذا الشهر (مدين)</div>
+            <div class="text-xl font-bold text-red-600 mt-2">@paymentsThisMonth.ToString("N2") جنيه</div>
+            <div class="text-sm mt-1">المتبقي: <span class="font-bold">@remaining.ToString("N2")</span> جنيه</div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-border-light shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full min-w-[900px]">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary">التاريخ</th>
+                        <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary">النوع</th>
+                        <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary">المرجع</th>
+                        <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary">الوصف</th>
+                        <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary">الرصيد قبل</th>
+                        <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary">التغير</th>
+                        <th class="py-4 px-4 text-right text-xs font-bold text-text-secondary">الرصيد بعد</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-border-light">
+                    @foreach (var t in Model.OrderByDescending(x => x.TransactionDate))
+                    {
+                        <tr>
+                            <td class="py-4 px-4 text-sm">@t.TransactionDate.ToString("yyyy-MM-dd")</td>
+                            <td class="py-4 px-4 text-sm">@TransactionTypes.GetArabicLabel(t.TransactionType)</td>
+                            <td class="py-4 px-4 text-sm">@t.ReferenceNumber</td>
+                            <td class="py-4 px-4 text-sm">@t.Description</td>
+                            <td class="py-4 px-4 text-sm text-right">@t.BalanceBefore.ToString("N2")</td>
+                            <td class="py-4 px-4 text-sm text-right font-bold @(t.AmountChanged < 0 ? "text-red-600" : "text-green-600")">@(t.AmountChanged < 0 ? "-" : "+")@Math.Abs(t.AmountChanged).ToString("N2")</td>
+                            <td class="py-4 px-4 text-sm text-right">@t.BalanceAfter.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

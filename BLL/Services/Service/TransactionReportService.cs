@@ -1,4 +1,4 @@
-﻿
+
 using BLL.Services.IService;
 using BLL.ViewModels.Transactions;
 using DAL.Models;
@@ -67,7 +67,7 @@ namespace BLL.Services.Service
                         WeightChanged = u.Weight,
                         QuantityAfter = u.StockQuantityAfter,
                         UnitPrice = u.UnitPrice,
-                        TotalAmount = u.Weight * u.UnitPrice,
+                        TotalAmount = u.TotalCost,
                         ReferenceNumber = u.ReferenceNumber,
                         Notes = $"{u.UsageCategory}",
                         TransactionDate = u.UsageDate,
@@ -173,7 +173,7 @@ namespace BLL.Services.Service
                         WeightChanged = u.Weight,
                         QuantityAfter = u.StockQuantityAfter,
                         UnitPrice = u.UnitPrice,
-                        TotalAmount = u.Weight * u.UnitPrice,
+                        TotalAmount = u.TotalCost,
                         ReferenceNumber = u.ReferenceNumber,
                         Notes = $"{u.UsageCategory}",
                         TransactionDate = u.UsageDate,
@@ -220,7 +220,7 @@ namespace BLL.Services.Service
                         WeightChanged = u.Weight,
                         QuantityAfter = u.StockQuantityAfter,
                         UnitPrice = u.UnitPrice,
-                        TotalAmount = u.Weight * u.UnitPrice,
+                        TotalAmount = u.TotalCost,
                         ReferenceNumber = u.ReferenceNumber,
                         Notes = $"{u.UsageCategory}",
                         TransactionDate = u.UsageDate,
@@ -233,6 +233,21 @@ namespace BLL.Services.Service
             {
                 Console.WriteLine($"Error getting internal usage transactions: {ex.Message}");
                 return Enumerable.Empty<ProductTransactionVM>();
+            }
+        }
+
+        // Employee transactions retrieval
+        public async Task<IEnumerable<DAL.Models.EmployeeTransaction>> GetEmployeeTransactionsByEmployeeIdAsync(int employeeId)
+        {
+            try
+            {
+                var transactions = await _unitOfWork.EmployeeTransaction.GetAllAsync();
+                return transactions.Where(t => !t.IsDeleted && t.EmployeeId == employeeId).OrderByDescending(t => t.TransactionDate).ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting employee transactions: {ex.Message}");
+                return Enumerable.Empty<DAL.Models.EmployeeTransaction>();
             }
         }
 
@@ -260,7 +275,7 @@ namespace BLL.Services.Service
                         WeightChanged = u.Weight,
                         QuantityAfter = u.StockQuantityAfter,
                         UnitPrice = u.UnitPrice,
-                        TotalAmount = u.Weight * u.UnitPrice,
+                        TotalAmount = u.TotalCost,
                         ReferenceNumber = u.ReferenceNumber,
                         Notes = $"{u.UsageCategory}",
                         TransactionDate = u.UsageDate,

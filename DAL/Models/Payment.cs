@@ -10,13 +10,20 @@ namespace DAL.Models
 {
     public class Payment : Base
     {
+        [Required, StringLength(30)]
+        public string PartyType { get; set; } = PaymentPartyTypes.Customer;
+
         public int? CustomerId { get; set; }
         [ForeignKey(nameof(CustomerId))]
-        public Customer Customer { get; set; }
+        public Customer? Customer { get; set; }
 
         public int? SupplierId { get; set; }
         [ForeignKey(nameof(SupplierId))]
-        public Supplier Supplier { get; set; }
+        public Supplier? Supplier { get; set; }
+
+        public int? EmployeeId { get; set; }
+        [ForeignKey(nameof(EmployeeId))]
+        public Employee? Employee { get; set; }
 
         [Required, Column(TypeName = "decimal(18,2)")]
         public decimal Amount { get; set; }
@@ -36,9 +43,34 @@ namespace DAL.Models
 
         public int? MobileWalletId { get; set; }
         [ForeignKey(nameof(MobileWalletId))]
-        public MobileWallet MobileWallet { get; set; }
+        public MobileWallet? MobileWallet { get; set; }
+
+        [Required, StringLength(150)]
+        public string PartyName { get; set; } = string.Empty;
+
+        [Required, StringLength(150)]
+        public string Reason { get; set; } = string.Empty;
+
+        [Required, StringLength(50)]
+        public string ReferenceNumber { get; set; } = string.Empty;
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal BalanceBefore { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal BalanceAfter { get; set; }
+
+        public DateTime PaymentDate { get; set; } = DateTime.Now;
 
         [StringLength(500)]
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
+    }
+
+    public static class PaymentPartyTypes
+    {
+        public const string Customer = "Customer";
+        public const string Supplier = "Supplier";
+        public const string Employee = "Employee";
+        public const string Expense = "Expense";
     }
 }
