@@ -15,14 +15,26 @@ namespace DAL.Repositories.Repository
 
         public async Task<IEnumerable<ProductTransaction>> GetByProductIdAsync(int productId)
         {
-            return await _context.ProductTransactions.Where(pt => pt.ProductId == productId && !pt.IsDeleted)
+            return await _context.ProductTransactions
+                .Include(pt => pt.Invoice)
+                .Include(pt => pt.Product)
+                .Where(pt =>
+                    pt.ProductId == productId &&
+                    !pt.IsDeleted &&
+                    (pt.InvoiceId == 0 || (pt.Invoice != null && !pt.Invoice.IsDeleted)))
                 .OrderByDescending(pt => pt.CreatedAt)
                 .ToListAsync();
         }
 
         public async Task<IEnumerable<ProductTransaction>> GetByInvoiceIdAsync(int invoiceId)
         {
-            return await _context.ProductTransactions.Where(pt => pt.InvoiceId == invoiceId && !pt.IsDeleted)
+            return await _context.ProductTransactions
+                .Include(pt => pt.Invoice)
+                .Include(pt => pt.Product)
+                .Where(pt =>
+                    pt.InvoiceId == invoiceId &&
+                    !pt.IsDeleted &&
+                    (pt.Invoice != null && !pt.Invoice.IsDeleted))
                 .OrderByDescending(pt => pt.CreatedAt)
                 .ToListAsync();
         }

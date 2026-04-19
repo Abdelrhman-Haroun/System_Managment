@@ -233,7 +233,7 @@
                                 @transaction.Notes
                             </td>
                             <td class="py-4 px-4 text-center">
-                                @if (transaction.InvoiceId > 0)
+                                @if (transaction.InvoiceId > 0 && transaction.HasActiveInvoice)
                                 {
                                     <a asp-controller="Invoice" asp-action="Details" asp-route-id="@transaction.InvoiceId"
                                        class="text-primary hover:text-primary-dark p-2 hover:bg-primary/10 rounded-lg transition-all inline-flex items-center"

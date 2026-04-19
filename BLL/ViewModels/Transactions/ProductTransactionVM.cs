@@ -9,6 +9,7 @@ namespace BLL.ViewModels.Transactions
         public int ProductId { get; set; }
         public string ProductName { get; set; } = string.Empty;
         public int InvoiceId { get; set; }
+        public bool HasActiveInvoice { get; set; }
         public int ProductType { get; set; }
         public string TransactionType { get; set; } = string.Empty;
         public decimal QuantityBefore { get; set; }

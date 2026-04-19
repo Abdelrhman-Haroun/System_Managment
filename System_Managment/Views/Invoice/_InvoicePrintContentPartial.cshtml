@@ -565,7 +565,7 @@
                 }
                 @foreach (var item in Model.Items)
                 {
-                    var lineTotal = item.EffectiveQuantity * item.UnitPrice;
+                    var lineTotal = item.TotalPrice;
                     <tr>
                         <td>@index</td>
                         <td class="product-cell">

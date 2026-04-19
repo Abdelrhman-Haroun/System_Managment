@@ -26,10 +26,11 @@ namespace BLL.Services.Service
                 var transactions = await _unitOfWork.ProductTransaction.GetByProductIdAsync(productId);
                 var internalUsages = await _unitOfWork.InternalProductUsage.GetByProductIdAsync(productId);
                 var product = await _unitOfWork.Product.GetByIdAsync(productId);
+                var activeInvoiceIds = await GetActiveInvoiceIdsAsync(transactions.Select(t => t.InvoiceId));
 
                 // Map regular transactions
                 var transactionList = transactions
-                    .Where(t => !t.IsDeleted && !IsInternalUsageLog(t))
+                    .Where(t => !t.IsDeleted && !IsInternalUsageLog(t) && HasActiveInvoice(t.InvoiceId, activeInvoiceIds))
                     .Select(t => new ProductTransactionVM
                     {
                         Id = t.Id,
@@ -37,6 +38,7 @@ namespace BLL.Services.Service
                         ProductName = product?.Name ?? "غير معروف",
                         ProductType = t.ProductType ?? product?.ProductType ?? 1,
                         InvoiceId = t.InvoiceId,
+                        HasActiveInvoice = HasActiveInvoice(t.InvoiceId, activeInvoiceIds),
                         TransactionType = t.TransactionType ?? "",
                         QuantityBefore = t.QuantityBefore,
                         QuantityChanged = t.QuantityChanged,
@@ -94,9 +96,10 @@ namespace BLL.Services.Service
             try
             {
                 var transactions = await _unitOfWork.ProductTransaction.GetByInvoiceIdAsync(invoiceId);
+                var activeInvoiceIds = await GetActiveInvoiceIdsAsync(transactions.Select(t => t.InvoiceId));
 
                 return transactions
-                    .Where(t => !t.IsDeleted)
+                    .Where(t => !t.IsDeleted && HasActiveInvoice(t.InvoiceId, activeInvoiceIds))
                     .Select(t => new ProductTransactionVM
                     {
                         Id = t.Id,
@@ -104,6 +107,7 @@ namespace BLL.Services.Service
                         ProductName = t.Product?.Name ?? "غير معروف",
                         ProductType = t.ProductType ?? t.Product?.ProductType ?? 1,
                         InvoiceId = t.InvoiceId,
+                        HasActiveInvoice = HasActiveInvoice(t.InvoiceId, activeInvoiceIds),
                         TransactionType = t.TransactionType ?? "",
                         QuantityBefore = t.QuantityBefore,
                         QuantityChanged = t.QuantityChanged,
@@ -132,10 +136,11 @@ namespace BLL.Services.Service
             {
                 var transactions = await _unitOfWork.ProductTransaction.GetAllAsync();
                 var internalUsages = await _unitOfWork.InternalProductUsage.GetAllAsync();
+                var activeInvoiceIds = await GetActiveInvoiceIdsAsync(transactions.Select(t => t.InvoiceId));
 
                 // Map regular transactions
                 var transactionList = transactions
-                    .Where(t => !t.IsDeleted && !IsInternalUsageLog(t))
+                    .Where(t => !t.IsDeleted && !IsInternalUsageLog(t) && HasActiveInvoice(t.InvoiceId, activeInvoiceIds))
                     .Select(t => new ProductTransactionVM
                     {
                         Id = t.Id,
@@ -143,6 +148,7 @@ namespace BLL.Services.Service
                         ProductName = t.Product?.Name ?? "غير معروف",
                         ProductType = t.ProductType ?? t.Product?.ProductType ?? 1,
                         InvoiceId = t.InvoiceId,
+                        HasActiveInvoice = HasActiveInvoice(t.InvoiceId, activeInvoiceIds),
                         TransactionType = t.TransactionType ?? "",
                         QuantityBefore = t.QuantityBefore,
                         QuantityChanged = t.QuantityChanged,
@@ -500,13 +506,14 @@ namespace BLL.Services.Service
             {
                 var transactions = await _unitOfWork.ProductTransaction.GetByProductIdAsync(productId);
                 var internalUsages = await _unitOfWork.InternalProductUsage.GetByProductIdAsync(productId);
+                var activeInvoiceIds = await GetActiveInvoiceIdsAsync(transactions.Select(t => t.InvoiceId));
 
                 var totalIn = transactions
-                    .Where(t => !t.IsDeleted && TransactionTypes.IsPurchase(t.TransactionType))
+                    .Where(t => !t.IsDeleted && HasActiveInvoice(t.InvoiceId, activeInvoiceIds) && TransactionTypes.IsPurchase(t.TransactionType))
                     .Sum(t => t.QuantityChanged);
 
                 var totalOut = transactions
-                    .Where(t => !t.IsDeleted && TransactionTypes.IsSales(t.TransactionType))
+                    .Where(t => !t.IsDeleted && HasActiveInvoice(t.InvoiceId, activeInvoiceIds) && TransactionTypes.IsSales(t.TransactionType))
                     .Sum(t => Math.Abs(t.QuantityChanged));
 
                 // Add internal usage to total out
@@ -575,6 +582,23 @@ namespace BLL.Services.Service
         {
             return transaction.InvoiceId == 0 &&
                    TransactionTypes.IsInternalUsage(transaction.TransactionType);
+        }
+
+        private async Task<HashSet<int>> GetActiveInvoiceIdsAsync(IEnumerable<int> invoiceIds)
+        {
+            var ids = invoiceIds.Where(id => id > 0).Distinct().ToList();
+            if (!ids.Any())
+            {
+                return new HashSet<int>();
+            }
+
+            var invoices = await _unitOfWork.Invoice.GetAllAsync(i => !i.IsDeleted && ids.Contains(i.Id));
+            return invoices.Select(i => i.Id).ToHashSet();
+        }
+
+        private static bool HasActiveInvoice(int invoiceId, HashSet<int> activeInvoiceIds)
+        {
+            return invoiceId == 0 || activeInvoiceIds.Contains(invoiceId);
         }
     }
 }

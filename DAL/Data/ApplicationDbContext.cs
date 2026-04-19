@@ -46,6 +46,32 @@ namespace DAL.Data
         {
             base.OnModelCreating(builder);
 
+            builder.Entity<Invoice>().HasQueryFilter(x => !x.IsDeleted);
+            builder.Entity<InvoiceItem>().HasQueryFilter(x => !x.IsDeleted && !x.Invoice.IsDeleted);
+            builder.Entity<Product>().HasQueryFilter(x => !x.IsDeleted);
+            builder.Entity<Customer>().HasQueryFilter(x => !x.IsDeleted);
+            builder.Entity<Supplier>().HasQueryFilter(x => !x.IsDeleted);
+            builder.Entity<Store>().HasQueryFilter(x => !x.IsDeleted);
+            builder.Entity<ProductCategory>().HasQueryFilter(x => !x.IsDeleted);
+            builder.Entity<InternalProductUsage>().HasQueryFilter(x => !x.IsDeleted);
+            builder.Entity<ProductTransaction>().HasQueryFilter(x =>
+                !x.IsDeleted &&
+                (x.InvoiceId == 0 || !x.Invoice.IsDeleted));
+            builder.Entity<CustomerTransaction>().HasQueryFilter(x =>
+                !x.IsDeleted &&
+                !x.Invoice.IsDeleted);
+            builder.Entity<SupplierTransaction>().HasQueryFilter(x =>
+                !x.IsDeleted &&
+                !x.Invoice.IsDeleted);
+            builder.Entity<Payment>().HasQueryFilter(x => !x.IsDeleted);
+            builder.Entity<PaymentMethodTransaction>().HasQueryFilter(x => !x.IsDeleted);
+            builder.Entity<Employee>().HasQueryFilter(x => !x.IsDeleted);
+            builder.Entity<EmployeeType>().HasQueryFilter(x => !x.IsDeleted);
+            builder.Entity<EmployeeAttendance>().HasQueryFilter(x => !x.IsDeleted);
+            builder.Entity<EmployeeSalaryAdjustment>().HasQueryFilter(x => !x.IsDeleted);
+            builder.Entity<EmployeeSalaryHistory>().HasQueryFilter(x => !x.IsDeleted);
+            builder.Entity<EmployeeTransaction>().HasQueryFilter(x => !x.IsDeleted);
+
             builder.Entity<Product>()
                 .Property(x => x.StockQuantity)
                 .HasPrecision(18, 2);

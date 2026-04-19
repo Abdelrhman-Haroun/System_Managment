@@ -195,10 +195,12 @@ public class CustomerController : Controller
         }
         catch (Exception ex)
         {
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                return Json(new { success = false, message = "حدث خطأ أثناء الحذف" });
+            var message = ex is InvalidOperationException ? ex.Message : "حدث خطأ أثناء الحذف";
 
-            TempData["Error"] = "حدث خطأ أثناء الحذف";
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return Json(new { success = false, message });
+
+            TempData["Error"] = message;
             return RedirectToAction(nameof(Index));
         }
     }

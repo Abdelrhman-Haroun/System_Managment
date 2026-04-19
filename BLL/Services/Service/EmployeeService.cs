@@ -93,13 +93,14 @@ namespace BLL.Services.Service
             var oldSalary = employee.Salary;
             if (oldSalary != model.Salary)
             {
-                // update salary and create history snapshot effective now
+                // Salary changes apply to future payroll periods only.
                 employee.Salary = model.Salary;
+                var effectiveFrom = GetNextPayrollEffectiveDate();
                 _unitOfWork.EmployeeSalaryHistory.Add(new DAL.Models.EmployeeSalaryHistory
                 {
                     EmployeeId = employee.Id,
                     Salary = model.Salary,
-                    EffectiveFrom = DateTime.UtcNow,
+                    EffectiveFrom = effectiveFrom,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 });
@@ -125,12 +126,23 @@ namespace BLL.Services.Service
                 return false;
             }
 
+            if ((employee.Balance ?? 0m) != 0m)
+            {
+                throw new InvalidOperationException("لا يمكن حذف الموظف طالما أن الرصيد لا يساوي صفر");
+            }
+
             employee.IsDeleted = true;
             employee.IsActive = false;
             employee.UpdatedAt = DateTime.UtcNow;
             _unitOfWork.Employee.Update(employee);
             await _unitOfWork.CompleteAsync();
             return true;
+        }
+
+        private static DateTime GetNextPayrollEffectiveDate()
+        {
+            var today = DateTime.UtcNow.Date;
+            return new DateTime(today.Year, today.Month, 1).AddMonths(1);
         }
 
         private async Task EnsureEmployeeTypeExists(int? employeeTypeId)

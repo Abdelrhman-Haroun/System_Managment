@@ -118,15 +118,45 @@ namespace System_Managment.Controllers
             {
                 case "BankAccount":
                     var account = await _context.BankAccounts.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
-                    if (account != null) { account.IsDeleted = true; account.UpdatedAt = DateTime.Now; }
+                    if (account != null)
+                    {
+                        if (account.Balance != 0m)
+                        {
+                            TempData["Error"] = "لا يمكن حذف الحساب البنكي طالما أن الرصيد لا يساوي صفر";
+                            return RedirectToAction(nameof(Index));
+                        }
+
+                        account.IsDeleted = true;
+                        account.UpdatedAt = DateTime.Now;
+                    }
                     break;
                 case "MobileWallet":
                     var wallet = await _context.MobileWallets.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
-                    if (wallet != null) { wallet.IsDeleted = true; wallet.UpdatedAt = DateTime.Now; }
+                    if (wallet != null)
+                    {
+                        if (wallet.Balance != 0m)
+                        {
+                            TempData["Error"] = "لا يمكن حذف المحفظة الإلكترونية طالما أن الرصيد لا يساوي صفر";
+                            return RedirectToAction(nameof(Index));
+                        }
+
+                        wallet.IsDeleted = true;
+                        wallet.UpdatedAt = DateTime.Now;
+                    }
                     break;
                 default:
                     var cashbox = await _context.CashBoxes.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
-                    if (cashbox != null) { cashbox.IsDeleted = true; cashbox.UpdatedAt = DateTime.Now; }
+                    if (cashbox != null)
+                    {
+                        if ((cashbox.Balance ?? 0m) != 0m)
+                        {
+                            TempData["Error"] = "لا يمكن حذف الخزنة طالما أن الرصيد لا يساوي صفر";
+                            return RedirectToAction(nameof(Index));
+                        }
+
+                        cashbox.IsDeleted = true;
+                        cashbox.UpdatedAt = DateTime.Now;
+                    }
                     break;
             }
 

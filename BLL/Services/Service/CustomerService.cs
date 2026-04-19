@@ -178,8 +178,14 @@ namespace BLL.Services.Service
                     return false;
                 }
 
+                if ((customer.Balance ?? 0m) != 0m)
+                {
+                    throw new InvalidOperationException("لا يمكن حذف العميل طالما أن الرصيد لا يساوي صفر");
+                }
+
                 // Soft delete
                 customer.IsDeleted = true;
+                customer.UpdatedAt = DateTime.UtcNow;
 
                 _unit.Customer.Update(customer);
                 await _unit.CompleteAsync();

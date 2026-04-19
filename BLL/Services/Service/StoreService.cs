@@ -176,8 +176,15 @@ namespace BLL.Services.Service
                     return false;
                 }
 
+                var storeProducts = await _unit.Product.GetAllAsync(x => x.StoreId == id && !x.IsDeleted);
+                if (storeProducts.Any(x => (x.StockQuantity ?? 0m) != 0m))
+                {
+                    throw new InvalidOperationException("لا يمكن حذف المخزن طالما يوجد به منتجات رصيدها بالمخزون لا يساوي صفر");
+                }
+
                 // Soft delete
                 Store.IsDeleted = true;
+                Store.UpdatedAt = DateTime.UtcNow;
 
                 _unit.Store.Update(Store);
                 await _unit.CompleteAsync();

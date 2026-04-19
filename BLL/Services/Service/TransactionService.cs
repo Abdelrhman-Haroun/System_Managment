@@ -173,11 +173,7 @@ namespace BLL.Services.Service
             decimal weightChanged,
             decimal unitPrice)
         {
-            var effectiveQuantity = productType == (int)ProductType.Count
-                ? quantityChanged
-                : weightChanged;
-
-            return effectiveQuantity * unitPrice;
+            return weightChanged * unitPrice;
         }
     }
 }

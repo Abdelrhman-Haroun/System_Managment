@@ -215,8 +215,14 @@ namespace BLL.Services.Service
                     return false;
                 }
 
+                if ((Product.StockQuantity ?? 0m) != 0m)
+                {
+                    throw new InvalidOperationException("لا يمكن حذف المنتج طالما أن رصيده بالمخزون لا يساوي صفر");
+                }
+
                 // Soft delete
                 Product.IsDeleted = true;
+                Product.UpdatedAt = DateTime.UtcNow;
 
                 _unit.Product.Update(Product);
                 await _unit.CompleteAsync();

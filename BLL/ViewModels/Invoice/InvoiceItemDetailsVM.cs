@@ -16,6 +16,6 @@ namespace BLL.ViewModels.Invoice
         public decimal Weight { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal EffectiveQuantity => ProductType == (int)DAL.Models.ProductType.Count ? Quantity : Weight;
-        public decimal TotalPrice => EffectiveQuantity * UnitPrice;
+        public decimal TotalPrice => Weight * UnitPrice;
     }
 }

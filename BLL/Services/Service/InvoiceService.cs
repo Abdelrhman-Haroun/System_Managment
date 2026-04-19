@@ -12,7 +12,8 @@ namespace BLL.Services.Service
         {
             public required Product Product { get; init; }
             public required InvoiceItemVM Item { get; init; }
-            public required decimal EffectiveQuantity { get; init; }
+            public required decimal StockQuantityChange { get; init; }
+            public required decimal LineTotal { get; init; }
         }
 
         private readonly IUnitOfWork _unitOfWork;
@@ -42,7 +43,7 @@ namespace BLL.Services.Service
                     return (false, "أحد المنتجات المحددة غير موجود", null);
                 }
 
-                var invalidItem = preparedItems.FirstOrDefault(i => i.EffectiveQuantity <= 0 || i.Item.Weight <= 0);
+                var invalidItem = preparedItems.FirstOrDefault(i => i.StockQuantityChange <= 0 || i.Item.Weight <= 0);
                 if (invalidItem != null)
                 {
                     return (false, $"بيانات المنتج {invalidItem.Product.Name} غير صحيحة. تأكد من إدخال العدد/الكمية والوزن بشكل صحيح", null);
@@ -53,7 +54,7 @@ namespace BLL.Services.Service
                     foreach (var itemGroup in preparedItems.GroupBy(i => i.Product.Id))
                     {
                         var product = itemGroup.First().Product;
-                        var requestedQuantity = itemGroup.Sum(i => i.EffectiveQuantity);
+                        var requestedQuantity = itemGroup.Sum(i => i.StockQuantityChange);
                         var availableQuantity = product.StockQuantity ?? 0;
 
                         if (availableQuantity < requestedQuantity)
@@ -63,7 +64,7 @@ namespace BLL.Services.Service
                     }
                 }
 
-                var subtotal = preparedItems.Sum(i => i.EffectiveQuantity * i.Item.UnitPrice);
+                var subtotal = preparedItems.Sum(i => i.LineTotal);
                 var invoiceItems = preparedItems.Select(i => new InvoiceItem
                 {
                     ProductId = i.Item.ProductId,
@@ -71,7 +72,7 @@ namespace BLL.Services.Service
                     Quantity = i.Item.Quantity,
                     Weight = i.Item.Weight,
                     UnitPrice = i.Item.UnitPrice,
-                    TotalPrice = i.EffectiveQuantity * i.Item.UnitPrice
+                    TotalPrice = i.LineTotal
                 }).ToList();
 
                 decimal totalAmount = subtotal - model.DiscountAmount + model.TaxAmount;
@@ -144,7 +145,7 @@ namespace BLL.Services.Service
                 {
                     var product = preparedItem.Product;
                     decimal quantityBefore = product.StockQuantity ?? 0;
-                    decimal quantityChanged = preparedItem.EffectiveQuantity;
+                    decimal quantityChanged = preparedItem.StockQuantityChange;
                     decimal weightChanged = preparedItem.Item.Weight;
 
                     product.StockQuantity = model.InvoiceType == InvoiceTypes.Purchase
@@ -206,7 +207,7 @@ namespace BLL.Services.Service
                     return (false, "أحد المنتجات المحددة غير موجود");
                 }
 
-                var invalidItem = preparedItems.FirstOrDefault(i => i.EffectiveQuantity <= 0 || i.Item.Weight <= 0);
+                var invalidItem = preparedItems.FirstOrDefault(i => i.StockQuantityChange <= 0 || i.Item.Weight <= 0);
                 if (invalidItem != null)
                 {
                     return (false, $"بيانات المنتج {invalidItem.Product.Name} غير صحيحة. تأكد من إدخال العدد/الكمية والوزن بشكل صحيح");
@@ -244,7 +245,7 @@ namespace BLL.Services.Service
                         stockTargets[product.Id] = product.StockQuantity ?? 0;
                     }
 
-                    stockTargets[product.Id] += itemGroup.Sum(i => GetStockImpact(model.InvoiceType, i.EffectiveQuantity));
+                    stockTargets[product.Id] += itemGroup.Sum(i => GetStockImpact(model.InvoiceType, i.StockQuantityChange));
                 }
 
                 var invalidStock = stockTargets.FirstOrDefault(kvp => kvp.Value < 0);
@@ -256,10 +257,14 @@ namespace BLL.Services.Service
                     return (false, $"الكمية المتوفرة من {productName} غير كافية للتعديل");
                 }
 
-                var subtotal = preparedItems.Sum(i => i.EffectiveQuantity * i.Item.UnitPrice);
+                var subtotal = preparedItems.Sum(i => i.LineTotal);
                 var totalAmount = subtotal - model.DiscountAmount + model.TaxAmount;
 
-                await _transactionService.RevertInvoiceTransactionsAsync(invoice.Id);
+                var transactionsReverted = await _transactionService.RevertInvoiceTransactionsAsync(invoice.Id);
+                if (!transactionsReverted)
+                {
+                    return (false, "تعذر تحديث الفاتورة بسبب مشكلة في حذف المعاملات القديمة");
+                }
 
                 invoice.InvoiceType = model.InvoiceType;
                 invoice.CustomerId = model.CustomerId;
@@ -289,7 +294,7 @@ namespace BLL.Services.Service
                         Quantity = preparedItem.Item.Quantity,
                         Weight = preparedItem.Item.Weight,
                         UnitPrice = preparedItem.Item.UnitPrice,
-                        TotalPrice = preparedItem.EffectiveQuantity * preparedItem.Item.UnitPrice
+                        TotalPrice = preparedItem.LineTotal
                     };
                     invoice.InvoiceItems.Add(newItem);
                 }
@@ -348,7 +353,7 @@ namespace BLL.Services.Service
                 foreach (var itemGroup in preparedItems.GroupBy(i => i.Product.Id))
                 {
                     var product = productCache[itemGroup.Key];
-                    var quantityChanged = itemGroup.Sum(i => i.EffectiveQuantity);
+                    var quantityChanged = itemGroup.Sum(i => i.StockQuantityChange);
                     var weightChanged = itemGroup.Sum(i => i.Item.Weight);
                     var quantityAfter = product.StockQuantity ?? 0;
                     var quantityBefore = quantityAfter - GetStockImpact(invoice.InvoiceType, quantityChanged);
@@ -408,7 +413,11 @@ namespace BLL.Services.Service
                     _unitOfWork.Product.Update(product);
                 }
 
-                await _transactionService.RevertInvoiceTransactionsAsync(invoice.Id);
+                var transactionsReverted = await _transactionService.RevertInvoiceTransactionsAsync(invoice.Id);
+                if (!transactionsReverted)
+                {
+                    return (false, "تعذر حذف الفاتورة بسبب مشكلة في حذف معاملات المنتجات");
+                }
                 await AdjustInvoicePartyBalanceAsync(invoice.InvoiceType, invoice.SupplierId, invoice.CustomerId, -invoice.TotalAmount);
 
                 // Soft delete invoice and items
@@ -541,7 +550,8 @@ namespace BLL.Services.Service
                 {
                     Product = product,
                     Item = item,
-                    EffectiveQuantity = GetEffectiveQuantity(product.ProductType, item.Quantity, item.Weight)
+                    StockQuantityChange = GetEffectiveQuantity(product.ProductType, item.Quantity, item.Weight),
+                    LineTotal = item.Weight * item.UnitPrice
                 });
             }
 

@@ -177,8 +177,14 @@ namespace BLL.Services.Service
                     return false;
                 }
 
+                if ((Supplier.Balance ?? 0m) != 0m)
+                {
+                    throw new InvalidOperationException("لا يمكن حذف المورد طالما أن الرصيد لا يساوي صفر");
+                }
+
                 // Soft delete
                 Supplier.IsDeleted = true;
+                Supplier.UpdatedAt = DateTime.UtcNow;
 
                 _unit.Supplier.Update(Supplier);
                 await _unit.CompleteAsync();
