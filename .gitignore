@@ -361,3 +361,16 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Custom Ignore Rules
+# Ignore configuration files to protect sensitive credentials (e.g. database connection, API keys)
+appsettings.json
+appsettings.Development.json
+appsettings.*.json
+!appsettings.example.json
+*.env
+.env
+.env.*
+
+# Ignore .NET telemetry data
+.dotnet/
